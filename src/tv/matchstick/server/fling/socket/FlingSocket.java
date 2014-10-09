@@ -14,22 +14,18 @@ import java.nio.channels.SocketChannel;
 
 import javax.net.ssl.SSLException;
 
-import tv.matchstick.fling.Fling;
-import tv.matchstick.server.common.exception.C_atq;
-import tv.matchstick.server.common.exception.C_auf;
-import tv.matchstick.server.fling.socket.data.C_axm;
+import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.LOG;
 
 public final class FlingSocket {
     private static final LOG mLogs = new LOG("FlingSocket");
-    private static final int SAMPLE_SOCKET_PORT = 8011;
-    private static final boolean DEBUG = true;
+    private static final int SIMPLE_SOCKET_PORT = 8011;
     private final FlingSocketListener mSocketListener;
     private SocketChannel mSocketChannel;
     private SocketBuf mReadSocketBuf;
     private SocketBuf mWriteSocketBuf;
     private final FlingSocketMultiplexer mFlingSocketMultiplexer;
-    private final int g;
+    private final int MAX_MESSAGE_SIZE = 0x1fffc;
     private int mSocketStatus;
     private InetSocketAddress mInetSocketAddress;
     private long mBeginConnectTime;
@@ -38,29 +34,22 @@ public final class FlingSocket {
     private long m;
     private boolean n;
 
-    public FlingSocket(Context context, FlingSocketListener listener_atu1)
-    {
-        if (listener_atu1 == null)
-        {
+    public FlingSocket(Context context, FlingSocketListener listener) {
+        if (listener == null) {
             throw new IllegalArgumentException("listener cannot be null");
         } else {
-            mSocketListener = listener_atu1;
+            mSocketListener = listener;
             mSocketStatus = 0;
-            g = 0x1fffc;
-            mFlingSocketMultiplexer = FlingSocketMultiplexer.getInstance(context);
-            return;
+            mFlingSocketMultiplexer = FlingSocketMultiplexer
+                    .getInstance(context);
         }
     }
 
-    private void doTeardown(int reason_i1)
-    {
+    private void doTeardown(int reason_i1) {
         mLogs.d("doTeardown with reason=%d", reason_i1);
-        
-        if (mSocketChannel != null)
-        {
-            boolean flag;
-            try
-            {
+
+        if (mSocketChannel != null) {
+            try {
                 mSocketChannel.close();
             } catch (IOException ioexception) {
             }
@@ -77,14 +66,10 @@ public final class FlingSocket {
         mDisconnectTime = 0L;
         mBeginConnectTime = 0L;
         n = true;
-        if (flag)
-        {
+        if (flag) {
             mSocketListener.onConnectionFailed(reason_i1);
-            return;
-        } else
-        {
+        } else {
             mSocketListener.onDisconnected(reason_i1);
-            return;
         }
     }
 
@@ -93,7 +78,7 @@ public final class FlingSocket {
         try {
             mFlingSocketMultiplexer.init();
             mLogs.d("Connecting to %s:%d", hostAddr, port);
-            int socketPort = SAMPLE_SOCKET_PORT;
+            int socketPort = SIMPLE_SOCKET_PORT;
             mInetSocketAddress = new InetSocketAddress(hostAddr, socketPort);
             mTimeoutTime = 10000L;// 5000L;
             m = 2000L;
@@ -134,7 +119,7 @@ public final class FlingSocket {
                     flag = true;
                 } else
                 {
-                    if (long1.longValue() > (long) g) {
+                    if (long1.longValue() > (long) MAX_MESSAGE_SIZE) {
                         throw new IOException("invalid message size received");
                     }
                     // cond_4
@@ -168,10 +153,9 @@ public final class FlingSocket {
                         // cond_6
                         String message = new String(abyte0, "utf-8");
                         android.util.Log.d("FlingSocket", "received message : " + message);
-                        C_axm msg = new C_axm();
+                        FlingMessage msg = new FlingMessage();
                         msg.parseJson(message);
-                        payload("received", ByteBuffer.wrap(msg.build()));
-                        mSocketListener.onMessageReceived(ByteBuffer.wrap(msg.build()));
+                        mSocketListener.onMessageReceived(ByteBuffer.wrap(message.getBytes("UTF-8")));
 
                         continue;
                     } else {
@@ -201,14 +185,6 @@ public final class FlingSocket {
                 mReadSocketBuf.b = 0;
                 return;
             }
-        }
-    }
-
-    private void payload(String tag, ByteBuffer bytebuffer) {
-        if (DEBUG) {
-            C_axm axm1 = C_axm.a(bytebuffer.array());
-            android.util.Log.d("FlingSocket", tag);
-            android.util.Log.d("FlingSocket", axm1.payload());
         }
     }
 
@@ -248,12 +224,10 @@ public final class FlingSocket {
         if (bytebuffer == null)
             throw new IllegalArgumentException("message cannot be null");
 
-        payload("send", bytebuffer);
-
         // sample
         StringBuffer sb = new StringBuffer();
-        C_axm axm1 = C_axm.a(bytebuffer.array());
-        String json = axm1.buildJson().toString();
+        FlingMessage flingMessage = new FlingMessage(bytebuffer.array());
+        String json = flingMessage.buildJson().toString();
         int length = json.getBytes("utf-8").length;
         sb.append(length);
         sb.append(":");
@@ -444,7 +418,6 @@ public final class FlingSocket {
             doTeardown(1);
             flag = false;
         } catch (SSLException ee) {
-
             mLogs.w(ee, "SSLException encountered. Tearing down the socket.");
             doTeardown(4);
             flag = false;
@@ -453,9 +426,7 @@ public final class FlingSocket {
             doTeardown(2);
             flag = false;
         }
-
         return flag;
-
     }
 
     final synchronized boolean onWrite()

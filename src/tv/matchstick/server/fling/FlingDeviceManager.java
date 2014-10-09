@@ -10,7 +10,8 @@ import org.json.JSONObject;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
-import tv.matchstick.server.fling.socket.data.C_axm;
+import tv.matchstick.server.fling.socket.data.BinaryPayload;
+import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.LOG;
 
 import java.io.IOException;
@@ -73,8 +74,14 @@ final class FlingDeviceManager implements FlingSocketListener {
     private void sendMessage(String namespace, String message) throws Exception
     {
         DeviceFilter.getLogs().d("Sending text message to %s: (ns=%s, dest=%s) %s", mFlingDevice.getFriendlyName(), namespace, "receiver-0", message);
-        C_axm axm1 = (new C_axm()).protocolVersion(0).sourceId(g).destinationId("receiver-0").namespace(namespace).payloadType(0).payloadMessage(message);
-        mFlingSocket.send(ByteBuffer.wrap(axm1.build()));
+        FlingMessage msg = new FlingMessage();
+        msg.setProtocolVersion(0);
+        msg.setSourceId(g);
+        msg.setDestinationId("receiver-0");
+        msg.setNamespace(namespace);
+        msg.setPayloadMessage(message);
+        byte abyte0[] = msg.buildJson().toString().getBytes("UTF-8");
+        mFlingSocket.send(ByteBuffer.wrap(abyte0));
     }
 
     private void setNoApp()
@@ -220,57 +227,40 @@ final class FlingDeviceManager implements FlingSocketListener {
     {
         long requestId;
         DeviceFilter.getLogs().d("onMessageReceived:in[%s]", g);
-        C_axm axm1;
-        String message;
-        JSONObject jsonobject;
-        try
-        {
-            axm1 = C_axm.a(receivedMessage.array());
-            DeviceFilter.getLogs().d("Received a protobuf: %s", axm1.toString());
-            // } catch (C_igt igt1)
-            // {
-            // Logs_avu avu2 = DeviceFilter_awz.b();
-            // Object aobj1[] = new Object[1];
-            // aobj1[0] = igt1.getMessage();
-            // avu2.b("Received an unparseable protobuf: %s", aobj1);
-            // return;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
 
-        if (axm1.getPayloadType() != 0) {
+        FlingMessage flingMessage = new FlingMessage(receivedMessage.array());
+
+        if (flingMessage.getPayloadType() != 0) {
             return;
         }
         
-        message = axm1.getMessage();
+        String message = flingMessage.getMessage();
         Log.d("DeviceFilter","onMessageReceived:" + message);
         try
         {
-            jsonobject = new JSONObject(message);
+            JSONObject jsonobject = new JSONObject(message);
             requestId = jsonobject.optLong("requestId", -1L);
+            if (requestId == -1L) {
+                return;
+            }
+            if (requestId != 1L) {
+                if (requestId != 2L) {
+                    DeviceFilter.getLogs().d("Unrecognized request ID: " + requestId);
+                    return;
+                }
+                h.fillNamespaceList(jsonobject);
+                setNoNameSpace();
+                return;
+            }
+            h.fillAppAvailabityList(jsonobject);
+            setNoApp();
         } catch (JSONException jsonexception)
         {
             Object aobj3[] = new Object[1];
             aobj3[0] = jsonexception.getMessage();
             DeviceFilter.getLogs().e("Failed to parse response: %s", aobj3);
-            return;
         }
-        if (requestId == -1L) {
-            return;
-        }
-        if (requestId != 1L) {
-            if (requestId != 2L) {
-                DeviceFilter.getLogs().d("Unrecognized request ID: " + requestId);
-                return;
-            }
-            h.fillNamespaceList(jsonobject);
-            setNoNameSpace();
-            return;
-        }
-        h.fillAppAvailabityList(jsonobject);
-        setNoApp();
-        return;
+        
     }
 
     public final void onDisconnected(int statusCode)

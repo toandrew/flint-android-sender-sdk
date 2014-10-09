@@ -32,7 +32,7 @@ import tv.matchstick.server.fling.channels.ReceiverControlChannel;
 import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.BinaryPayload;
-import tv.matchstick.server.fling.socket.data.C_axm;
+import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.ApplicationInfo;
 import tv.matchstick.server.utils.ApplicationMetadataPriv;
 import tv.matchstick.server.utils.FlingStatusCodes;
@@ -747,8 +747,16 @@ public final class FlingDeviceController implements FlingSocketListener {
             onSocketError(FlingStatusCodes.NETWORK_ERROR); // 7
             return;
         }
-        byte abyte0[] = (new C_axm()).protocolVersion(0).sourceId(p).destinationId(transId).namespace(namespace).payloadType(0).payloadMessage(message).build();
+
+        FlingMessage msg = new FlingMessage();
+        msg.setProtocolVersion(0);
+        msg.setSourceId(p);
+        msg.setDestinationId(transId);
+        msg.setNamespace(namespace);
+        msg.setPayloadMessage(message);
+        
         try {
+            byte abyte0[] = msg.buildJson().toString().getBytes("UTF-8");
             if (abyte0.length > 0x10000)
             {
                 throw new C_aue();
@@ -798,10 +806,15 @@ public final class FlingDeviceController implements FlingSocketListener {
             onSocketError(FlingStatusCodes.NETWORK_ERROR); //7
             return;
         }
+        FlingMessage msg = new FlingMessage();
+        msg.setProtocolVersion(0);
+        msg.setSourceId(p);
+        msg.setDestinationId(transId);
+        msg.setNamespace(nameSpace);
+        msg.setPayloadBinary(BinaryPayload.a(message));
+        byte abyte0[] = msg.buildJson().toString().getBytes("UTF-8");
         sendMessage(
-                ByteBuffer.wrap((new C_axm()).protocolVersion(0).sourceId(p).destinationId(transId).namespace(nameSpace).payloadType(1)
-                        .payloadBinary(BinaryPayload.a(message)).build()),
-                nameSpace, requestId);
+                ByteBuffer.wrap(abyte0), nameSpace, requestId);
         return;
     }
 
@@ -912,29 +925,13 @@ public final class FlingDeviceController implements FlingSocketListener {
     public final void onReceivedMessage(ByteBuffer received) {
         if (mHeartbeatChannel != null)
             mHeartbeatChannel.reset();
-        C_axm axm1 = null;
-        String nameSpace;
-        try {
-            axm1 = C_axm.a(received.array());
-        }
-        // catch (C_igt igt1)
-        // {
-        // Logs_avu avu1 = a;
-        // Object aobj[] = new Object[1];
-        // aobj[0] = igt1.getMessage();
-        // avu1.b("Received an unparseable protobuf: %s", aobj);
-        // return;
-        // }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.d("Received an unparseable protobuf???");
-        }
-        nameSpace = axm1.getNamespace();
+        FlingMessage message = new FlingMessage(received.array());
+        String nameSpace = message.getNamespace();
         if (TextUtils.isEmpty(nameSpace)) {
             log.d("Received a message with an empty or missing namespace");
             return;
         }
-        int payloadType = axm1.getPayloadType();
+        int payloadType = message.getPayloadType();
         FlingChannel flingChannel = (FlingChannel) mFlingChannelMap.get(nameSpace);
         if (flingChannel != null) {
             BinaryPayload binaryPayload;
@@ -947,11 +944,11 @@ public final class FlingDeviceController implements FlingSocketListener {
                     return;
 
                 case 0: // '\0'
-                    flingChannel.checkReceivedMessage(axm1.getMessage());
+                    flingChannel.checkReceivedMessage(message.getMessage());
                     return;
 
                 case 1: // '\001'
-                    binaryPayload = axm1.getBinaryMessage();
+                    binaryPayload = message.getBinaryMessage();
                     break;
             }
             byte abyte1[] = new byte[binaryPayload.getLength()];
@@ -964,7 +961,7 @@ public final class FlingDeviceController implements FlingSocketListener {
             flag = mNamespaces.contains(nameSpace);
         }
         if (flag) {
-            BinaryPayload igp1;
+            BinaryPayload binary;
             switch (payloadType) {
                 default:
                     LOG avu2 = log;
@@ -974,16 +971,16 @@ public final class FlingDeviceController implements FlingSocketListener {
                     return;
 
                 case 0: // '\0'
-                    mFlingSrvController.notifyOnMessageReceived(nameSpace, axm1.getMessage());
+                    mFlingSrvController.notifyOnMessageReceived(nameSpace, message.getMessage());
                     return;
 
                 case 1: // '\001'
-                    igp1 = axm1.getBinaryMessage();
+                    binary = message.getBinaryMessage();
                     break;
             }
-            byte message[] = new byte[igp1.getLength()];
-            igp1.copy(message);
-            mFlingSrvController.onReceiveBinary(nameSpace, message);
+            byte bytes[] = new byte[binary.getLength()];
+            binary.copy(bytes);
+            mFlingSrvController.onReceiveBinary(nameSpace, bytes);
             return;
         } else {
             log.w("Ignoring message. Namespace has not been registered.", new Object[0]);
