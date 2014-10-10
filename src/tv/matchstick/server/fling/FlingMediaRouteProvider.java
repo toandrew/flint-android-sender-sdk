@@ -17,7 +17,6 @@ import java.util.Set;
 
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingDeviceService;
-import tv.matchstick.server.cast_mirroring.IMirrorDeviceHelper;
 import tv.matchstick.server.common.checker.MainThreadChecker;
 import tv.matchstick.server.fling.mdns.DeviceScanner;
 import tv.matchstick.server.fling.mdns.IDeviceScanListener;
@@ -64,9 +63,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                         mLogs.d("device %s is in use; not removing route",flingdevice);
                     } else
                     {
-                        if (r != null) {
-                            r.b(flingdevice);
-                        }
                         iterator.remove();
                     }
                 } else
@@ -113,7 +109,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     private final Map mDiscoveryCriteriaMap = new HashMap();
     private final Map q = new HashMap();
-    private IMirrorDeviceHelper r;
     private boolean s;
     private final DeviceFilter mFlingDeviceFilter;
     private final Set mDiscoveryCriteriaHashSet = new HashSet();
@@ -312,8 +307,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             } while (true);
         } else {
             routeProvider.mDiscoveryCriteriaMap.put(flingdevice.getDeviceId(), new DiscoveryCriteriaHelper(flingdevice, set));
-            if (routeProvider.r != null)
-                routeProvider.r.a(flingdevice);
         }
     }
 
@@ -367,8 +360,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     private void b(FlingDevice flingdevice) {
         mDiscoveryCriteriaMap.remove(flingdevice.getDeviceId());
-        if (r != null)
-            r.b(flingdevice);
     }
 
     static Map c(FlingMediaRouteProvider awb1) {
@@ -506,10 +497,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         return awb1.mDiscoveryCriteriaMap;
     }
 
-    static IMirrorDeviceHelper f(FlingMediaRouteProvider awb1) {
-        return awb1.r;
-    }
-
     static Map g(FlingMediaRouteProvider awb1) {
         return awb1.x;
     }
@@ -520,10 +507,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             return null;
         else
             return new FlingRouteController(this, awv1.mFlingDevice);
-    }
-
-    public final void a(IMirrorDeviceHelper aww1) {
-        r = aww1;
     }
 
     public final void onDiscoveryRequestChanged(DiscoveryRequest request) {

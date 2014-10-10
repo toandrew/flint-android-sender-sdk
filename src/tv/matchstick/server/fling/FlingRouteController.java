@@ -13,7 +13,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.cast_mirroring.JGCastService;
 import tv.matchstick.server.common.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
 import tv.matchstick.server.fling.channels.MediaControlChannel;
@@ -25,7 +24,6 @@ import tv.matchstick.server.utils.C_dt;
 import tv.matchstick.server.utils.IStatusRequest;
 import tv.matchstick.server.utils.LOG;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -43,7 +41,6 @@ public final class FlingRouteController extends RouteController implements
     public String mSessionId;
     boolean h;
     public boolean i;
-    JGCastService mJGCastService;
     public final FlingMediaRouteProvider mFlingMediaRouteProvider;
     private String mApplicationId;
     private boolean isRelaunchApp;
@@ -946,11 +943,6 @@ public final class FlingRouteController extends RouteController implements
         }
     }
 
-    final void a(boolean flag) {
-        if (FlingMediaRouteProvider.f(mFlingMediaRouteProvider) != null)
-            FlingMediaRouteProvider.f(mFlingMediaRouteProvider).a(mFlingDevice, flag);
-    }
-
     public final boolean onControlRequest(Intent intent, RouteCtrlRequestCallback om) {
         boolean flag;
         FlingMediaRouteProvider.getLogs_a().d("Received control request %s", intent);
@@ -999,18 +991,11 @@ public final class FlingRouteController extends RouteController implements
 
     public final void disconnectCastMirror(boolean flag) {
         if (i) {
-            if (mJGCastService != null) {
-                FlingMediaRouteProvider.getLogs_a().d("Destroying mirroring client",
-                        new Object[0]);
-                mJGCastService.disconnect();
-                mJGCastService = null;
-            }
             if (mMirroringControlChannel != null) {
                 if (mFlingDeviceController != null)
                     mFlingDeviceController.b(mMirroringControlChannel);
                 mMirroringControlChannel = null;
             }
-            a(flag);
             i = false;
         }
     }
