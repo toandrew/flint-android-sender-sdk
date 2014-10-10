@@ -24,7 +24,7 @@ final class RemotePlaybackRequest {
         Bundle bundle = new Bundle();
         bundle.putInt("tv.matchstick.fling.EXTRA_ERROR_CODE", errorCode);
         mRouteCtrlRequestCallback.onError(
-                (String) FlingMediaRouteProvider.g(mFlingMediaRouteProvider).get(
+                (String) FlingMediaRouteProvider.getErrorMap(mFlingMediaRouteProvider).get(
                         Integer.valueOf(errorCode)), bundle);
     }
 

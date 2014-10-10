@@ -54,7 +54,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 if (awv1 != null)
                 {
                     FlingDevice flingdevice = awv1.mFlingDevice;
-                    FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) q
+                    FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) mFlingDeviceControllerMap
                             .get(flingdevice.getDeviceId());
                     if (awu1 != null)
                     {
@@ -77,7 +77,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         public void onDeviceOnline(FlingDevice flingdevice) {
             // TODO Auto-generated method stub
             mLogs.d("DeviceScanner.Listener#onDeviceOnline :%s",flingdevice);
-            FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) q.get(flingdevice
+            FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) mFlingDeviceControllerMap.get(flingdevice
                     .getDeviceId());
             if (awu1 != null) {
                 awu1.b = true;
@@ -92,7 +92,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                     new Object[] {
                         flingdevice
                     });
-            FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) q.get(flingdevice
+            FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) mFlingDeviceControllerMap.get(flingdevice
                     .getDeviceId());
             if (awu1 != null)
             {
@@ -106,13 +106,13 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     };
 
-    private final Map mDiscoveryCriteriaMap = new HashMap();
-    private final Map q = new HashMap();
+    private final Map<String, DiscoveryCriteriaHelper> mDiscoveryCriteriaMap = new HashMap<String, DiscoveryCriteriaHelper>();
+    private final Map<String, FlingDeviceControllerHelper> mFlingDeviceControllerMap = new HashMap<String, FlingDeviceControllerHelper>();
     private boolean s;
     private final DeviceFilter mFlingDeviceFilter;
-    private final Set mDiscoveryCriteriaHashSet = new HashSet();
-    private final List mIntentFilterList = getAllIntentFilters();
-    private final Map x = new HashMap();
+    private final Set<DiscoveryCriteria> mDiscoveryCriteriaHashSet = new HashSet<DiscoveryCriteria>();
+    private final List<IntentFilter> mIntentFilterList = getAllIntentFilters();
+    private final Map<Integer, String> mErrorMap = new HashMap<Integer, String>();
 
     private static final String[] mFlingMimeTypes = {
             "image/jpeg",
@@ -141,10 +141,10 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     private FlingMediaRouteProvider(Context context) {
         super(context);
-        x.put(Integer.valueOf(1), "Request failed");
-        x.put(Integer.valueOf(2), "Failed to start a session");
-        x.put(Integer.valueOf(2), "Unknown or invalid session ID");
-        x.put(Integer.valueOf(3), "Disconnected from Fling Device but trying to reconnect");
+        mErrorMap.put(Integer.valueOf(1), "Request failed");
+        mErrorMap.put(Integer.valueOf(2), "Failed to start a session");
+        mErrorMap.put(Integer.valueOf(2), "Unknown or invalid session ID");
+        mErrorMap.put(Integer.valueOf(3), "Disconnected from Fling Device but trying to reconnect");
         
         mFlingDeviceFilter = new DeviceFilter(context, mDiscoveryCriteriaHashSet, "gms_cast_mrp"){
 
@@ -189,7 +189,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             FlingMediaRouteProvider provider, FlingRouteController controller) {
         FlingDevice flingdevice = controller.mFlingDevice;
         String id = flingdevice.getDeviceId();
-        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) provider.q.get(id);
+        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) provider.mFlingDeviceControllerMap.get(id);
         if (awu1 == null) {
             awu1 = new FlingDeviceControllerHelper(provider);
             mLogs.d("creating FlingDeviceController for %s", flingdevice);
@@ -200,7 +200,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                     "gms_cast_mrp", flingdevice, awe1);
             awu1.mFlingDeviceController.setSubTag("MRP");
             awu1.c = true;
-            provider.q.put(id, awu1);
+            provider.mFlingDeviceControllerMap.put(id, awu1);
             mLogs.d("Connecting controller to device", new Object[0]);
             awu1.mFlingDeviceController.connectDevice();
         }
@@ -215,7 +215,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     private MediaRouteDescriptor buildRouteDescriptorForDevice(DiscoveryCriteriaHelper criteriaHelper) {
         FlingDevice flingdevice = criteriaHelper.mFlingDevice;
         Set set = criteriaHelper.mDiscoveryCriteriaSet;
-        FlingDeviceControllerHelper controllerHelper = (FlingDeviceControllerHelper) q.get(flingdevice
+        FlingDeviceControllerHelper controllerHelper = (FlingDeviceControllerHelper) mFlingDeviceControllerMap.get(flingdevice
                 .getDeviceId());
         String statusText;
         boolean isConnecting;
@@ -340,7 +340,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     public static void b(FlingMediaRouteProvider awb1, FlingRouteController awn1) {
         FlingDevice flingdevice = awn1.mFlingDevice;
         String id = flingdevice.getDeviceId();
-        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) awb1.q.get(id);
+        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) awb1.mFlingDeviceControllerMap.get(id);
         if (awu1 != null) {
             awu1.e.remove(awn1);
             if (awu1.isEmpty()) {
@@ -352,7 +352,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                     awb1.b(flingdevice);
                     awb1.publishRoutes();
                 }
-                awb1.q.remove(id);
+                awb1.mFlingDeviceControllerMap.remove(id);
             }
         }
     }
@@ -362,7 +362,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     }
 
     static Map c(FlingMediaRouteProvider awb1) {
-        return awb1.q;
+        return awb1.mFlingDeviceControllerMap;
     }
 
     private void onDiscoveryRequestChanged() {
@@ -448,9 +448,9 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         return awb1.mFlingDeviceFilter;
     }
 
-    private List getAllIntentFilters() {
+    private List<IntentFilter> getAllIntentFilters() {
         int i1 = 0;
-        ArrayList arraylist = new ArrayList();
+        ArrayList<IntentFilter> arraylist = new ArrayList<IntentFilter>();
         IntentFilter intentfilter = new IntentFilter();
         intentfilter.addCategory("android.media.intent.category.REMOTE_PLAYBACK");
         intentfilter.addAction("android.media.intent.action.PLAY");
@@ -491,8 +491,8 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         return awb1.mDiscoveryCriteriaMap;
     }
 
-    static Map g(FlingMediaRouteProvider awb1) {
-        return awb1.x;
+    static Map<Integer, String> getErrorMap(FlingMediaRouteProvider provider) {
+        return provider.mErrorMap;
     }
 
     public final RouteController getRouteController(String routeId) {

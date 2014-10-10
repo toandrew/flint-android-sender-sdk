@@ -9,14 +9,14 @@ final class FlingDeviceControllerHelper {
     public boolean b;
     public boolean c;
     public boolean d;
-    public final List e = new ArrayList();
+    public final List<FlingRouteController> e = new ArrayList<FlingRouteController>();
     final FlingMediaRouteProvider f;
 
-    public FlingDeviceControllerHelper(FlingMediaRouteProvider awb)
+    public FlingDeviceControllerHelper(FlingMediaRouteProvider provider)
     {
         super();
 
-        f = awb;
+        f = provider;
         b = true;
     }
 
