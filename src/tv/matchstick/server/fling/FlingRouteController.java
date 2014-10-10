@@ -16,7 +16,6 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.common.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
 import tv.matchstick.server.fling.channels.MediaControlChannel;
-import tv.matchstick.server.fling.channels.MirroringControlChannel;
 import tv.matchstick.server.fling.media.MediaItemStatusHelper;
 import tv.matchstick.server.fling.media.RouteController;
 import tv.matchstick.server.fling.media.RouteCtrlRequestCallback;
@@ -52,7 +51,6 @@ public final class FlingRouteController extends RouteController implements
     private MediaControlChannel mMediaControlChannel;
     private long mLoadRequestId;
     private boolean u;
-    private MirroringControlChannel mMirroringControlChannel;
     private final List w = new LinkedList();
     private TrackedItem mTrackedItem;
 
@@ -555,21 +553,7 @@ public final class FlingRouteController extends RouteController implements
 
     private void startSession(int i1) {
         FlingMediaRouteProvider.getLogs_a().d("startSession()");
-        
-        if (i1 == 1) {
-            MediaRouteSession axe1 = mMediaRouteSession;
-            int j1 = ((WifiManager) ((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext
-                    .getSystemService("wifi"))
-                    .getConnectionInfo().getIpAddress();
-            axe1.startSession("674A0243",
-                    (new StringBuilder()).append(j1 & 0xff).append(".").append(0xff & j1 >> 8)
-                            .append(".").append(0xff & j1 >> 16).append(".")
-                            .append(0xff & j1 >> 24).toString(), true);
-            return;
-        } else {
-            mMediaRouteSession.startSession(mApplicationId, null, isRelaunchApp);
-            return;
-        }
+        mMediaRouteSession.startSession(mApplicationId, null, isRelaunchApp);
     }
 
     private void f(int i1) {
@@ -883,35 +867,6 @@ public final class FlingRouteController extends RouteController implements
                 processRemotePlaybackRequest(o);
                 o = null;
             }
-        } else {
-            if ("674A0243".equals(applicationmetadata.getApplicationId())) {
-                u = true;
-
-                mMirroringControlChannel = new MirroringControlChannel(mFlingDevice,
-                        mFlingDeviceController.getTransId()) {
-                    protected final void onAnswer(final String s) {
-                        FlingMediaRouteProvider.getLogs_a().d("onAnswer");
-
-                        ((MediaRouteProvider) (mFlingMediaRouteProvider)).mHandler
-                                .post(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        // TODO Auto-generated method stub
-                                        // todo
-                                    }
-
-                                });
-                    }
-                };
-
-                try {
-                    mFlingDeviceController.a(mMirroringControlChannel);
-                    mMirroringControlChannel.a();
-                } catch (Exception ioexception) {
-                    FlingMediaRouteProvider.getLogs_a().w(ioexception, "Failed to send offer");
-                }
-            }
         }
         if (mLoadRequestId != -1L || mMediaControlChannel == null)
             return;
@@ -989,17 +944,6 @@ public final class FlingRouteController extends RouteController implements
         sendPendingIntent(sessionId, 1);
     }
 
-    public final void disconnectCastMirror(boolean flag) {
-        if (i) {
-            if (mMirroringControlChannel != null) {
-                if (mFlingDeviceController != null)
-                    mFlingDeviceController.b(mMirroringControlChannel);
-                mMirroringControlChannel = null;
-            }
-            i = false;
-        }
-    }
-
     public final void onUnselect() {
         FlingMediaRouteProvider.getLogs_a().d("onUnselect");
         endSession();
@@ -1012,7 +956,6 @@ public final class FlingRouteController extends RouteController implements
         boolean flag = false;
         if (statusCode != 0)
             flag = true;
-        disconnectCastMirror(flag);
         if (mMediaRouteSession != null) {
             mMediaRouteSession.onApplicationDisconnected(statusCode);
             sendPendingIntent(getSessionId(), 1);
@@ -1059,27 +1002,19 @@ public final class FlingRouteController extends RouteController implements
     }
 
     public final void startSession() {
-        switch (f) {
-            case 1:
-                FlingMediaRouteProvider.getLogs_a().d("starting pending session for mirroring");
-                startSession(1);
-                break;
-            case 2:
-                FlingMediaRouteProvider.getLogs_a().d("starting pending session for media with session ID %s", mSessionId);
-                if (mSessionId != null) {
-                    resumeSession(mSessionId);
-                    mSessionId = null;
-                } else {
-                    startSession(0);
-                }
-                break;
+        if (f == 2) {
+            FlingMediaRouteProvider.getLogs_a().d("starting pending session for media with session ID %s", mSessionId);
+            if (mSessionId != null) {
+                resumeSession(mSessionId);
+                mSessionId = null;
+            } else {
+                startSession(0);
+            }
         }
         f = 0;
-        return;
     }
 
     public final void g() {
-        disconnectCastMirror(true);
         FlingMediaRouteProvider.b(mFlingMediaRouteProvider, this);
     }
 

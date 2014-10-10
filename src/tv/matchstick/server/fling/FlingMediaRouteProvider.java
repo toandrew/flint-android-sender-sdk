@@ -38,7 +38,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             "android.media.intent.action.GET_SESSION_STATUS",
             "android.media.intent.action.END_SESSION"
     };
-    private static final DiscoveryCriteria mDiscoveryCriteria;
     private final DeviceScanner mMdnsDeviceScanner;
 
     private final IDeviceScanListener mDeviceScannerListener = new IDeviceScanListener() {
@@ -418,12 +417,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 flag1 = flag2;
             }
         }
-        if (s) {
-            if (!mDiscoveryCriteriaHashSet.contains(mDiscoveryCriteria)) {
-                mDiscoveryCriteriaHashSet.add(mDiscoveryCriteria);
-            }
-        } else {
-            mDiscoveryCriteriaHashSet.remove(mDiscoveryCriteria);
+        if (!s) {
             isStartScan = flag1;
         }
 
@@ -518,17 +512,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         if (s != flag) {
             s = flag;
             onDiscoveryRequestChanged();
-        }
-    }
-
-    static {
-        StringBuffer stringbuffer = new StringBuffer("tv.matchstick.fling.CATEGORY_FLING");
-        if (!"674A0243".matches("[A-F0-9]+")) {
-            throw new IllegalArgumentException((new StringBuilder("Invalid appliation ID: "))
-                    .append("674A0243").toString());
-        } else {
-            stringbuffer.append("/").append("674A0243");
-            mDiscoveryCriteria = DiscoveryCriteria.getDiscoveryCriteria(stringbuffer.toString());
         }
     }
 }

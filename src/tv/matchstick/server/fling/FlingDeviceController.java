@@ -725,23 +725,21 @@ public final class FlingDeviceController implements FlingSocketListener {
                 mReceiverControlChannel.mTransportId);
     }
 
-    public final void sendTextMessage(String namespace, String message, long id, String transId)
-    {
-        if (TextUtils.isEmpty(transId))
-        {
+    public final void sendTextMessage(String namespace, String message,
+            long id, String transId) {
+        if (TextUtils.isEmpty(transId)) {
             log.w("ignoring attempt to send a text message with no destination ID",
                     new Object[0]);
-            mFlingSrvController.onRequestCallback(namespace, id, FlingStatusCodes.INVALID_REQUEST); // 2001
+            mFlingSrvController.onRequestCallback(namespace, id,
+                    FlingStatusCodes.INVALID_REQUEST); // 2001
             return;
         }
-        if (transId == null)
-        {
-            try
-            {
-                throw new IllegalStateException("The application has not launched yet.");
+        if (transId == null) {
+            try {
+                throw new IllegalStateException(
+                        "The application has not launched yet.");
                 // } catch (IOException ioexception)
-            } catch (Exception ioexception)
-            {
+            } catch (Exception ioexception) {
                 log.w(ioexception, "Error while sending message", new Object[0]);
             }
             onSocketError(FlingStatusCodes.NETWORK_ERROR); // 7
@@ -754,16 +752,13 @@ public final class FlingDeviceController implements FlingSocketListener {
         msg.setDestinationId(transId);
         msg.setNamespace(namespace);
         msg.setPayloadMessage(message);
-        
+
         try {
             byte abyte0[] = msg.buildJson().toString().getBytes("UTF-8");
-            if (abyte0.length > 0x10000)
-            {
+            if (abyte0.length > 0x10000) {
                 throw new C_aue();
-            } else
-            {
+            } else {
                 sendMessage(ByteBuffer.wrap(abyte0), namespace, id);
-                return;
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -238,7 +238,6 @@ final class FlingSrvControllerImpl implements IFlingSrvController {
                         FlingMediaRouteProvider.getLogs_a().d("onApplicationConnectionFailed: statusCode=%d", statusCode);
                         awn1.h = false;
                         awn1.sendPendingIntent(awn1.getSessionId(), 1);
-                        awn1.disconnectCastMirror(true);
                         if (awn1.mMediaRouteSession != null)
                             awn1.mMediaRouteSession.onApplicationConnectionFailed(statusCode);
                     }
