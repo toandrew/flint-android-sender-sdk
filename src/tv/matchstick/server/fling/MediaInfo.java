@@ -6,8 +6,8 @@ import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.JsonComparer;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
-import tv.matchstick.server.utils.C_bmg;
 
 import java.util.Arrays;
 
@@ -180,7 +180,7 @@ public final class MediaInfo {
             return false;
 
         if (mCustomData != null && mediainfo.mCustomData != null
-                && !C_bmg.a(mCustomData, mediainfo.mCustomData))
+                && !JsonComparer.compare(mCustomData, mediainfo.mCustomData))
             return false;
 
         return ObjEqualChecker.isEquals(mContentId, mediainfo.mContentId)
