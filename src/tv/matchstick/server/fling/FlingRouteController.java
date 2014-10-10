@@ -13,7 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.common.images.WebImage;
+import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
 import tv.matchstick.server.fling.channels.MediaControlChannel;
 import tv.matchstick.server.fling.media.MediaItemStatusHelper;

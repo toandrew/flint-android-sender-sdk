@@ -1,8 +1,8 @@
 
 package tv.matchstick.server.fling;
 
+import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.exception.FlingRuntimeException;
-import tv.matchstick.server.common.images.WebImage;
 import tv.matchstick.server.common.internal.safeparcel.ParcelReader;
 import tv.matchstick.server.common.internal.safeparcel.ParcelWritter;
 import android.net.Uri;

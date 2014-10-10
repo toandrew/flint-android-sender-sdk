@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.server.common.images.WebImage;
+import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.utils.LOG;
 
 import java.text.ParseException;
@@ -128,7 +128,7 @@ public final class MetadataUtils {
         }
         jsonarray = new JSONArray();
         for (Iterator iterator = images.iterator(); iterator.hasNext(); jsonarray
-                .put(((WebImage) iterator.next()).cT()))
+                .put(((WebImage) iterator.next()).buildJson()))
             ;
         try {
             jsonobject.put("images", jsonarray);

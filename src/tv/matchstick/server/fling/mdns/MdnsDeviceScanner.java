@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.common.images.WebImage;
+import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.utils.LOG;
 
 public final class MdnsDeviceScanner extends DeviceScanner {

@@ -6,7 +6,7 @@ import android.os.Bundle;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.server.common.images.WebImage;
+import tv.matchstick.fling.images.WebImage;
 
 import java.util.Calendar;
 import java.util.Iterator;

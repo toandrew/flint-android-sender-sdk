@@ -15,7 +15,7 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.server.common.images.WebImage;
+import tv.matchstick.fling.images.WebImage;
 
 public final class MediaMetadata {
     public static final int MEDIA_TYPE_GENERIC = 0;

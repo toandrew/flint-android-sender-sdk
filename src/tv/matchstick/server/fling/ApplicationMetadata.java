@@ -8,7 +8,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
-import tv.matchstick.server.common.images.WebImage;
+import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.server.utils.ApplicationMetadataPriv;
 

@@ -18,10 +18,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.PlatformChecker;
 import tv.matchstick.server.common.exception.FlingMessageLargeException;
-import tv.matchstick.server.common.images.WebImage;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.fling.channels.FlingChannel;
 import tv.matchstick.server.fling.channels.ConnectionControlChannel;
