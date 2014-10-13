@@ -12,8 +12,8 @@ public interface IFlingCallbacks extends IInterface {
     public abstract void onPostInitComplete(int statusCode, IBinder binder,
             Bundle bundle) throws RemoteException;
 
-    public static abstract class Stub extends Binder implements
-            IFlingCallbacks {
+    public static abstract class Stub extends Binder implements IFlingCallbacks {
+
         public Stub() {
             attachInterface(this,
                     "tv.matchstick.common.internal.IFlingCallbacks");
@@ -24,16 +24,17 @@ public interface IFlingCallbacks extends IInterface {
                 return null;
             IInterface callbacks = binder
                     .queryLocalInterface("tv.matchstick.common.internal.IFlingCallbacks");
-            if ((callbacks != null)
-                    && (callbacks instanceof IFlingCallbacks))
+            if ((callbacks != null) && (callbacks instanceof IFlingCallbacks))
                 return ((IFlingCallbacks) callbacks);
             return new Proxy(binder);
         }
 
+        @Override
         public IBinder asBinder() {
             return this;
         }
 
+        @Override
         public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
                 throws RemoteException {
             switch (code) {
@@ -63,6 +64,7 @@ public interface IFlingCallbacks extends IInterface {
                 mRemote = iBinder;
             }
 
+            @Override
             public IBinder asBinder() {
                 return mRemote;
             }
@@ -72,8 +74,7 @@ public interface IFlingCallbacks extends IInterface {
                 Parcel parcel1 = Parcel.obtain();
                 Parcel parcel2 = Parcel.obtain();
                 try {
-                    parcel1
-                            .writeInterfaceToken("tv.matchstick.common.internal.IFlingCallbacks");
+                    parcel1.writeInterfaceToken("tv.matchstick.common.internal.IFlingCallbacks");
                     parcel1.writeInt(statusCode);
                     parcel1.writeStrongBinder(binder);
                     if (bundle != null) {

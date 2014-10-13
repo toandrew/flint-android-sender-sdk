@@ -695,7 +695,7 @@ public class FlingClientImpl extends
 		/**
 		 * Init fling service.
 		 */
-		serviceBroker.initService(flingCallback, 4323000, getContext()
+		serviceBroker.initFlingService(flingCallback, 4323000, getContext()
 				.getPackageName(),
 				mIFlingDeviceControllerListener.asBinder(), bundle);
 	}
