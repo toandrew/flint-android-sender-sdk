@@ -9,87 +9,87 @@ import android.os.RemoteException;
 
 public interface IFlingCallbacks extends IInterface {
 
-	public abstract void onPostInitComplete(int statusCode, IBinder binder,
-			Bundle bundle) throws RemoteException;
+    public abstract void onPostInitComplete(int statusCode, IBinder binder,
+            Bundle bundle) throws RemoteException;
 
-	public static abstract class Stub_a extends Binder implements
-			IFlingCallbacks {
-		public Stub_a() {
-			attachInterface(this,
-					"tv.matchstick.common.internal.IFlingCallbacks");
-		}
+    public static abstract class Stub extends Binder implements
+            IFlingCallbacks {
+        public Stub() {
+            attachInterface(this,
+                    "tv.matchstick.common.internal.IFlingCallbacks");
+        }
 
-		public static IFlingCallbacks asInterface(IBinder paramIBinder) {
-			if (paramIBinder == null)
-				return null;
-			IInterface localIInterface = paramIBinder
-					.queryLocalInterface("tv.matchstick.common.internal.IFlingCallbacks");
-			if ((localIInterface != null)
-					&& (localIInterface instanceof IFlingCallbacks))
-				return ((IFlingCallbacks) localIInterface);
-			return new Proxy(paramIBinder);
-		}
+        public static IFlingCallbacks asInterface(IBinder binder) {
+            if (binder == null)
+                return null;
+            IInterface callbacks = binder
+                    .queryLocalInterface("tv.matchstick.common.internal.IFlingCallbacks");
+            if ((callbacks != null)
+                    && (callbacks instanceof IFlingCallbacks))
+                return ((IFlingCallbacks) callbacks);
+            return new Proxy(binder);
+        }
 
-		public IBinder asBinder() {
-			return this;
-		}
+        public IBinder asBinder() {
+            return this;
+        }
 
-		public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
-				throws RemoteException {
-			switch (code) {
-			case 1598968902:
-				reply.writeString("tv.matchstick.common.internal.IFlingCallbacks");
-				return true;
-			case 1:
-				data.enforceInterface("tv.matchstick.common.internal.IFlingCallbacks");
-				int statusCode = data.readInt();
-				IBinder binder = data.readStrongBinder();
-				Bundle bundle;
-				if (0 != data.readInt())
-					bundle = (Bundle) Bundle.CREATOR.createFromParcel(data);
-				else
-					bundle = null;
-				onPostInitComplete(statusCode, binder, bundle);
-				reply.writeNoException();
-				return true;
-			}
-			return super.onTransact(code, data, reply, flags);
-		}
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
+                throws RemoteException {
+            switch (code) {
+            case IBinder.LAST_CALL_TRANSACTION:
+                reply.writeString("tv.matchstick.common.internal.IFlingCallbacks");
+                return true;
+            case 1:
+                data.enforceInterface("tv.matchstick.common.internal.IFlingCallbacks");
+                int statusCode = data.readInt();
+                IBinder binder = data.readStrongBinder();
+                Bundle bundle;
+                if (data.readInt() != 0)
+                    bundle = (Bundle) Bundle.CREATOR.createFromParcel(data);
+                else
+                    bundle = null;
+                onPostInitComplete(statusCode, binder, bundle);
+                reply.writeNoException();
+                return true;
+            }
+            return super.onTransact(code, data, reply, flags);
+        }
 
-		private static class Proxy implements IFlingCallbacks {
-			private IBinder remote;
+        private static class Proxy implements IFlingCallbacks {
+            private IBinder mRemote;
 
-			Proxy(IBinder paramIBinder) {
-				this.remote = paramIBinder;
-			}
+            Proxy(IBinder iBinder) {
+                mRemote = iBinder;
+            }
 
-			public IBinder asBinder() {
-				return this.remote;
-			}
+            public IBinder asBinder() {
+                return mRemote;
+            }
 
-			public void onPostInitComplete(int statusCode, IBinder binder,
-					Bundle bundle) throws RemoteException {
-				Parcel localParcel1 = Parcel.obtain();
-				Parcel localParcel2 = Parcel.obtain();
-				try {
-					localParcel1
-							.writeInterfaceToken("tv.matchstick.common.internal.IFlingCallbacks");
-					localParcel1.writeInt(statusCode);
-					localParcel1.writeStrongBinder(binder);
-					if (bundle != null) {
-						localParcel1.writeInt(1);
-						bundle.writeToParcel(localParcel1, 0);
-					} else {
-						localParcel1.writeInt(0);
-					}
-					this.remote.transact(1, localParcel1, localParcel2, 0);
-					localParcel2.readException();
-				} finally {
-					localParcel2.recycle();
-					localParcel1.recycle();
-				}
-			}
-		}
-	}
+            public void onPostInitComplete(int statusCode, IBinder binder,
+                    Bundle bundle) throws RemoteException {
+                Parcel parcel1 = Parcel.obtain();
+                Parcel parcel2 = Parcel.obtain();
+                try {
+                    parcel1
+                            .writeInterfaceToken("tv.matchstick.common.internal.IFlingCallbacks");
+                    parcel1.writeInt(statusCode);
+                    parcel1.writeStrongBinder(binder);
+                    if (bundle != null) {
+                        parcel1.writeInt(1);
+                        bundle.writeToParcel(parcel1, 0);
+                    } else {
+                        parcel1.writeInt(0);
+                    }
+                    mRemote.transact(1, parcel1, parcel2, 0);
+                    parcel2.readException();
+                } finally {
+                    parcel2.recycle();
+                    parcel1.recycle();
+                }
+            }
+        }
+    }
 
 }

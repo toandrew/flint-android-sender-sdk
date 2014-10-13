@@ -1,6 +1,7 @@
 
 package tv.matchstick.server.fling.bridge;
 
+import tv.matchstick.client.internal.IFlingCallbacks;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -42,7 +43,7 @@ public abstract class IFlingServiceBrokerStub extends Binder implements IFlingSe
 
             case 19: // '\023'
                 data.enforceInterface("tv.matchstick.common.internal.IFlingServiceBroker");
-                IFlingCallbacks callbacks = IFlingCallbacksStub.a(data.readStrongBinder());// IFlingCallbacks
+                IFlingCallbacks callbacks = IFlingCallbacks.Stub.asInterface(data.readStrongBinder());// IFlingCallbacks
                 int version = data.readInt(); // 4242000
                 String pakcageName = data.readString(); // getContext().getPackageName()
                 IBinder flingDeviceControllerListener = data.readStrongBinder(); // tv.matchstick.fling.internal.IFlingDeviceControllerListener

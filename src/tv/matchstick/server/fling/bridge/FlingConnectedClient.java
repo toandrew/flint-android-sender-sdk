@@ -1,5 +1,6 @@
 package tv.matchstick.server.fling.bridge;
 
+import tv.matchstick.client.internal.IFlingCallbacks;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.common.checker.EmptyChecker;
@@ -106,7 +107,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
 		 */
 		if (mFlingDeviceController.isConnected()) {
 			try {
-				mFlingCallbacks.onConnect(0, mStubImpl.asBinder(), null);
+				mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS, mStubImpl.asBinder(), null);
 			} catch (RemoteException remoteexception2) {
 				FlingService.log().d("client died while brokering service");
 			}
@@ -167,7 +168,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
 	 */
 	public final void onConnected() {
 		try {
-			mFlingCallbacks.onConnect(0, mStubImpl.asBinder(), null);
+			mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS, mStubImpl.asBinder(), null);
 			FlingService.log().d("Connected to device.");
 		} catch (RemoteException remoteexception) {
 			FlingService.log().w(remoteexception,
@@ -284,7 +285,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
 	 */
 	public final void onConnectedWithoutApp() {
 		try {
-			mFlingCallbacks.onConnect(1001, mStubImpl.asBinder(), null);
+			mFlingCallbacks.onPostInitComplete(1001, mStubImpl.asBinder(), null);
 			FlingService.log().d("Connected to device without app.");
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -310,7 +311,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
 	 */
 	public final void onConnectionFailed() {
 		try {
-			mFlingCallbacks.onConnect(FlingStatusCodes.NETWORK_ERROR, null,
+			mFlingCallbacks.onPostInitComplete(FlingStatusCodes.NETWORK_ERROR, null,
 					null);
 		} catch (RemoteException e) {
 			e.printStackTrace();

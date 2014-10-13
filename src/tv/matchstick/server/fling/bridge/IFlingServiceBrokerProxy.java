@@ -1,6 +1,7 @@
 
 package tv.matchstick.server.fling.bridge;
 
+import tv.matchstick.client.internal.IFlingCallbacks;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;

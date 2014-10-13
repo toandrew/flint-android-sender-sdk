@@ -46,7 +46,7 @@ public interface IFlingServiceBroker extends IInterface {
 				
 			case 19:
 				data.enforceInterface("tv.matchstick.common.internal.IFlingServiceBroker");
-				localem = IFlingCallbacks.Stub_a.asInterface(data
+				localem = IFlingCallbacks.Stub.asInterface(data
 						.readStrongBinder());
 				i = data.readInt();
 				str1 = data.readString();

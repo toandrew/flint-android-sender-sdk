@@ -1,5 +1,6 @@
 package tv.matchstick.server.fling.bridge;
 
+import tv.matchstick.client.internal.IFlingCallbacks;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingService;
 import android.os.Bundle;
@@ -48,7 +49,7 @@ public final class FlingServiceBinder extends FlingServiceBrokerStub {
 			FlingService.log().e(exception, "Fling device was not valid.",
 					new Object[0]);
 			try {
-				callbacks.onConnect(10, null, null);
+				callbacks.onPostInitComplete(10, null, null);
 			} catch (RemoteException remoteexception) {
 				FlingService.log().d("client died while brokering service");
 			}

@@ -341,7 +341,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 *
 	 */
 	public static final class IFlingCallbackImpl extends
-			IFlingCallbacks.Stub_a {
+			IFlingCallbacks.Stub {
 		
 		// Fling client.
 		private FlingClient flingClient;
