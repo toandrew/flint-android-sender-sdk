@@ -17,7 +17,7 @@ import android.os.RemoteException;
  */
 public final class FlingConnectedClient implements IFlingSrvController {
 	final FlingService mFlingService;
-	private FlingDeviceControllerStub mStubImpl;
+	private FlingDeviceControllerStubImpl mStubImpl;
 	private final IFlingDeviceControllerListener mFlingDeviceControllerListener;
 	private final DeathRecipient mFlingCallbackDeathHandler;
 	private final DeathRecipient mListenerDeathHandler;
