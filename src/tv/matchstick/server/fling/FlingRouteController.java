@@ -14,6 +14,7 @@ import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.MediaInfo;
 import tv.matchstick.fling.MediaMetadata;
+import tv.matchstick.fling.MediaStatus;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
 import tv.matchstick.server.fling.channels.MediaControlChannel;
@@ -130,9 +131,9 @@ public final class FlingRouteController extends RouteController implements
         Intent intent = new Intent();
         intent.putExtra("android.media.intent.extra.ITEM_ID", item.mItemId);
         MediaItemStatusHelper nr1 = (new MediaItemStatusHelper(playbackState))
-                .a(SystemClock.uptimeMillis());
+                .putTimestamp(SystemClock.uptimeMillis());
         if (bundle != null)
-            nr1.a(bundle);
+            nr1.putExtras(bundle);
         intent.putExtra("android.media.intent.extra.ITEM_STATUS",
                 nr1.createMediaItemStatus().mBundle);
         try {
@@ -501,7 +502,7 @@ public final class FlingRouteController extends RouteController implements
                             aws1.mItemId);
                     bundle6.putBundle(
                             "android.media.intent.extra.ITEM_STATUS",
-                            (new MediaItemStatusHelper(3)).a(
+                            (new MediaItemStatusHelper(3)).putTimestamp(
                                     SystemClock.uptimeMillis())
                                     .createMediaItemStatus().mBundle);
                     awt1.onRouteCtrlRequestOk(bundle6);
@@ -657,83 +658,77 @@ public final class FlingRouteController extends RouteController implements
     }
 
     private Bundle createSessionStatusBundle(int sessionState) {
-        SessionStatusBundle oo1 = new SessionStatusBundle(sessionState);
-        MediaStatus aud1;
+        SessionStatusBundle bundle = new SessionStatusBundle(sessionState);
+        MediaStatus status;
 
         boolean queuePaused;
         if (mMediaControlChannel != null
-                && (aud1 = mMediaControlChannel.getMediaStatus()) != null) {
-            if (aud1.mPlayerState == 3) // queue paused?
+                && (status = mMediaControlChannel.getMediaStatus()) != null) {
+            if (status.getPlayerState() == MediaStatus.PLAYER_STATE_PAUSED)
                 queuePaused = true;
             else
                 queuePaused = false;
         } else {
             queuePaused = false;
         }
-        oo1.data.putBoolean("queuePaused", queuePaused);
-        return (new MediaSessionStatus(oo1.setTimestamp(SystemClock
+        bundle.data.putBoolean("queuePaused", queuePaused);
+        return (new MediaSessionStatus(bundle.setTimestamp(SystemClock
                 .uptimeMillis()).data, (byte) 0)).mData;
     }
 
     private Bundle getItemStatusBundle() {
-        byte byte0;
-        MediaStatus aud1;
-        byte0 = 5;
-        aud1 = mMediaControlChannel.getMediaStatus();
-        if (aud1 != null) {
-            int i1;
-            int j1;
-            i1 = aud1.mPlayerState;
-            j1 = aud1.mIdleReason;
-            switch (i1) {
-            case 1:
-                switch (j1) {
+        int playbackState = 5;
+        MediaStatus mediaStatus = mMediaControlChannel.getMediaStatus();
+        if (mediaStatus != null) {
+            int playerState = mediaStatus.getPlayerState();
+            int reason = mediaStatus.getIdleReason();
+            switch (playerState) {
+            case MediaStatus.PLAYER_STATE_IDLE:
+                switch (reason) {
+                case MediaStatus.IDLE_REASON_ERROR:
+                    playbackState = 7;
+                    break;
+                case MediaStatus.IDLE_REASON_FINISHED:
+                    playbackState = 4;
+                    break;
+                case MediaStatus.IDLE_REASON_INTERRUPTED:
+                    playbackState = 6;
+                    break;
+                case MediaStatus.IDLE_REASON_CANCELED:
+                    break;
                 default:
-                    byte0 = 7;
-                    break;
-
-                case 4: // '\004'
-                    byte0 = 7;
-                    break;
-
-                case 1: // '\001'
-                    byte0 = 4;
-                    break;
-
-                case 3: // '\003'
-                    byte0 = 6;
-                    break;
-
-                case 2: // '\002'
+                    playbackState = 7;
                     break;
                 }
                 break;
-            case 2:
-                byte0 = 1;
+            case MediaStatus.PLAYER_STATE_PLAYING:
+                playbackState = 1;
                 break;
-            case 3:
-                byte0 = 2;
+            case MediaStatus.PLAYER_STATE_PAUSED:
+                playbackState = 2;
                 break;
-            case 4:
-                byte0 = 3;
+            case MediaStatus.PLAYER_STATE_BUFFERING:
+                playbackState = 3;
                 break;
             default:
-                byte0 = 7;
+                playbackState = 7;
                 break;
             }
-            MediaItemStatusHelper nr1 = new MediaItemStatusHelper(byte0);
-            long contentDuration = mMediaControlChannel.getContentDuration();
-            nr1.mData.putLong("contentDuration", contentDuration);
-            long l2 = mMediaControlChannel.a();
-            nr1.mData.putLong("contentPosition", l2);
-            MediaItemStatusHelper nr2 = nr1.a(SystemClock.uptimeMillis());
-            Bundle bundle = a(aud1.mCustomData);
+            MediaItemStatusHelper helper = new MediaItemStatusHelper(
+                    playbackState)
+                    .putContentDuration(
+                            mMediaControlChannel.getContentDuration())
+                    .putContentPosition(
+                            mMediaControlChannel.getContentPosition())
+                    .putTimestamp(SystemClock.uptimeMillis());
+            Bundle bundle = a(mediaStatus.getCustomData());
             if (bundle != null)
-                nr2.a(bundle);
-            return nr2.createMediaItemStatus().mBundle;
+                helper.putExtras(bundle);
+            return helper.createMediaItemStatus().mBundle;
         }
         FlingMediaRouteProvider.getLogs_a().d("*** media status is null!");
-        return (new MediaItemStatusHelper(byte0)).createMediaItemStatus().mBundle;
+        return (new MediaItemStatusHelper(playbackState))
+                .createMediaItemStatus().mBundle;
     }
 
     public final void onRelease() {
@@ -827,7 +822,7 @@ public final class FlingRouteController extends RouteController implements
                         bundle.putParcelable(
                                 "android.media.intent.extra.ITEM_STATUS",
                                 getItemStatusBundle());
-                        MediaInfo atz1 = aud1.mMedia;
+                        MediaInfo atz1 = aud1.getMediaInfo();
                         if (atz1 != null) {
                             Bundle bundle1 = FlingMediaManagerHelper
                                     .createMetadataBundle(atz1);
@@ -1107,7 +1102,7 @@ public final class FlingRouteController extends RouteController implements
                 }
             }
 
-            if (mMediaControlChannel.getMediaStatus().mPlayerState == 1) {
+            if (mMediaControlChannel.getMediaStatus().getPlayerState() == MediaStatus.PLAYER_STATE_IDLE) {
                 FlingMediaRouteProvider.getLogs_a().d(
                         "player state is now IDLE; removing tracked item %s",
                         mTrackedItem);

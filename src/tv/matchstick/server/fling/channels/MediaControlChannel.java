@@ -1,4 +1,3 @@
-
 package tv.matchstick.server.fling.channels;
 
 import android.os.Handler;
@@ -10,7 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import tv.matchstick.fling.MediaInfo;
-import tv.matchstick.server.fling.MediaStatus;
+import tv.matchstick.fling.MediaStatus;
 import tv.matchstick.server.utils.IStatusRequest;
 import tv.matchstick.server.utils.LOG;
 import tv.matchstick.server.utils.RequestTracker;
@@ -45,8 +44,10 @@ public class MediaControlChannel extends FlingChannel {
             mRequestTracker_m.checkTimeout(time, 3);
             mRequestTracker_n.checkTimeout(time, 3);
             synchronized (RequestTracker.mLock_a) {
-                if (!mRequestTracker_h.isRunning() && !mRequestTracker_i.isRunning()
-                        && !mRequestTracker_l.isRunning() && !mRequestTracker_m.isRunning()
+                if (!mRequestTracker_h.isRunning()
+                        && !mRequestTracker_i.isRunning()
+                        && !mRequestTracker_l.isRunning()
+                        && !mRequestTracker_m.isRunning()
                         && !mRequestTracker_n.isRunning())
                     flag = false;
                 else
@@ -60,24 +61,21 @@ public class MediaControlChannel extends FlingChannel {
 
     private boolean p;
 
-    public MediaControlChannel()
-    {
+    public MediaControlChannel() {
         super("urn:x-cast:com.google.cast.media", "MediaControlChannel");
         mRequestTracker_h = new RequestTracker(b);
         mRequestTracker_i = new RequestTracker(c);
         mRequestTracker_l = new RequestTracker(a);
         mRequestTracker_m = new RequestTracker(a);
         mRequestTracker_n = new RequestTracker(a);
-        j();
+        reset();
     }
 
-    static void a(MediaControlChannel avv1, boolean flag)
-    {
+    static void a(MediaControlChannel avv1, boolean flag) {
         avv1.a(flag);
     }
 
-    private void a(boolean flag)
-    {
+    private void a(boolean flag) {
         if (p == flag) {
             return;
         }
@@ -91,39 +89,32 @@ public class MediaControlChannel extends FlingChannel {
         }
     }
 
-    static boolean a(MediaControlChannel avv1)
-    {
+    static boolean a(MediaControlChannel avv1) {
         avv1.p = false;
         return false;
     }
 
-    static RequestTracker b(MediaControlChannel avv1)
-    {
+    static RequestTracker b(MediaControlChannel avv1) {
         return avv1.mRequestTracker_h;
     }
 
-    static RequestTracker c(MediaControlChannel avv1)
-    {
+    static RequestTracker c(MediaControlChannel avv1) {
         return avv1.mRequestTracker_i;
     }
 
-    static RequestTracker d(MediaControlChannel avv1)
-    {
+    static RequestTracker d(MediaControlChannel avv1) {
         return avv1.mRequestTracker_l;
     }
 
-    static RequestTracker e(MediaControlChannel avv1)
-    {
+    static RequestTracker e(MediaControlChannel avv1) {
         return avv1.mRequestTracker_m;
     }
 
-    static RequestTracker f(MediaControlChannel avv1)
-    {
+    static RequestTracker f(MediaControlChannel avv1) {
         return avv1.mRequestTracker_n;
     }
 
-    private void j()
-    {
+    private void reset() {
         a(false);
         mElapsedTime = 0L;
         mMediaStatus = null;
@@ -132,51 +123,43 @@ public class MediaControlChannel extends FlingChannel {
         mRequestTracker_l.a();
     }
 
-    public final long a()
-    {
-        MediaInfo atz1 = getMediaInfo();
-        if (atz1 == null || mElapsedTime == 0L) {
+    public final long getContentPosition() {
+        MediaInfo meidaInfo = getMediaInfo();
+        if (meidaInfo == null || mElapsedTime == 0L) {
             return 0L;
         }
 
-        double d1 = mMediaStatus.mPlaybackRate;
-        long l1 = mMediaStatus.mCurrentTime;
-        int k = mMediaStatus.mPlayerState;
-        if (d1 == 0.0D || k != 2) {
-            return l1;
+        double rate = mMediaStatus.getPlaybackRate();
+        long currentTime = mMediaStatus.getStreamPosition();
+        int state = mMediaStatus.getPlayerState();
+        if (rate == 0.0D || state != MediaStatus.PLAYER_STATE_PLAYING) {
+            return currentTime;
         }
-        long l2 = SystemClock.elapsedRealtime() - mElapsedTime;
-        long l3;
-        long l4;
-        long l5;
-        if (l2 < 0L)
-            l3 = 0L;
-        else
-            l3 = l2;
-        if (l3 == 0L)
-            return l1;
-        l4 = atz1.getStreamDuration();
-        l5 = l1 + (long) (d1 * (double) l3);
-        if (l5 <= l4)
-            if (l5 < 0L)
-                l4 = 0L;
+        long elapsed = SystemClock.elapsedRealtime() - mElapsedTime;
+        if (elapsed <= 0L) {
+            return currentTime;
+        }
+        long duration = meidaInfo.getStreamDuration();
+        long time = currentTime + (long) (rate * (double) elapsed);
+        if (time <= duration) {
+            if (time < 0L)
+                return 0;
             else
-                l4 = l5;
-        return l4;
+                return time;
+        }
+        return duration;
     }
 
-    public final long getStatus(IStatusRequest avy)
-    {
+    public final long getStatus(IStatusRequest avy) {
         JSONObject jsonobject = new JSONObject();
         long l1 = getId();
         mRequestTracker_n.start(l1, avy);
         a(true);
-        try
-        {
+        try {
             jsonobject.put("requestId", l1);
             jsonobject.put("type", "GET_STATUS");
             if (mMediaStatus != null)
-                jsonobject.put("mediaSessionId", mMediaStatus.mMediaSessionId);
+                jsonobject.put("mediaSessionId", mMediaStatus.getMediaSessionId());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -186,8 +169,8 @@ public class MediaControlChannel extends FlingChannel {
         return l1;
     }
 
-    public final long seekTime(IStatusRequest avy, long currentTime, JSONObject customData)
-    {
+    public final long seekTime(IStatusRequest avy, long currentTime,
+            JSONObject customData) {
         JSONObject jsonobject1;
         long requestId;
         jsonobject1 = new JSONObject();
@@ -208,8 +191,8 @@ public class MediaControlChannel extends FlingChannel {
         return requestId;
     }
 
-    public final long load(IStatusRequest avy, MediaInfo atz1, long currentTime, JSONObject customData)
-    {
+    public final long load(IStatusRequest avy, MediaInfo atz1,
+            long currentTime, JSONObject customData) {
         JSONObject jsonobject1;
         long requestId;
         jsonobject1 = new JSONObject();
@@ -231,8 +214,7 @@ public class MediaControlChannel extends FlingChannel {
         return requestId;
     }
 
-    public final void pause(JSONObject customData)
-    {
+    public final void pause(JSONObject customData) {
         JSONObject jsonobject1;
         long requestId;
         jsonobject1 = new JSONObject();
@@ -251,11 +233,8 @@ public class MediaControlChannel extends FlingChannel {
         return;
     }
 
-    public final void checkReceivedMessage(String message)
-    {
-        mLogs.d("message received: %s", new Object[] {
-                message
-        });
+    public final void checkReceivedMessage(String message) {
+        mLogs.d("message received: %s", new Object[] { message });
         JSONObject jsonobject;
         JSONObject jsonobject1;
         JSONObject jsonobject2;
@@ -285,14 +264,17 @@ public class MediaControlChannel extends FlingChannel {
                 boolean flag1 = false;
                 int k = 0;
                 int i1 = 0;
-                if (mRequestTracker_i.isRunning() && !mRequestTracker_i.a(requestId))
+                if (mRequestTracker_i.isRunning()
+                        && !mRequestTracker_i.a(requestId))
                     flag1 = true;
                 else
                     flag1 = false;
 
                 boolean flag2;
-                if (mRequestTracker_l.isRunning() && !mRequestTracker_l.a(requestId)
-                        || mRequestTracker_m.isRunning() && !mRequestTracker_m.a(requestId))
+                if (mRequestTracker_l.isRunning()
+                        && !mRequestTracker_l.a(requestId)
+                        || mRequestTracker_m.isRunning()
+                        && !mRequestTracker_m.a(requestId))
                     flag2 = true;
                 else
                     flag2 = false;
@@ -310,7 +292,7 @@ public class MediaControlChannel extends FlingChannel {
                     i1 = 7;
                 } else {
                     if (mMediaStatus != null) {
-                        i1 = mMediaStatus.init(jsonobject5, k);
+                        i1 = mMediaStatus.setMediaStatusWithJson(jsonobject5, k);
                     }
                 }
 
@@ -335,9 +317,9 @@ public class MediaControlChannel extends FlingChannel {
                 mRequestTracker_n.onResult(requestId, 0);
                 return;
             }
-            if (type.equals("INVALID_PLAYER_STATE"))
-            {
-                mLogs.w("received unexpected error: Invalid Player State.", new Object[0]);
+            if (type.equals("INVALID_PLAYER_STATE")) {
+                mLogs.w("received unexpected error: Invalid Player State.",
+                        new Object[0]);
                 jsonobject4 = jsonobject.optJSONObject("customData");
                 mRequestTracker_h.onResult(requestId, 1, jsonobject4);
                 mRequestTracker_i.onResult(requestId, 1, jsonobject4);
@@ -346,21 +328,19 @@ public class MediaControlChannel extends FlingChannel {
                 mRequestTracker_n.onResult(requestId, 1, jsonobject4);
                 return;
             }
-            if (type.equals("LOAD_FAILED"))
-            {
+            if (type.equals("LOAD_FAILED")) {
                 jsonobject3 = jsonobject.optJSONObject("customData");
                 mRequestTracker_h.onResult(requestId, 1, jsonobject3);
                 return;
             }
-            if (type.equals("LOAD_CANCELLED"))
-            {
+            if (type.equals("LOAD_CANCELLED")) {
                 jsonobject2 = jsonobject.optJSONObject("customData");
                 mRequestTracker_h.onResult(requestId, 2, jsonobject2);
                 return;
             }
-            if (type.equals("INVALID_REQUEST"))
-            {
-                mLogs.w("received unexpected error: Invalid Request.", new Object[0]);
+            if (type.equals("INVALID_REQUEST")) {
+                mLogs.w("received unexpected error: Invalid Request.",
+                        new Object[0]);
                 jsonobject1 = jsonobject.optJSONObject("customData");
                 mRequestTracker_h.onResult(requestId, 1, jsonobject1);
                 mRequestTracker_i.onResult(requestId, 1, jsonobject1);
@@ -381,8 +361,7 @@ public class MediaControlChannel extends FlingChannel {
         }
     }
 
-    public final long getContentDuration()
-    {
+    public final long getContentDuration() {
         MediaInfo info = getMediaInfo();
         if (info != null)
             return info.getStreamDuration();
@@ -390,8 +369,7 @@ public class MediaControlChannel extends FlingChannel {
             return 0L;
     }
 
-    public final void stop(JSONObject customData)
-    {
+    public final void stop(JSONObject customData) {
         JSONObject jsonobject1;
         long requestId = getId();
         jsonobject1 = new JSONObject();
@@ -409,8 +387,7 @@ public class MediaControlChannel extends FlingChannel {
         return;
     }
 
-    public final void play(JSONObject customData)
-    {
+    public final void play(JSONObject customData) {
         JSONObject jsonobject1;
         long requestId = getId();
         jsonobject1 = new JSONObject();
@@ -427,42 +404,35 @@ public class MediaControlChannel extends FlingChannel {
         return;
     }
 
-    public final void d()
-    {
-        j();
+    public final void d() {
+        reset();
     }
 
-    public final MediaStatus getMediaStatus()
-    {
+    public final MediaStatus getMediaStatus() {
         return mMediaStatus;
     }
 
-    public final MediaInfo getMediaInfo()
-    {
+    public final MediaInfo getMediaInfo() {
         if (mMediaStatus == null)
             return null;
         else
-            return mMediaStatus.mMedia;
+            return mMediaStatus.getMediaInfo();
     }
 
-    public final long getMediaSessionId()
-    {
+    public final long getMediaSessionId() {
         if (mMediaStatus == null)
             throw new IllegalStateException("No current media session");
         else
-            return mMediaStatus.mMediaSessionId;
+            return mMediaStatus.getMediaSessionId();
     }
 
-    protected void onStatusUpdated()
-    {
+    protected void onStatusUpdated() {
     }
 
-    protected void sendItemStatusUpdate_i()
-    {
+    protected void sendItemStatusUpdate_i() {
     }
 
-    static
-    {
+    static {
         a = TimeUnit.SECONDS.toMillis(3L);
         b = TimeUnit.HOURS.toMillis(24L);
         c = TimeUnit.SECONDS.toMillis(5L);
