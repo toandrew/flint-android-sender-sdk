@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.fling.MediaMetadata;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
 import tv.matchstick.server.fling.channels.MediaControlChannel;
@@ -167,7 +168,7 @@ public final class FlingRouteController extends RouteController implements
         boolean flag3;
         Uri uri;
         Bundle bundle4;
-        MediaMetadata aub1;
+        MediaMetadata mediaMetadata;
         String albumArtist;
         String composer;
         String title;
@@ -371,7 +372,7 @@ public final class FlingRouteController extends RouteController implements
             FlingMediaRouteProvider.getLogs_a().d("Device received play request, uri %s", uri);
             a(intent);
             bundle4 = intent.getBundleExtra("android.media.intent.extra.ITEM_METADATA");
-            aub1 = null;
+            mediaMetadata = null;
             if (bundle4 != null) {
                 albumTitle = bundle4.getString("android.media.metadata.ALBUM_TITLE");
                 albumArtist = bundle4.getString("android.media.metadata.ALBUM_ARTIST");
@@ -391,41 +392,41 @@ public final class FlingRouteController extends RouteController implements
                             .getInt("android.media.metadata.TRACK_NUMBER"));
                 }
                 if (albumTitle == null && discNumber == null && trackNumber == null) {
-                    aub1 = new MediaMetadata(0);
+                    mediaMetadata = new MediaMetadata(0);
 
                 } else {
-                    aub1 = new MediaMetadata(3);
+                    mediaMetadata = new MediaMetadata(3);
                     if (albumTitle != null)
-                        aub1.putString("tv.matchstick.fling.metadata.ALBUM_TITLE",
+                        mediaMetadata.putString("tv.matchstick.fling.metadata.ALBUM_TITLE",
                                 albumTitle);
                     if (albumArtist != null)
-                        aub1.putString("tv.matchstick.fling.metadata.ALBUM_ARTIST",
+                        mediaMetadata.putString("tv.matchstick.fling.metadata.ALBUM_ARTIST",
                                 albumArtist);
                     if (composer != null)
-                        aub1.putString("tv.matchstick.fling.metadata.COMPOSER", composer);
+                        mediaMetadata.putString("tv.matchstick.fling.metadata.COMPOSER", composer);
                     if (discNumber != null)
-                        aub1.a("tv.matchstick.fling.metadata.DISC_NUMBER",
+                        mediaMetadata.putInt("tv.matchstick.fling.metadata.DISC_NUMBER",
                                 discNumber.intValue());
                     if (trackNumber != null)
-                        aub1.a("tv.matchstick.fling.metadata.TRACK_NUMBER",
+                        mediaMetadata.putInt("tv.matchstick.fling.metadata.TRACK_NUMBER",
                                 trackNumber.intValue());
                 }
                 title = bundle4.getString("android.media.metadata.TITLE");
                 if (title != null)
-                    aub1.putString("tv.matchstick.fling.metadata.TITLE", title);
+                    mediaMetadata.putString("tv.matchstick.fling.metadata.TITLE", title);
                 artist = bundle4.getString("android.media.metadata.ARTIST");
                 if (artist != null)
-                    aub1.putString("tv.matchstick.fling.metadata.ARTIST", artist);
+                    mediaMetadata.putString("tv.matchstick.fling.metadata.ARTIST", artist);
                 if (bundle4.containsKey("android.media.metadata.YEAR")) {
                     year = bundle4.getInt("android.media.metadata.YEAR");
                     calendar = Calendar.getInstance();
                     calendar.set(1, year);
-                    aub1.a("tv.matchstick.fling.metadata.RELEASE_DATE", calendar);
+                    mediaMetadata.putDate("tv.matchstick.fling.metadata.RELEASE_DATE", calendar);
                 }
                 if (bundle4.containsKey("android.media.metadata.ARTWORK_URI")) {
                     artworkUri = bundle4.getString("android.media.metadata.ARTWORK_URI");
                     if (!TextUtils.isEmpty(artworkUri))
-                        aub1.addImage(new WebImage(Uri.parse(artworkUri)));
+                        mediaMetadata.addImage(new WebImage(Uri.parse(artworkUri)));
                 }
 
             }
@@ -435,7 +436,7 @@ public final class FlingRouteController extends RouteController implements
             atz1 = aua1.mMediaInfo;
             if (!TextUtils.isEmpty(contentType)) {
                 atz1.mContentType = contentType;
-                aua1.mMediaInfo.mMediaMetadata = aub1;
+                aua1.mMediaInfo.mMediaMetadata = mediaMetadata;
                 atz2 = aua1.mMediaInfo;
                 if (TextUtils.isEmpty(atz2.mContentId))
                     throw new IllegalArgumentException("content ID cannot be null or empty");

@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import tv.matchstick.client.internal.JsonComparer;
+import tv.matchstick.fling.MediaMetadata;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
 
 import java.util.Arrays;
@@ -52,7 +53,7 @@ public final class MediaInfo {
             JSONObject jsonobject1 = jsonobject.getJSONObject("metadata");
             mMediaMetadata = new MediaMetadata(
                     jsonobject1.getInt("metadataType"));
-            mMediaMetadata.a(jsonobject1);
+            mMediaMetadata.writeToBundle(jsonobject1);
         }
         mDuration = (long) (1000D * jsonobject.optDouble("duration", 0.0D));
         mCustomData = jsonobject.optJSONObject("customData");
@@ -156,7 +157,7 @@ public final class MediaInfo {
             if (mContentType != null)
                 jsonobject.put("contentType", mContentType);
             if (mMediaMetadata != null)
-                jsonobject.put("metadata", mMediaMetadata.getMetaData());
+                jsonobject.put("metadata", mMediaMetadata.buildJson());
             jsonobject.put("duration", (double) mDuration / 1000D);
             if (mCustomData != null) {
                 jsonobject.put("customData", mCustomData);
