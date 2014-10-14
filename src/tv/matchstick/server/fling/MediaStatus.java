@@ -4,6 +4,8 @@ package tv.matchstick.server.fling;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.fling.MediaInfo;
+
 public final class MediaStatus {
     public static final long COMMAND_PAUSE = 1L;
     public static final long COMMAND_SEEK = 2L;

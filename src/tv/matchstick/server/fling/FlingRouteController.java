@@ -1,10 +1,8 @@
-
 package tv.matchstick.server.fling;
 
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -14,6 +12,7 @@ import org.json.JSONObject;
 
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.fling.MediaInfo;
 import tv.matchstick.fling.MediaMetadata;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
@@ -23,7 +22,6 @@ import tv.matchstick.server.fling.media.RouteController;
 import tv.matchstick.server.fling.media.RouteCtrlRequestCallback;
 import tv.matchstick.server.utils.C_dt;
 import tv.matchstick.server.utils.IStatusRequest;
-import tv.matchstick.server.utils.LOG;
 
 import java.util.Calendar;
 import java.util.Iterator;
@@ -31,8 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public final class FlingRouteController extends RouteController implements
-        IStatusRequest,
-        IMediaChannelHelper {
+        IStatusRequest, IMediaChannelHelper {
     public final FlingDevice mFlingDevice;
     public FlingDeviceController mFlingDeviceController;
     double c;
@@ -56,7 +53,8 @@ public final class FlingRouteController extends RouteController implements
     private final List w = new LinkedList();
     private TrackedItem mTrackedItem;
 
-    public FlingRouteController(FlingMediaRouteProvider awb1, FlingDevice flingdevice) {
+    public FlingRouteController(FlingMediaRouteProvider awb1,
+            FlingDevice flingdevice) {
         super();
         mFlingMediaRouteProvider = awb1;
         mApplicationId = (String) FlingMediaRouteProvider.i.b();
@@ -79,18 +77,21 @@ public final class FlingRouteController extends RouteController implements
             try {
                 httpStatus = jsonobject.getInt("httpStatus");
                 bundle = new Bundle();
-                bundle.putInt("android.media.status.extra.HTTP_STATUS_CODE", httpStatus);
+                bundle.putInt("android.media.status.extra.HTTP_STATUS_CODE",
+                        httpStatus);
             } catch (JSONException jsonexception1) {
                 bundle = null;
             }
         }
         if (jsonobject.has("httpHeaders")) {
             try {
-                Bundle httpHeaders = FlingMediaManagerHelper.getBundle(jsonobject
-                        .getJSONObject("httpHeaders"));
+                Bundle httpHeaders = FlingMediaManagerHelper
+                        .getBundle(jsonobject.getJSONObject("httpHeaders"));
                 if (bundle == null)
                     bundle = new Bundle();
-                bundle.putBundle("android.media.status.extra.HTTP_RESPONSE_HEADERS", httpHeaders);
+                bundle.putBundle(
+                        "android.media.status.extra.HTTP_RESPONSE_HEADERS",
+                        httpHeaders);
             } catch (JSONException jsonexception) {
             }
         }
@@ -100,7 +101,8 @@ public final class FlingRouteController extends RouteController implements
     private void a(Intent intent) {
         long l1 = mFlingDeviceController.h();
         Bundle bundle = intent.getExtras();
-        if (bundle.containsKey("tv.matchstick.fling.EXTRA_DEBUG_LOGGING_ENABLED")) {
+        if (bundle
+                .containsKey("tv.matchstick.fling.EXTRA_DEBUG_LOGGING_ENABLED")) {
             boolean flag = bundle
                     .getBoolean("tv.matchstick.fling.EXTRA_DEBUG_LOGGING_ENABLED");
             if (flag)
@@ -118,21 +120,25 @@ public final class FlingRouteController extends RouteController implements
         w.remove(aws1);
     }
 
-    private void sendPlaybackStateForItem(TrackedItem item, int playbackState, Bundle bundle) {
-        FlingMediaRouteProvider.getLogs_a().d("sendPlaybackStateForItem for item: %s, playbackState: %d", item, playbackState);
+    private void sendPlaybackStateForItem(TrackedItem item, int playbackState,
+            Bundle bundle) {
+        FlingMediaRouteProvider.getLogs_a().d(
+                "sendPlaybackStateForItem for item: %s, playbackState: %d",
+                item, playbackState);
         if (item.mPendingIntent == null)
             return;
         Intent intent = new Intent();
         intent.putExtra("android.media.intent.extra.ITEM_ID", item.mItemId);
-        MediaItemStatusHelper nr1 = (new MediaItemStatusHelper(playbackState)).a(SystemClock
-                .uptimeMillis());
+        MediaItemStatusHelper nr1 = (new MediaItemStatusHelper(playbackState))
+                .a(SystemClock.uptimeMillis());
         if (bundle != null)
             nr1.a(bundle);
         intent.putExtra("android.media.intent.extra.ITEM_STATUS",
                 nr1.createMediaItemStatus().mBundle);
         try {
             item.mPendingIntent.send(
-                    ((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext, 0, intent);
+                    ((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext,
+                    0, intent);
             return;
         } catch (android.app.PendingIntent.CanceledException canceledexception) {
             FlingMediaRouteProvider.getLogs_a().w(canceledexception,
@@ -144,14 +150,13 @@ public final class FlingRouteController extends RouteController implements
         String albumTitle;
         Integer discNumber;
         Integer trackNumber;
-        FlingMediaRouteProvider.getLogs_a().d("processRemotePlaybackRequest()", new Object[0]);
+        FlingMediaRouteProvider.getLogs_a().d("processRemotePlaybackRequest()",
+                new Object[0]);
         Intent intent = awt1.mIntent;
         String action = intent.getAction();
-        Bundle bundle = intent.getBundleExtra("tv.matchstick.fling.EXTRA_CUSTOM_DATA");
+        Bundle bundle = intent
+                .getBundleExtra("tv.matchstick.fling.EXTRA_CUSTOM_DATA");
         JSONObject jsonobject;
-        IllegalStateException illegalstateexception;
-        LOG avu1;
-        Object aobj[];
         Bundle bundle1;
         Bundle bundle2;
         String appId;
@@ -161,11 +166,10 @@ public final class FlingRouteController extends RouteController implements
         MediaControlChannel avv1;
         Bundle bundle3;
         long itemPosition;
-        LOG avu2;
-        Object aobj1[];
         boolean flag1;
         boolean flag2;
         boolean flag3;
+        MediaInfo info;
         Uri uri;
         Bundle bundle4;
         MediaMetadata mediaMetadata;
@@ -174,20 +178,13 @@ public final class FlingRouteController extends RouteController implements
         String title;
         String artist;
         String artworkUri;
-        MediaInfoContainer aua1;
         String contentType;
-        MediaInfo atz1;
-        MediaInfo atz2;
-        MediaInfo atz3;
         Bundle bundle5;
         JSONObject jsonobject1;
         long pos;
         PendingIntent pendingintent1;
         TrackedItem aws1;
-        LOG avu3;
-        Object aobj2[];
         Bundle bundle6;
-        JSONException jsonexception;
         JSONObject jsonobject2;
         int year;
         Calendar calendar;
@@ -196,9 +193,11 @@ public final class FlingRouteController extends RouteController implements
             jsonobject = FlingMediaManagerHelper.getJsonObject(bundle, null);
         else
             jsonobject = null;
-        FlingMediaRouteProvider.getLogs_a().d("got remote playback request; action=%s",action);
+        FlingMediaRouteProvider.getLogs_a().d(
+                "got remote playback request; action=%s", action);
         try {
-            if (!action.equals("android.media.intent.action.PLAY") || intent.getData() == null) {
+            if (!action.equals("android.media.intent.action.PLAY")
+                    || intent.getData() == null) {
                 if (action.equals("android.media.intent.action.PAUSE")) {
                     flag3 = checkSession(awt1, 0);
                     if (!flag3)
@@ -248,11 +247,13 @@ public final class FlingRouteController extends RouteController implements
                     if (!checkSession(awt1, 0))
                         return true;
                     d(intent.getStringExtra("android.media.intent.extra.ITEM_ID"));
-                    itemPosition = intent.getLongExtra("android.media.intent.extra.ITEM_POSITION",
-                            0L);
+                    itemPosition = intent.getLongExtra(
+                            "android.media.intent.extra.ITEM_POSITION", 0L);
                     try {
-                        FlingMediaRouteProvider.getLogs_a().d("seeking to %d ms", itemPosition);
-                        mMediaControlChannel.seekTime(this, itemPosition, jsonobject);
+                        FlingMediaRouteProvider.getLogs_a().d(
+                                "seeking to %d ms", itemPosition);
+                        mMediaControlChannel.seekTime(this, itemPosition,
+                                jsonobject);
                         // } catch (IOException ioexception1) {
                     } catch (Exception ioexception1) {
                         FlingMediaRouteProvider.getLogs_a().w(ioexception1,
@@ -271,9 +272,11 @@ public final class FlingRouteController extends RouteController implements
                         return true;
                     }
                     bundle3 = new Bundle();
-                    bundle3.putParcelable("android.media.intent.extra.ITEM_STATUS",
+                    bundle3.putParcelable(
+                            "android.media.intent.extra.ITEM_STATUS",
                             getItemStatusBundle());
-                    bundle3.putParcelable("android.media.intent.extra.SESSION_STATUS",
+                    bundle3.putParcelable(
+                            "android.media.intent.extra.SESSION_STATUS",
                             createSessionStatusBundle(0));
                     awt1.onRouteCtrlRequestOk(bundle3);
                     return true;
@@ -289,7 +292,8 @@ public final class FlingRouteController extends RouteController implements
                     }
                     try {
                         if (mLoadRequestId == -1L)
-                            mLoadRequestId = mMediaControlChannel.getStatus(this);
+                            mLoadRequestId = mMediaControlChannel
+                                    .getStatus(this);
                         mSyncStatusRequest = awt1;
                         // } catch (IOException ioexception) {
                     } catch (Exception ioexception) {
@@ -302,21 +306,25 @@ public final class FlingRouteController extends RouteController implements
                 }
 
                 if (!action.equals("android.media.intent.action.START_SESSION")) {
-                    if (action.equals("android.media.intent.action.GET_SESSION_STATUS")) {
+                    if (action
+                            .equals("android.media.intent.action.GET_SESSION_STATUS")) {
                         checkSession(awt1, 0);
                         bundle2 = new Bundle();
-                        bundle2.putParcelable("android.media.intent.extra.SESSION_STATUS",
+                        bundle2.putParcelable(
+                                "android.media.intent.extra.SESSION_STATUS",
                                 createSessionStatusBundle(0));
                         awt1.onRouteCtrlRequestOk(bundle2);
                         return true;
                     }
-                    if (action.equals("android.media.intent.action.END_SESSION")) {
+                    if (action
+                            .equals("android.media.intent.action.END_SESSION")) {
                         checkSession(awt1, 0);
                         sendPendingIntent(getSessionId(), 1);
                         mPendingIntent = null;
                         endSession();
                         bundle1 = new Bundle();
-                        bundle1.putParcelable("android.media.intent.extra.SESSION_STATUS",
+                        bundle1.putParcelable(
+                                "android.media.intent.extra.SESSION_STATUS",
                                 createSessionStatusBundle(1));
                         awt1.onRouteCtrlRequestOk(bundle1);
                         return true;
@@ -333,7 +341,8 @@ public final class FlingRouteController extends RouteController implements
                     s3 = (String) FlingMediaRouteProvider.i.b();
                 }
                 flag = intent.getBooleanExtra(
-                        "tv.matchstick.fling.EXTRA_FLING_RELAUNCH_APPLICATION", true);
+                        "tv.matchstick.fling.EXTRA_FLING_RELAUNCH_APPLICATION",
+                        true);
                 n = intent
                         .getBooleanExtra(
                                 "tv.matchstick.fling.EXTRA_FLING_STOP_APPLICATION_WHEN_SESSION_ENDS",
@@ -343,9 +352,7 @@ public final class FlingRouteController extends RouteController implements
                 if (pendingintent == null) {
                     FlingMediaRouteProvider.getLogs_a().d(
                             "No status update receiver supplied to %s",
-                            new Object[] {
-                                action
-                            });
+                            new Object[] { action });
                     return false;
                 }
                 a(intent);
@@ -369,13 +376,17 @@ public final class FlingRouteController extends RouteController implements
             uri = intent.getData();
             if (uri == null)
                 return false;
-            FlingMediaRouteProvider.getLogs_a().d("Device received play request, uri %s", uri);
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "Device received play request, uri %s", uri);
             a(intent);
-            bundle4 = intent.getBundleExtra("android.media.intent.extra.ITEM_METADATA");
+            bundle4 = intent
+                    .getBundleExtra("android.media.intent.extra.ITEM_METADATA");
             mediaMetadata = null;
             if (bundle4 != null) {
-                albumTitle = bundle4.getString("android.media.metadata.ALBUM_TITLE");
-                albumArtist = bundle4.getString("android.media.metadata.ALBUM_ARTIST");
+                albumTitle = bundle4
+                        .getString("android.media.metadata.ALBUM_TITLE");
+                albumArtist = bundle4
+                        .getString("android.media.metadata.ALBUM_ARTIST");
                 composer = bundle4.getString("android.media.metadata.COMPOSER");
                 if (!bundle4.containsKey("android.media.metadata.DISC_NUMBER")) {
                     discNumber = null;
@@ -391,67 +402,74 @@ public final class FlingRouteController extends RouteController implements
                     trackNumber = Integer.valueOf(bundle4
                             .getInt("android.media.metadata.TRACK_NUMBER"));
                 }
-                if (albumTitle == null && discNumber == null && trackNumber == null) {
+                if (albumTitle == null && discNumber == null
+                        && trackNumber == null) {
                     mediaMetadata = new MediaMetadata(0);
 
                 } else {
                     mediaMetadata = new MediaMetadata(3);
                     if (albumTitle != null)
-                        mediaMetadata.putString("tv.matchstick.fling.metadata.ALBUM_TITLE",
+                        mediaMetadata.putString(
+                                "tv.matchstick.fling.metadata.ALBUM_TITLE",
                                 albumTitle);
                     if (albumArtist != null)
-                        mediaMetadata.putString("tv.matchstick.fling.metadata.ALBUM_ARTIST",
+                        mediaMetadata.putString(
+                                "tv.matchstick.fling.metadata.ALBUM_ARTIST",
                                 albumArtist);
                     if (composer != null)
-                        mediaMetadata.putString("tv.matchstick.fling.metadata.COMPOSER", composer);
+                        mediaMetadata.putString(
+                                "tv.matchstick.fling.metadata.COMPOSER",
+                                composer);
                     if (discNumber != null)
-                        mediaMetadata.putInt("tv.matchstick.fling.metadata.DISC_NUMBER",
+                        mediaMetadata.putInt(
+                                "tv.matchstick.fling.metadata.DISC_NUMBER",
                                 discNumber.intValue());
                     if (trackNumber != null)
-                        mediaMetadata.putInt("tv.matchstick.fling.metadata.TRACK_NUMBER",
+                        mediaMetadata.putInt(
+                                "tv.matchstick.fling.metadata.TRACK_NUMBER",
                                 trackNumber.intValue());
                 }
                 title = bundle4.getString("android.media.metadata.TITLE");
                 if (title != null)
-                    mediaMetadata.putString("tv.matchstick.fling.metadata.TITLE", title);
+                    mediaMetadata.putString(
+                            "tv.matchstick.fling.metadata.TITLE", title);
                 artist = bundle4.getString("android.media.metadata.ARTIST");
                 if (artist != null)
-                    mediaMetadata.putString("tv.matchstick.fling.metadata.ARTIST", artist);
+                    mediaMetadata.putString(
+                            "tv.matchstick.fling.metadata.ARTIST", artist);
                 if (bundle4.containsKey("android.media.metadata.YEAR")) {
                     year = bundle4.getInt("android.media.metadata.YEAR");
                     calendar = Calendar.getInstance();
                     calendar.set(1, year);
-                    mediaMetadata.putDate("tv.matchstick.fling.metadata.RELEASE_DATE", calendar);
+                    mediaMetadata.putDate(
+                            "tv.matchstick.fling.metadata.RELEASE_DATE",
+                            calendar);
                 }
                 if (bundle4.containsKey("android.media.metadata.ARTWORK_URI")) {
-                    artworkUri = bundle4.getString("android.media.metadata.ARTWORK_URI");
+                    artworkUri = bundle4
+                            .getString("android.media.metadata.ARTWORK_URI");
                     if (!TextUtils.isEmpty(artworkUri))
-                        mediaMetadata.addImage(new WebImage(Uri.parse(artworkUri)));
+                        mediaMetadata.addImage(new WebImage(Uri
+                                .parse(artworkUri)));
                 }
 
             }
-            aua1 = new MediaInfoContainer(uri.toString());
-            aua1.mMediaInfo.mStreamType = 1;
+
             contentType = intent.getType();
-            atz1 = aua1.mMediaInfo;
             if (!TextUtils.isEmpty(contentType)) {
-                atz1.mContentType = contentType;
-                aua1.mMediaInfo.mMediaMetadata = mediaMetadata;
-                atz2 = aua1.mMediaInfo;
-                if (TextUtils.isEmpty(atz2.mContentId))
-                    throw new IllegalArgumentException("content ID cannot be null or empty");
-                if (TextUtils.isEmpty(atz2.mContentType))
-                    throw new IllegalArgumentException("content type cannot be null or empty");
-                if (atz2.mStreamType == -1)
-                    throw new IllegalArgumentException("a valid stream type must be specified");
-                atz3 = aua1.mMediaInfo;
-                bundle5 = intent.getBundleExtra("android.media.intent.extra.HTTP_HEADERS");
+                info = new MediaInfo.Builder(uri.toString())
+                        .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                        .setContentType(contentType).setMetadata(mediaMetadata)
+                        .build();
+                bundle5 = intent
+                        .getBundleExtra("android.media.intent.extra.HTTP_HEADERS");
                 if (bundle5 == null) {
                     jsonobject1 = jsonobject;
 
                 } else {
                     try {
-                        jsonobject2 = FlingMediaManagerHelper.getJsonObject(bundle5, null);
+                        jsonobject2 = FlingMediaManagerHelper.getJsonObject(
+                                bundle5, null);
                         if (jsonobject == null) {
                             jsonobject = new JSONObject();
                         }
@@ -460,49 +478,58 @@ public final class FlingRouteController extends RouteController implements
                     }
                     jsonobject1 = jsonobject;
                 }
-                pos = intent.getLongExtra("android.media.intent.extra.ITEM_POSITION", 0L);
+                pos = intent.getLongExtra(
+                        "android.media.intent.extra.ITEM_POSITION", 0L);
                 pendingintent1 = (PendingIntent) intent
                         .getParcelableExtra("android.media.intent.extra.ITEM_STATUS_UPDATE_RECEIVER");
                 try {
-                    aws1 = new TrackedItem(this, mMediaControlChannel.load(this, atz3, pos,
-                            jsonobject1));
+                    aws1 = new TrackedItem(this, mMediaControlChannel.load(
+                            this, info, pos, jsonobject1));
                     aws1.mPendingIntent = pendingintent1;
                     w.add(aws1);
 
-                    FlingMediaRouteProvider.getLogs_a().d("loading media with item id assigned as %s", aws1.mItemId);
+                    FlingMediaRouteProvider.getLogs_a().d(
+                            "loading media with item id assigned as %s",
+                            aws1.mItemId);
                     bundle6 = new Bundle();
-                    bundle6.putString("android.media.intent.extra.SESSION_ID", getSessionId());
-                    bundle6.putParcelable("android.media.intent.extra.SESSION_STATUS",
+                    bundle6.putString("android.media.intent.extra.SESSION_ID",
+                            getSessionId());
+                    bundle6.putParcelable(
+                            "android.media.intent.extra.SESSION_STATUS",
                             createSessionStatusBundle(0));
-                    bundle6.putString("android.media.intent.extra.ITEM_ID", aws1.mItemId);
-                    bundle6.putBundle("android.media.intent.extra.ITEM_STATUS",
-                            (new MediaItemStatusHelper(3)).a(SystemClock.uptimeMillis())
+                    bundle6.putString("android.media.intent.extra.ITEM_ID",
+                            aws1.mItemId);
+                    bundle6.putBundle(
+                            "android.media.intent.extra.ITEM_STATUS",
+                            (new MediaItemStatusHelper(3)).a(
+                                    SystemClock.uptimeMillis())
                                     .createMediaItemStatus().mBundle);
                     awt1.onRouteCtrlRequestOk(bundle6);
                     // } catch (IOException ioexception5) {
                 } catch (Exception ioexception5) {
                     FlingMediaRouteProvider.getLogs_a().w(ioexception5,
-                            "exception while processing %s",action);
+                            "exception while processing %s", action);
                     awt1.onRouteCtrlRequestFailed(1);
                 }
                 return true;
 
             }
-            throw new IllegalArgumentException("content type cannot be null or empty");
+            throw new IllegalArgumentException(
+                    "content type cannot be null or empty");
         } catch (IllegalStateException e) {
-            FlingMediaRouteProvider.getLogs_a().d("can't process command; %s", e.getMessage());
+            FlingMediaRouteProvider.getLogs_a().d("can't process command; %s",
+                    e.getMessage());
             return false;
         }
     }
 
     private boolean checkSession(RemotePlaybackRequest awt1, int i1) {
-        String sessionId = awt1.mIntent.getStringExtra("android.media.intent.extra.SESSION_ID");
+        String sessionId = awt1.mIntent
+                .getStringExtra("android.media.intent.extra.SESSION_ID");
         String currentSessionId = getSessionId();
         FlingMediaRouteProvider.getLogs_a().d(
                 "checkSession() sessionId=%s, currentSessionId=%s",
-                new Object[] {
-                        sessionId, currentSessionId
-                });
+                new Object[] { sessionId, currentSessionId });
         if (TextUtils.isEmpty(sessionId)) {
             if (h && currentSessionId != null) {
                 h = false;
@@ -548,7 +575,8 @@ public final class FlingRouteController extends RouteController implements
         if (mTrackedItem == null)
             throw new IllegalStateException("no current item");
         if (!mTrackedItem.mItemId.equals(itemId))
-            throw new IllegalStateException("item ID does not match current item");
+            throw new IllegalStateException(
+                    "item ID does not match current item");
         else
             return;
     }
@@ -585,26 +613,28 @@ public final class FlingRouteController extends RouteController implements
             stringbuilder = new StringBuilder();
             stringbuilder.append("MediaSessionStatus{ ");
             stringbuilder.append("timestamp=");
-            C_dt.a(SystemClock.elapsedRealtime() - mData.getLong("timestamp"), stringbuilder);
+            C_dt.a(SystemClock.elapsedRealtime() - mData.getLong("timestamp"),
+                    stringbuilder);
             stringbuilder.append(" ms ago");
             stringbuilder1 = stringbuilder.append(", sessionState=");
             i = mData.getInt("sessionState", 2);
             String s;
             switch (i) {
-                case 0:
-                    s = "active";
-                    break;
-                case 1:
-                    s = "ended";
-                    break;
-                case 2:
-                    s = "invalidated";
-                    break;
-                default:
-                    s = Integer.toString(i);
+            case 0:
+                s = "active";
+                break;
+            case 1:
+                s = "ended";
+                break;
+            case 2:
+                s = "invalidated";
+                break;
+            default:
+                s = Integer.toString(i);
             }
             stringbuilder1.append(s);
-            stringbuilder.append(", queuePaused=").append(mData.getBoolean("queuePaused"));
+            stringbuilder.append(", queuePaused=").append(
+                    mData.getBoolean("queuePaused"));
             stringbuilder.append(", extras=").append(mData.getBundle("extras"));
             stringbuilder.append(" }");
             return stringbuilder.toString();
@@ -641,8 +671,8 @@ public final class FlingRouteController extends RouteController implements
             queuePaused = false;
         }
         oo1.data.putBoolean("queuePaused", queuePaused);
-        return (new MediaSessionStatus(oo1.setTimestamp(SystemClock.uptimeMillis()).data,
-                (byte) 0)).mData;
+        return (new MediaSessionStatus(oo1.setTimestamp(SystemClock
+                .uptimeMillis()).data, (byte) 0)).mData;
     }
 
     private Bundle getItemStatusBundle() {
@@ -656,40 +686,40 @@ public final class FlingRouteController extends RouteController implements
             i1 = aud1.mPlayerState;
             j1 = aud1.mIdleReason;
             switch (i1) {
-                case 1:
-                    switch (j1) {
-                        default:
-                            byte0 = 7;
-                            break;
-
-                        case 4: // '\004'
-                            byte0 = 7;
-                            break;
-
-                        case 1: // '\001'
-                            byte0 = 4;
-                            break;
-
-                        case 3: // '\003'
-                            byte0 = 6;
-                            break;
-
-                        case 2: // '\002'
-                            break;
-                    }
-                    break;
-                case 2:
-                    byte0 = 1;
-                    break;
-                case 3:
-                    byte0 = 2;
-                    break;
-                case 4:
-                    byte0 = 3;
-                    break;
+            case 1:
+                switch (j1) {
                 default:
                     byte0 = 7;
                     break;
+
+                case 4: // '\004'
+                    byte0 = 7;
+                    break;
+
+                case 1: // '\001'
+                    byte0 = 4;
+                    break;
+
+                case 3: // '\003'
+                    byte0 = 6;
+                    break;
+
+                case 2: // '\002'
+                    break;
+                }
+                break;
+            case 2:
+                byte0 = 1;
+                break;
+            case 3:
+                byte0 = 2;
+                break;
+            case 4:
+                byte0 = 3;
+                break;
+            default:
+                byte0 = 7;
+                break;
             }
             MediaItemStatusHelper nr1 = new MediaItemStatusHelper(byte0);
             long contentDuration = mMediaControlChannel.getContentDuration();
@@ -707,11 +737,13 @@ public final class FlingRouteController extends RouteController implements
     }
 
     public final void onRelease() {
-        FlingMediaRouteProvider.getLogs_a().d("Controller released", new Object[0]);
+        FlingMediaRouteProvider.getLogs_a().d("Controller released",
+                new Object[0]);
     }
 
     public final void onSetVolume(int volume) {
-        FlingMediaRouteProvider.getLogs_a().d("onSetVolume() volume=%d", volume);
+        FlingMediaRouteProvider.getLogs_a()
+                .d("onSetVolume() volume=%d", volume);
         if (mFlingDeviceController == null) {
             return;
         }
@@ -719,11 +751,13 @@ public final class FlingRouteController extends RouteController implements
         try {
             mFlingDeviceController.setVolume(d1, c, false);
         } catch (IllegalStateException e) {
-            FlingMediaRouteProvider.getLogs_a().d("Unable to set volume: %s", e.getMessage());
+            FlingMediaRouteProvider.getLogs_a().d("Unable to set volume: %s",
+                    e.getMessage());
         }
     }
 
-    public final void requestStatus(long loadRequestId, int status, JSONObject jsonobject) {
+    public final void requestStatus(long loadRequestId, int status,
+            JSONObject jsonobject) {
         Iterator iterator = w.iterator();
         TrackedItem aws1;
         do {
@@ -737,7 +771,8 @@ public final class FlingRouteController extends RouteController implements
             if (loadRequestId != mLoadRequestId) {
                 return;
             }
-            FlingMediaRouteProvider.getLogs_a().d("requestStatus has completed");
+            FlingMediaRouteProvider.getLogs_a()
+                    .d("requestStatus has completed");
             mLoadRequestId = -1L;
             long sessionId;
             Iterator iterator1;
@@ -777,27 +812,30 @@ public final class FlingRouteController extends RouteController implements
                 f(4);
                 mTrackedItem = null;
             }
-            FlingMediaRouteProvider.getLogs_a().d("mSyncStatusRequest = %s, status=%d", status);
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "mSyncStatusRequest = %s, status=%d", status);
             if (mSyncStatusRequest != null) {
                 if (status == 0) {
                     FlingMediaRouteProvider.getLogs_a().d(
                             "requestStatus completed; sending response");
                     Bundle bundle = new Bundle();
                     if (mTrackedItem != null) {
-                        MediaStatus aud1 = mMediaControlChannel.getMediaStatus();
+                        MediaStatus aud1 = mMediaControlChannel
+                                .getMediaStatus();
                         bundle.putString("android.media.intent.extra.ITEM_ID",
                                 mTrackedItem.mItemId);
-                        bundle.putParcelable("android.media.intent.extra.ITEM_STATUS",
+                        bundle.putParcelable(
+                                "android.media.intent.extra.ITEM_STATUS",
                                 getItemStatusBundle());
                         MediaInfo atz1 = aud1.mMedia;
                         if (atz1 != null) {
                             Bundle bundle1 = FlingMediaManagerHelper
                                     .createMetadataBundle(atz1);
-                            FlingMediaRouteProvider.getLogs_a().d("adding metadata bundle: %s",
-                                    new Object[] {
-                                        bundle1
-                                    });
-                            bundle.putParcelable("android.media.intent.extra.ITEM_METADATA",
+                            FlingMediaRouteProvider.getLogs_a().d(
+                                    "adding metadata bundle: %s",
+                                    new Object[] { bundle1 });
+                            bundle.putParcelable(
+                                    "android.media.intent.extra.ITEM_METADATA",
                                     bundle1);
                         }
                     }
@@ -812,34 +850,37 @@ public final class FlingRouteController extends RouteController implements
         }
         long mediaSessionId = mMediaControlChannel.getMediaSessionId();
         switch (status) {
-            default:
-            case 1:
-                FlingMediaRouteProvider.getLogs_a().d("unknown status %d; sending error state", status);
-                sendPlaybackStateForItem(aws1, 7, a(jsonobject));
-                a(aws1);
-                break;
-            case 0:
-                FlingMediaRouteProvider.getLogs_a().d("Load completed; mediaSessionId=%d", mediaSessionId);
-                aws1.mLoadRequestId = -1L;
-                aws1.mMediaSessionId = mediaSessionId;
-                mTrackedItem = aws1;
-                sendItemStatusUpdate();
-                break;
-            case 2:
-                FlingMediaRouteProvider.getLogs_a().d("STATUS_CANCELED; sending error state");
-                sendPlaybackStateForItem(aws1, 5, ((Bundle) (null)));
-                a(aws1);
-                break;
-            case 3:
-                FlingMediaRouteProvider.getLogs_a().d("STATUS_TIMED_OUT; sending error state");
-                sendPlaybackStateForItem(aws1, 7, ((Bundle) (null)));
-                a(aws1);
-                break;
+        default:
+        case 1:
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "unknown status %d; sending error state", status);
+            sendPlaybackStateForItem(aws1, 7, a(jsonobject));
+            a(aws1);
+            break;
+        case 0:
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "Load completed; mediaSessionId=%d", mediaSessionId);
+            aws1.mLoadRequestId = -1L;
+            aws1.mMediaSessionId = mediaSessionId;
+            mTrackedItem = aws1;
+            sendItemStatusUpdate();
+            break;
+        case 2:
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "STATUS_CANCELED; sending error state");
+            sendPlaybackStateForItem(aws1, 5, ((Bundle) (null)));
+            a(aws1);
+            break;
+        case 3:
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "STATUS_TIMED_OUT; sending error state");
+            sendPlaybackStateForItem(aws1, 7, ((Bundle) (null)));
+            a(aws1);
+            break;
         }
     }
 
-    public final void attachMediaChannel(String sessionId)
-    {
+    public final void attachMediaChannel(String sessionId) {
         ApplicationMetadata applicationmetadata;
         applicationmetadata = mMediaRouteSession.getApplicationMetadata();
         if (p != null) {
@@ -850,7 +891,8 @@ public final class FlingRouteController extends RouteController implements
         }
         sendPendingIntent(sessionId, 0);
         if (mApplicationId.equals(applicationmetadata.getApplicationId())) {
-            FlingMediaRouteProvider.getLogs_a().d("attachMediaChannel", new Object[0]);
+            FlingMediaRouteProvider.getLogs_a().d("attachMediaChannel",
+                    new Object[0]);
 
             // mMediaControlChannel_s = new C_awo(this);
             mMediaControlChannel = new MediaControlChannel() {
@@ -890,8 +932,9 @@ public final class FlingRouteController extends RouteController implements
                 createSessionStatusBundle(sessionStatus));
         try {
             FlingMediaRouteProvider.getLogs_a().d(
-                    "Invoking session status PendingIntent with: %s",intent);
-            mPendingIntent.send(((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext,
+                    "Invoking session status PendingIntent with: %s", intent);
+            mPendingIntent.send(
+                    ((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext,
                     0, intent);
             return;
         } catch (android.app.PendingIntent.CanceledException canceledexception) {
@@ -900,12 +943,15 @@ public final class FlingRouteController extends RouteController implements
         }
     }
 
-    public final boolean onControlRequest(Intent intent, RouteCtrlRequestCallback om) {
+    public final boolean onControlRequest(Intent intent,
+            RouteCtrlRequestCallback om) {
         boolean flag;
-        FlingMediaRouteProvider.getLogs_a().d("Received control request %s", intent);
-        RemotePlaybackRequest awt1 = new RemotePlaybackRequest(mFlingMediaRouteProvider,
-                intent, om);
-        if (!intent.hasCategory("android.media.intent.category.REMOTE_PLAYBACK")) {
+        FlingMediaRouteProvider.getLogs_a().d("Received control request %s",
+                intent);
+        RemotePlaybackRequest awt1 = new RemotePlaybackRequest(
+                mFlingMediaRouteProvider, intent, om);
+        if (!intent
+                .hasCategory("android.media.intent.category.REMOTE_PLAYBACK")) {
             boolean flag1 = intent
                     .hasCategory("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK");
             flag = false;
@@ -918,14 +964,16 @@ public final class FlingRouteController extends RouteController implements
 
     public final void onSelect() {
         FlingMediaRouteProvider.getLogs_a().d("onSelect");
-        mFlingDeviceController = FlingMediaRouteProvider.createDeviceController(
-                mFlingMediaRouteProvider, this);
-        mMediaRouteSession = new MediaRouteSession(mFlingDeviceController, this,
+        mFlingDeviceController = FlingMediaRouteProvider
+                .createDeviceController(mFlingMediaRouteProvider, this);
+        mMediaRouteSession = new MediaRouteSession(mFlingDeviceController,
+                this,
                 ((MediaRouteProvider) (mFlingMediaRouteProvider)).mHandler);
     }
 
     public final void onUpdateVolume(int delta) {
-        FlingMediaRouteProvider.getLogs_a().d("onUpdateVolume() delta=%d", delta);
+        FlingMediaRouteProvider.getLogs_a().d("onUpdateVolume() delta=%d",
+                delta);
         if (mFlingDeviceController == null)
             return;
         try {
@@ -933,7 +981,9 @@ public final class FlingRouteController extends RouteController implements
             mFlingDeviceController.setVolume(d1, c, false);
             return;
         } catch (IllegalStateException illegalstateexception) {
-            FlingMediaRouteProvider.getLogs_a().d("Unable to update volume: %s", illegalstateexception.getMessage());
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "Unable to update volume: %s",
+                    illegalstateexception.getMessage());
             return;
         }
     }
@@ -954,10 +1004,8 @@ public final class FlingRouteController extends RouteController implements
     }
 
     public final void onApplicationDisconnected(int statusCode) {
-        FlingMediaRouteProvider.getLogs_a().d("onApplicationDisconnected: statusCode=%d", statusCode);
-        boolean flag = false;
-        if (statusCode != 0)
-            flag = true;
+        FlingMediaRouteProvider.getLogs_a().d(
+                "onApplicationDisconnected: statusCode=%d", statusCode);
         if (mMediaRouteSession != null) {
             mMediaRouteSession.onApplicationDisconnected(statusCode);
             sendPendingIntent(getSessionId(), 1);
@@ -965,7 +1013,8 @@ public final class FlingRouteController extends RouteController implements
     }
 
     public final void endSession() {
-        FlingMediaRouteProvider.getLogs_a().d("endSession() voluntary=%b", true);
+        FlingMediaRouteProvider.getLogs_a()
+                .d("endSession() voluntary=%b", true);
         if (mMediaRouteSession != null) {
             mMediaRouteSession.stopSession(u | n);
             u = false;
@@ -1005,7 +1054,9 @@ public final class FlingRouteController extends RouteController implements
 
     public final void startSession() {
         if (f == 2) {
-            FlingMediaRouteProvider.getLogs_a().d("starting pending session for media with session ID %s", mSessionId);
+            FlingMediaRouteProvider.getLogs_a().d(
+                    "starting pending session for media with session ID %s",
+                    mSessionId);
             if (mSessionId != null) {
                 resumeSession(mSessionId);
                 mSessionId = null;
@@ -1021,34 +1072,45 @@ public final class FlingRouteController extends RouteController implements
     }
 
     final void sendItemStatusUpdate() {
-        FlingMediaRouteProvider.getLogs_a().d("sendItemStatusUpdate(); current item is %s", mTrackedItem);
+        FlingMediaRouteProvider.getLogs_a().d(
+                "sendItemStatusUpdate(); current item is %s", mTrackedItem);
         if (mTrackedItem != null) {
             PendingIntent pendingintent = mTrackedItem.mPendingIntent;
             if (pendingintent != null) {
-                FlingMediaRouteProvider.getLogs_a().d("found a PendingIntent for item %s", mTrackedItem);
+                FlingMediaRouteProvider.getLogs_a().d(
+                        "found a PendingIntent for item %s", mTrackedItem);
                 Intent intent = new Intent();
-                intent.putExtra("android.media.intent.extra.ITEM_ID", mTrackedItem.mItemId);
-                intent.putExtra("android.media.intent.extra.ITEM_STATUS", getItemStatusBundle());
+                intent.putExtra("android.media.intent.extra.ITEM_ID",
+                        mTrackedItem.mItemId);
+                intent.putExtra("android.media.intent.extra.ITEM_STATUS",
+                        getItemStatusBundle());
                 MediaInfo atz1 = mMediaControlChannel.getMediaInfo();
                 if (atz1 != null) {
-                    Bundle bundle = FlingMediaManagerHelper.createMetadataBundle(atz1);
-                    FlingMediaRouteProvider.getLogs_a().d("adding metadata bundle: %s", bundle.toString());
-                    intent.putExtra("android.media.intent.extra.ITEM_METADATA", bundle);
+                    Bundle bundle = FlingMediaManagerHelper
+                            .createMetadataBundle(atz1);
+                    FlingMediaRouteProvider.getLogs_a().d(
+                            "adding metadata bundle: %s", bundle.toString());
+                    intent.putExtra("android.media.intent.extra.ITEM_METADATA",
+                            bundle);
                 }
                 try {
                     FlingMediaRouteProvider.getLogs_a().d(
-                            "Invoking item status PendingIntent with: %s",intent);
-                    pendingintent.send(
-                            ((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext, 0,
+                            "Invoking item status PendingIntent with: %s",
                             intent);
+                    pendingintent
+                            .send(((MediaRouteProvider) (mFlingMediaRouteProvider)).mContext,
+                                    0, intent);
                 } catch (android.app.PendingIntent.CanceledException canceledexception) {
                     FlingMediaRouteProvider.getLogs_a().d(canceledexception,
-                            "exception while sending PendingIntent", new Object[0]);
+                            "exception while sending PendingIntent",
+                            new Object[0]);
                 }
             }
 
             if (mMediaControlChannel.getMediaStatus().mPlayerState == 1) {
-                FlingMediaRouteProvider.getLogs_a().d("player state is now IDLE; removing tracked item %s", mTrackedItem);
+                FlingMediaRouteProvider.getLogs_a().d(
+                        "player state is now IDLE; removing tracked item %s",
+                        mTrackedItem);
                 a(mTrackedItem);
             }
         }

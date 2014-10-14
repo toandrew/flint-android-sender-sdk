@@ -5,6 +5,7 @@ import android.os.Bundle;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.fling.MediaInfo;
 import tv.matchstick.fling.MediaMetadata;
 import tv.matchstick.fling.images.WebImage;
 
@@ -15,8 +16,8 @@ import java.util.Set;
 final class FlingMediaManagerHelper {
     static Bundle createMetadataBundle(MediaInfo mediaInfo) {
         Bundle bundle = new Bundle();
-        bundle.putLong("android.media.metadata.DURATION", mediaInfo.mDuration);
-        MediaMetadata mediaMetadata = mediaInfo.mMediaMetadata;
+        bundle.putLong("android.media.metadata.DURATION", mediaInfo.getStreamDuration());
+        MediaMetadata mediaMetadata = mediaInfo.getMetadata();
         String albumArtist = mediaMetadata
                 .getString("tv.matchstick.fling.metadata.ALBUM_ARTIST");
         if (albumArtist != null)

@@ -1,6 +1,7 @@
 
 package tv.matchstick.server.fling;
 
+import tv.matchstick.fling.MediaInfo;
 import android.text.TextUtils;
 
 public final class MediaInfoContainer {

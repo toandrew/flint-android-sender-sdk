@@ -9,7 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.server.fling.MediaInfo;
+import tv.matchstick.fling.MediaInfo;
 import tv.matchstick.server.fling.MediaStatus;
 import tv.matchstick.server.utils.IStatusRequest;
 import tv.matchstick.server.utils.LOG;
@@ -155,7 +155,7 @@ public class MediaControlChannel extends FlingChannel {
             l3 = l2;
         if (l3 == 0L)
             return l1;
-        l4 = atz1.mDuration;
+        l4 = atz1.getStreamDuration();
         l5 = l1 + (long) (d1 * (double) l3);
         if (l5 <= l4)
             if (l5 < 0L)
@@ -219,7 +219,7 @@ public class MediaControlChannel extends FlingChannel {
         try {
             jsonobject1.put("requestId", requestId);
             jsonobject1.put("type", "LOAD");
-            jsonobject1.put("media", atz1.buildJsonObj());
+            jsonobject1.put("media", atz1.buildJson());
             jsonobject1.put("autoplay", true);
             jsonobject1.put("currentTime", (double) currentTime / 1000D);
             if (customData != null)
@@ -385,7 +385,7 @@ public class MediaControlChannel extends FlingChannel {
     {
         MediaInfo info = getMediaInfo();
         if (info != null)
-            return info.mDuration;
+            return info.getStreamDuration();
         else
             return 0L;
     }
