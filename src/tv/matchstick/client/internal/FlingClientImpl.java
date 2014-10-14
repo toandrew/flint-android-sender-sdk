@@ -94,6 +94,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
          * postApplicationConnectionResult,etc.
          */
         this.mIFlingDeviceControllerListener = new IFlingDeviceControllerListener.Stub() {
+            @Override
             public void onDisconnected(int statusCode) {
                 mLogUtil.logd(
                         "IFlingDeviceControllerListener.onDisconnected: %d",
@@ -109,6 +110,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             /**
              * Application connected.
              */
+            @Override
             public void onApplicationConnected(
                     ApplicationMetadata applicatonMetadata,
                     String applicationId, String sessionId, boolean relaunched) {
@@ -125,7 +127,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                     }
                 }
             }
-
+            @Override
             public void postApplicationConnectionResult(int statusCode) {
                 synchronized (mLock_xU) {
                     if (mResultCallback != null) {
@@ -136,22 +138,23 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                     }
                 }
             }
-
-            public void notifyCallback(int statusCode) {
-                notifyCallback_D(statusCode);
+            @Override
+            public void onRequestResult(int result) {
+                notifyCallback(result);
             }
-
-            public void notifyCallback_C(int statusCode) {
-                notifyCallback_D(statusCode);
+            @Override
+            public void onRequestStatus(int status) {
+                notifyCallback(status);
             }
 
             /**
              * Application disconnected.
              */
+            @Override
             public void onApplicationDisconnected(final int statusCode) {
                 mApplicationId = null;
                 mSessionId = null;
-                if (notifyCallback_D(statusCode)) {
+                if (notifyCallback(statusCode)) {
                     return;
                 }
                 if (mFlingListener == null) {
@@ -170,6 +173,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             /**
              * notify application status or volume changed event.
              */
+            @Override
             public void notifyApplicationStatusOrVolumeChanged(
                     final String applicationStatus, final double volume,
                     final boolean isMute) {
@@ -183,6 +187,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             /**
              * Message received.
              */
+            @Override
             public void onMessageReceived(final String namespace,
                     final String message) {
                 mLogUtil.logd("Receive (type=text, ns=%s) %s", new Object[] {
@@ -209,18 +214,19 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             /**
              * receive binary message.
              */
-            public void receiveBinary(String namespace, byte[] message) {
+            @Override
+            public void onReceiveBinary(String namespace, byte[] message) {
                 mLogUtil.logd(
                         "IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
                         new Object[] { namespace,
                                 Integer.valueOf(message.length) });
             }
-
+            @Override
             public void requestCallback(String namespace, long requestId,
                     int statusCode) {
                 notifyCallback(requestId, statusCode);
             }
-
+            @Override
             public void requestCallback(String namespace, long requestId) {
                 notifyCallback(requestId, 0);
             }
@@ -237,7 +243,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                 resultCallback.onResult(new Status(statusCode));
             }
 
-            private boolean notifyCallback_D(int statusCode) {
+            private boolean notifyCallback(int statusCode) {
                 synchronized (mLock_xV) {
                     if (mResultCallback_xT != null) {
                         mResultCallback_xT.onResult(new Status(statusCode));

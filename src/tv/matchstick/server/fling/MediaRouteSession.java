@@ -1,6 +1,7 @@
 
 package tv.matchstick.server.fling;
 
+import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
 import tv.matchstick.server.utils.LOG;
 import android.os.Handler;

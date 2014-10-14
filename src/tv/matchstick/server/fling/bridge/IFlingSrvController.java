@@ -1,6 +1,6 @@
 package tv.matchstick.server.fling.bridge;
 
-import tv.matchstick.server.fling.ApplicationMetadata;
+import tv.matchstick.fling.ApplicationMetadata;
 
 public interface IFlingSrvController {
 	public abstract void onConnected();

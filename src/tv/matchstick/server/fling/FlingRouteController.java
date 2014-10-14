@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;

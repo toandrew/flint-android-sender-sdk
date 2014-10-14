@@ -4,6 +4,7 @@ package tv.matchstick.server.fling;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.utils.FlingStatusCodes;

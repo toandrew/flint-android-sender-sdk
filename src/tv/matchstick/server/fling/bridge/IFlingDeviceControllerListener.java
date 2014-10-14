@@ -1,7 +1,7 @@
 
 package tv.matchstick.server.fling.bridge;
 
-import tv.matchstick.server.fling.ApplicationMetadata;
+import tv.matchstick.fling.ApplicationMetadata;
 import android.os.IInterface;
 import android.os.RemoteException;
 

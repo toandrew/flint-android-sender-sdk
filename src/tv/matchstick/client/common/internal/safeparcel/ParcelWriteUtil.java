@@ -12,12 +12,12 @@ import android.os.Parcelable;
  * OK
  */
 public class ParcelWriteUtil {
-    private static void b(Parcel paramParcel, int paramInt1, int paramInt2) {
+    private static void b(Parcel parcel, int paramInt1, int paramInt2) {
         if (paramInt2 >= 65535) {
-            paramParcel.writeInt(0xFFFF0000 | paramInt1);
-            paramParcel.writeInt(paramInt2);
+            parcel.writeInt(0xFFFF0000 | paramInt1);
+            parcel.writeInt(paramInt2);
         } else {
-            paramParcel.writeInt(paramInt2 << 16 | paramInt1);
+            parcel.writeInt(paramInt2 << 16 | paramInt1);
         }
     }
 
@@ -69,9 +69,9 @@ public class ParcelWriteUtil {
         paramParcel.writeInt(paramShort);
     }
 
-    public static void c(Parcel paramParcel, int paramInt1, int paramInt2) {
-        b(paramParcel, paramInt1, 4);
-        paramParcel.writeInt(paramInt2);
+    public static void c(Parcel parcel, int paramInt1, int paramInt2) {
+        b(parcel, paramInt1, 4);
+        parcel.writeInt(paramInt2);
     }
 
     public static void a(Parcel paramParcel, int paramInt, long paramLong) {

@@ -1,7 +1,9 @@
 package tv.matchstick.fling;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
 import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
 import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil.SafeParcelA;
 import tv.matchstick.fling.images.WebImage;
@@ -13,86 +15,71 @@ import android.os.Parcelable;
  * Internal Application Meta data Creator
  */
 class ApplicationMetadataCreator implements
-		Parcelable.Creator<ApplicationMetadata> {
-	static void buildParcel(ApplicationMetadata paramApplicationMetadata,
-			Parcel paramParcel, int paramInt) {
-		int i = ParcelWriteUtil.p(paramParcel);
-		ParcelWriteUtil.c(paramParcel, 1,
-				paramApplicationMetadata.getVersionCode());
-		ParcelWriteUtil.a(paramParcel, 2,
-				paramApplicationMetadata.getApplicationId(), false);
-		ParcelWriteUtil.a(paramParcel, 3, paramApplicationMetadata.getName(),
-				false);
-		ParcelWriteUtil.b(paramParcel, 4, paramApplicationMetadata.getImages(),
-				false);
-		ParcelWriteUtil.a(paramParcel, 5, paramApplicationMetadata.mNamespaces,
-				false);
-		ParcelWriteUtil.a(paramParcel, 6,
-				paramApplicationMetadata.getSenderAppIdentifier(), false);
-		ParcelWriteUtil.a(paramParcel, 7,
-				paramApplicationMetadata.getSenderAppLaunchUrl(), paramInt,
-				false);
-		ParcelWriteUtil.D(paramParcel, i);
-	}
+        Parcelable.Creator<ApplicationMetadata> {
+    static void buildParcel(ApplicationMetadata applicationmetadata,
+            Parcel parcel, int flag) {
+        int i = ParcelWriteUtil.p(parcel);
+        ParcelWriteUtil.c(parcel, 1, applicationmetadata.getVersionCode());
+        ParcelWriteUtil.a(parcel, 2, applicationmetadata.getApplicationId(),
+                false);
+        ParcelWriteUtil.a(parcel, 3, applicationmetadata.getName(), false);
+        ParcelWriteUtil.b(parcel, 4, applicationmetadata.getImages(), false);
+        ParcelWriteUtil
+                .a(parcel, 5, applicationmetadata.getNamespaces(), false);
+        ParcelWriteUtil.a(parcel, 6,
+                applicationmetadata.getSenderAppIdentifier(), false);
+        ParcelWriteUtil.a(parcel, 7,
+                applicationmetadata.getSenderAppLaunchUrl(), flag, false);
+        ParcelWriteUtil.D(parcel, i);
+    }
 
-	public ApplicationMetadata createFromParcel(Parcel paramParcel) {
-		int i = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-				.o(paramParcel);
-		int j = 0;
-		String str1 = null;
-		String str2 = null;
-		ArrayList images = null;
-		ArrayList namespaces = null;
-		String str3 = null;
-		Uri localUri = null;
-		while (paramParcel.dataPosition() < i) {
-			int k = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-					.readInt_n(paramParcel);
-			switch (tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-					.S(k)) {
-			case 1:
-				j = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.g(paramParcel, k);
-				break;
-			case 2:
-				str1 = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.m(paramParcel, k);
-				break;
-			case 3:
-				str2 = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.m(paramParcel, k);
-				break;
-			case 4:
-				images = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.c(paramParcel, k, WebImage.CREATOR);
-				break;
-			case 5:
-				namespaces = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.y(paramParcel, k);
-				break;
-			case 6:
-				str3 = tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.m(paramParcel, k);
-				break;
-			case 7:
-				localUri = (Uri) tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.a(paramParcel, k, Uri.CREATOR);
-				break;
-			default:
-				tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil
-						.b(paramParcel, k);
-			}
-		}
-		if (paramParcel.dataPosition() != i)
-			throw new SafeParcelA("Overread allowed size end=" + i, paramParcel);
-		ApplicationMetadata localApplicationMetadata = new ApplicationMetadata(
-				j, str1, str2, images, namespaces, str3, localUri);
-		return localApplicationMetadata;
+    public ApplicationMetadata createFromParcel(Parcel parcel) {
+        int size = ParcelReadUtil.o(parcel);
+        int versionCode = 0;
+        String applicationId = null;
+        String name = null;
+        ArrayList<WebImage> images = null;
+        ArrayList<String> namespaces = null;
+        String senderAppIdentifier = null;
+        Uri senderAppLaunchUrl = null;
+        while (parcel.dataPosition() < size) {
+            int type = ParcelReadUtil.readInt_n(parcel);
+            switch (ParcelReadUtil.S(type)) {
+            case 1:
+                versionCode = ParcelReadUtil.g(parcel, type);
+                break;
+            case 2:
+                applicationId = ParcelReadUtil.m(parcel, type);
+                break;
+            case 3:
+                name = ParcelReadUtil.m(parcel, type);
+                break;
+            case 4:
+                images = ParcelReadUtil.c(parcel, type, WebImage.CREATOR);
+                break;
+            case 5:
+                namespaces = ParcelReadUtil.y(parcel, type);
+                break;
+            case 6:
+                senderAppIdentifier = ParcelReadUtil.m(parcel, type);
+                break;
+            case 7:
+                senderAppLaunchUrl = (Uri) ParcelReadUtil.a(parcel, type, Uri.CREATOR);
+                break;
+            default:
+                ParcelReadUtil.b(parcel, type);
+            }
+        }
+        if (parcel.dataPosition() != size)
+            throw new SafeParcelA("Overread allowed size end=" + size, parcel);
+        ApplicationMetadata applicationMetadata = new ApplicationMetadata(
+                versionCode, applicationId, name, images, namespaces, senderAppIdentifier, senderAppLaunchUrl);
+        return applicationMetadata;
 
-	}
+    }
 
-	@Override
-	public ApplicationMetadata[] newArray(int arg0) {
-		return new ApplicationMetadata[arg0];
-	}
+    @Override
+    public ApplicationMetadata[] newArray(int length) {
+        return new ApplicationMetadata[length];
+    }
 }

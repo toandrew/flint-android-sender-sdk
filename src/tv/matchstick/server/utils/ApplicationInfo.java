@@ -20,14 +20,14 @@ public final class ApplicationInfo {
     private String transportId;
     private String sessionId;
     private String statusText;
-    private List namespaces;
+    private List<String> namespaces;
     private final List senderApps;
-    private final List appImages;
+    private final List<WebImage> appImages;
 
     private ApplicationInfo()
     {
         senderApps = new ArrayList();
-        appImages = new ArrayList();
+        appImages = new ArrayList<WebImage>();
     }
 
     public ApplicationInfo(JSONObject jsonobject)
@@ -131,12 +131,12 @@ public final class ApplicationInfo {
         return statusText;
     }
 
-    public final List getNamespaces()
+    public final List<String> getNamespaces()
     {
         return Collections.unmodifiableList(namespaces);
     }
 
-    public final List getAppImages()
+    public final List<WebImage> getAppImages()
     {
         return Collections.unmodifiableList(appImages);
     }
