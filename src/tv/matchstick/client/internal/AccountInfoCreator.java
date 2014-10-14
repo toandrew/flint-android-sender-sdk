@@ -24,36 +24,36 @@ class AccountInfoCreator implements
 	}
 
 	public AccountInfo_a createFromParcel(Parcel paramParcel) {
-		int i = ParcelReadUtil.o(paramParcel);
+		int i = ParcelReadUtil.readStart(paramParcel);
 		int j = 0;
 		String str1 = null;
 		ArrayList<String> localArrayList = null;
 		int k = 0;
 		String str2 = null;
 		while (paramParcel.dataPosition() < i) {
-			int l = ParcelReadUtil.readInt_n(paramParcel);
-			switch (ParcelReadUtil.S(l)) {
+			int l = ParcelReadUtil.readSingleInt(paramParcel);
+			switch (ParcelReadUtil.halfOf(l)) {
 			case 1:
-				str1 = ParcelReadUtil.m(paramParcel, l);
+				str1 = ParcelReadUtil.readString(paramParcel, l);
 				break;
 			case 1000:
-				j = ParcelReadUtil.g(paramParcel, l);
+				j = ParcelReadUtil.readInt(paramParcel, l);
 				break;
 			case 2:
-				localArrayList = ParcelReadUtil.y(paramParcel, l);
+				localArrayList = ParcelReadUtil.readStringList(paramParcel, l);
 				break;
 			case 3:
-				k = ParcelReadUtil.g(paramParcel, l);
+				k = ParcelReadUtil.readInt(paramParcel, l);
 				break;
 			case 4:
-				str2 = ParcelReadUtil.m(paramParcel, l);
+				str2 = ParcelReadUtil.readString(paramParcel, l);
 				break;
 			default:
-				ParcelReadUtil.b(paramParcel, l);
+				ParcelReadUtil.skip(paramParcel, l);
 			}
 		}
 		if (paramParcel.dataPosition() != i) {
-			throw new ParcelReadUtil.SafeParcelA("Overread allowed size end="
+			throw new ParcelReadUtil.SafeParcel("Overread allowed size end="
 					+ i, paramParcel);
 		}
 		AccountInfo.AccountInfo_a locala = new AccountInfo.AccountInfo_a(j,

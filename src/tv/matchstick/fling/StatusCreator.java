@@ -15,33 +15,33 @@ class StatusCreator implements Parcelable.Creator<Status> {
 
 	@Override
 	public Status createFromParcel(Parcel parcel) {
-		int i = ParcelReadUtil.o(parcel);
+		int i = ParcelReadUtil.readStart(parcel);
 		int j = 0;
 		int k = 0;
 		String str = null;
 		PendingIntent localPendingIntent = null;
 		while (parcel.dataPosition() < i) {
-			int l = ParcelReadUtil.readInt_n(parcel);
-			switch (ParcelReadUtil.S(l)) {
+			int l = ParcelReadUtil.readSingleInt(parcel);
+			switch (ParcelReadUtil.halfOf(l)) {
 			case 1:
-				k = ParcelReadUtil.g(parcel, l);
+				k = ParcelReadUtil.readInt(parcel, l);
 				break;
 			case 1000:
-				j = ParcelReadUtil.g(parcel, l);
+				j = ParcelReadUtil.readInt(parcel, l);
 				break;
 			case 2:
-				str = ParcelReadUtil.m(parcel, l);
+				str = ParcelReadUtil.readString(parcel, l);
 				break;
 			case 3:
-				localPendingIntent = (PendingIntent) ParcelReadUtil.a(parcel,
+				localPendingIntent = (PendingIntent) ParcelReadUtil.readParcelable(parcel,
 						l, PendingIntent.CREATOR);
 				break;
 			default:
-				ParcelReadUtil.b(parcel, l);
+				ParcelReadUtil.skip(parcel, l);
 			}
 		}
 		if (parcel.dataPosition() != i)
-			throw new ParcelReadUtil.SafeParcelA("Overread allowed size end="
+			throw new ParcelReadUtil.SafeParcel("Overread allowed size end="
 					+ i, parcel);
 		return new Status(j, k, str, localPendingIntent);
 	}

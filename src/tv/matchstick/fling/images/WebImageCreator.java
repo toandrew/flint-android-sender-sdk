@@ -27,32 +27,32 @@ public class WebImageCreator implements Parcelable.Creator<WebImage> {
 
 	@Override
 	public WebImage createFromParcel(Parcel paramParcel) {
-		int i = ParcelReadUtil.o(paramParcel);
+		int i = ParcelReadUtil.readStart(paramParcel);
 		int j = 0;
 		Uri localUri = null;
 		int k = 0;
 		int l = 0;
 		while (paramParcel.dataPosition() < i) {
-			int i1 = ParcelReadUtil.readInt_n(paramParcel);
-			switch (ParcelReadUtil.S(i1)) {
+			int i1 = ParcelReadUtil.readSingleInt(paramParcel);
+			switch (ParcelReadUtil.halfOf(i1)) {
 			case 1:
-				j = ParcelReadUtil.g(paramParcel, i1);
+				j = ParcelReadUtil.readInt(paramParcel, i1);
 				break;
 			case 2:
-				localUri = (Uri) ParcelReadUtil.a(paramParcel, i1, Uri.CREATOR);
+				localUri = (Uri) ParcelReadUtil.readParcelable(paramParcel, i1, Uri.CREATOR);
 				break;
 			case 3:
-				k = ParcelReadUtil.g(paramParcel, i1);
+				k = ParcelReadUtil.readInt(paramParcel, i1);
 				break;
 			case 4:
-				l = ParcelReadUtil.g(paramParcel, i1);
+				l = ParcelReadUtil.readInt(paramParcel, i1);
 				break;
 			default:
-				ParcelReadUtil.b(paramParcel, i1);
+				ParcelReadUtil.skip(paramParcel, i1);
 			}
 		}
 		if (paramParcel.dataPosition() != i)
-			throw new ParcelReadUtil.SafeParcelA("Overread allowed size end=" + i,
+			throw new ParcelReadUtil.SafeParcel("Overread allowed size end=" + i,
 					paramParcel);
 		WebImage localWebImage = new WebImage(j, localUri, k, l);
 		return localWebImage;

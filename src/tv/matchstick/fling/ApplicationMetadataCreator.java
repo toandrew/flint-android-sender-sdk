@@ -5,7 +5,7 @@ import java.util.List;
 
 import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
 import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil.SafeParcelA;
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil.SafeParcel;
 import tv.matchstick.fling.images.WebImage;
 import android.net.Uri;
 import android.os.Parcel;
@@ -34,7 +34,7 @@ class ApplicationMetadataCreator implements
     }
 
     public ApplicationMetadata createFromParcel(Parcel parcel) {
-        int size = ParcelReadUtil.o(parcel);
+        int size = ParcelReadUtil.readStart(parcel);
         int versionCode = 0;
         String applicationId = null;
         String name = null;
@@ -43,35 +43,35 @@ class ApplicationMetadataCreator implements
         String senderAppIdentifier = null;
         Uri senderAppLaunchUrl = null;
         while (parcel.dataPosition() < size) {
-            int type = ParcelReadUtil.readInt_n(parcel);
-            switch (ParcelReadUtil.S(type)) {
+            int type = ParcelReadUtil.readSingleInt(parcel);
+            switch (ParcelReadUtil.halfOf(type)) {
             case 1:
-                versionCode = ParcelReadUtil.g(parcel, type);
+                versionCode = ParcelReadUtil.readInt(parcel, type);
                 break;
             case 2:
-                applicationId = ParcelReadUtil.m(parcel, type);
+                applicationId = ParcelReadUtil.readString(parcel, type);
                 break;
             case 3:
-                name = ParcelReadUtil.m(parcel, type);
+                name = ParcelReadUtil.readString(parcel, type);
                 break;
             case 4:
-                images = ParcelReadUtil.c(parcel, type, WebImage.CREATOR);
+                images = ParcelReadUtil.readCreatorList(parcel, type, WebImage.CREATOR);
                 break;
             case 5:
-                namespaces = ParcelReadUtil.y(parcel, type);
+                namespaces = ParcelReadUtil.readStringList(parcel, type);
                 break;
             case 6:
-                senderAppIdentifier = ParcelReadUtil.m(parcel, type);
+                senderAppIdentifier = ParcelReadUtil.readString(parcel, type);
                 break;
             case 7:
-                senderAppLaunchUrl = (Uri) ParcelReadUtil.a(parcel, type, Uri.CREATOR);
+                senderAppLaunchUrl = (Uri) ParcelReadUtil.readParcelable(parcel, type, Uri.CREATOR);
                 break;
             default:
-                ParcelReadUtil.b(parcel, type);
+                ParcelReadUtil.skip(parcel, type);
             }
         }
         if (parcel.dataPosition() != size)
-            throw new SafeParcelA("Overread allowed size end=" + size, parcel);
+            throw new SafeParcel("Overread allowed size end=" + size, parcel);
         ApplicationMetadata applicationMetadata = new ApplicationMetadata(
                 versionCode, applicationId, name, images, namespaces, senderAppIdentifier, senderAppLaunchUrl);
         return applicationMetadata;
