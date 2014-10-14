@@ -1,4 +1,3 @@
-
 package tv.matchstick.client.common.internal.safeparcel;
 
 import java.util.List;
@@ -12,241 +11,155 @@ import android.os.Parcelable;
  * OK
  */
 public class ParcelWriteUtil {
-    private static void b(Parcel parcel, int paramInt1, int paramInt2) {
-        if (paramInt2 >= 65535) {
-            parcel.writeInt(0xFFFF0000 | paramInt1);
-            parcel.writeInt(paramInt2);
+    private static void writeStart(Parcel parcel, int position, int length) {
+        if (length >= 65535) {
+            parcel.writeInt(0xFFFF0000 | position);
+            parcel.writeInt(length);
         } else {
-            parcel.writeInt(paramInt2 << 16 | paramInt1);
+            parcel.writeInt(length << 16 | position);
         }
     }
 
-    private static int writeInt_B(Parcel paramParcel, int paramInt) {
-        paramParcel.writeInt(0xFFFF0000 | paramInt);
-        paramParcel.writeInt(0);
-        return paramParcel.dataPosition();
+    private static int writeStart(Parcel parcel, int position) {
+        parcel.writeInt(0xFFFF0000 | position);
+        parcel.writeInt(0);
+        return parcel.dataPosition();
     }
 
-    private static void writeInt_C(Parcel paramParcel, int paramInt) {
-        int i = paramParcel.dataPosition();
-        int j = i - paramInt;
-        paramParcel.setDataPosition(paramInt - 4);
-        paramParcel.writeInt(j);
-        paramParcel.setDataPosition(i);
+    public static void writeEnd(Parcel parcel, int start) {
+        int end = parcel.dataPosition();
+        int length = end - start;
+        parcel.setDataPosition(start - 4);
+        parcel.writeInt(length);
+        parcel.setDataPosition(end);
     }
 
-    public static int p(Parcel paramParcel) {
-        return writeInt_B(paramParcel, 20293);
+    public static int position(Parcel parcel) {
+        return writeStart(parcel, SafeParcelable.SAFE_PARCEL_MAGIC);
     }
 
-    public static void D(Parcel paramParcel, int paramInt) {
-        writeInt_C(paramParcel, paramInt);
+    public static void write(Parcel parcel, int position, boolean val) {
+        writeStart(parcel, position, 4);
+        parcel.writeInt((val) ? 1 : 0);
     }
 
-    public static void a(Parcel paramParcel, int paramInt, boolean paramBoolean) {
-        b(paramParcel, paramInt, 4);
-        paramParcel.writeInt((paramBoolean) ? 1 : 0);
+    public static void write(Parcel parcel, int position, byte val) {
+        writeStart(parcel, position, 4);
+        parcel.writeInt(val);
     }
 
-    public static void a(Parcel paramParcel, int paramInt,
-            Boolean paramBoolean, boolean paramBoolean1) {
-        if (paramBoolean == null) {
-            if (paramBoolean1)
-                b(paramParcel, paramInt, 0);
+    public static void write(Parcel parcel, int position, short val) {
+        writeStart(parcel, position, 4);
+        parcel.writeInt(val);
+    }
+
+    public static void write(Parcel parcel, int position, int val) {
+        writeStart(parcel, position, 4);
+        parcel.writeInt(val);
+    }
+
+    public static void write(Parcel parcel, int position, long val) {
+        writeStart(parcel, position, 8);
+        parcel.writeLong(val);
+    }
+
+    public static void write(Parcel parcel, int position, float val) {
+        writeStart(parcel, position, 4);
+        parcel.writeFloat(val);
+    }
+
+    public static void write(Parcel parcel, int position, double val) {
+        writeStart(parcel, position, 8);
+        parcel.writeDouble(val);
+    }
+
+    public static void write(Parcel parcel, int position, String val,
+            boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(parcel, position, 0);
             return;
         }
-        b(paramParcel, paramInt, 4);
-        paramParcel.writeInt((paramBoolean.booleanValue()) ? 1 : 0);
+        int start = writeStart(parcel, position);
+        parcel.writeString(val);
+        writeEnd(parcel, start);
     }
 
-    public static void a(Parcel paramParcel, int paramInt, byte paramByte) {
-        b(paramParcel, paramInt, 4);
-        paramParcel.writeInt(paramByte);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt, short paramShort) {
-        b(paramParcel, paramInt, 4);
-        paramParcel.writeInt(paramShort);
-    }
-
-    public static void c(Parcel parcel, int paramInt1, int paramInt2) {
-        b(parcel, paramInt1, 4);
-        parcel.writeInt(paramInt2);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt, long paramLong) {
-        b(paramParcel, paramInt, 8);
-        paramParcel.writeLong(paramLong);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt, float paramFloat) {
-        b(paramParcel, paramInt, 4);
-        paramParcel.writeFloat(paramFloat);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt, double paramDouble) {
-        b(paramParcel, paramInt, 8);
-        paramParcel.writeDouble(paramDouble);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt, String paramString,
-            boolean paramBoolean) {
-        if (paramString == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
+    public static void write(Parcel parcel, int position, IBinder val,
+            boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(parcel, position, 0);
             return;
         }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeString(paramString);
-        writeInt_C(paramParcel, i);
+        int start = writeStart(parcel, position);
+        parcel.writeStrongBinder(val);
+        writeEnd(parcel, start);
     }
 
-    public static void a(Parcel paramParcel, int paramInt,
-            IBinder paramIBinder, boolean paramBoolean) {
-        if (paramIBinder == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
+    public static void write(Parcel parcel, int position, Parcelable val,
+            int flags, boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(parcel, position, 0);
             return;
         }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeStrongBinder(paramIBinder);
-        writeInt_C(paramParcel, i);
+        int start = writeStart(parcel, position);
+        val.writeToParcel(parcel, flags);
+        writeEnd(parcel, start);
     }
 
-    public static void a(Parcel paramParcel, int paramInt1,
-            Parcelable paramParcelable, int paramInt2, boolean paramBoolean) {
-        if (paramParcelable == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt1, 0);
+    public static void write(Parcel parcel, int position, Bundle val,
+            boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(parcel, position, 0);
             return;
         }
-        int i = writeInt_B(paramParcel, paramInt1);
-        paramParcelable.writeToParcel(paramParcel, paramInt2);
-        writeInt_C(paramParcel, i);
+        int start = writeStart(parcel, position);
+        parcel.writeBundle(val);
+        writeEnd(parcel, start);
     }
 
-    public static void a(Parcel paramParcel, int paramInt, Bundle paramBundle,
-            boolean paramBoolean) {
-        if (paramBundle == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
+    public static void writeStringList(Parcel parcel, int position,
+            List<String> val, boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(parcel, position, 0);
             return;
         }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeBundle(paramBundle);
-        writeInt_C(paramParcel, i);
+        int start = writeStart(parcel, position);
+        parcel.writeStringList(val);
+        writeEnd(parcel, start);
     }
 
-    public static void a(Parcel paramParcel, int paramInt,
-            byte[] paramArrayOfByte, boolean paramBoolean) {
-        if (paramArrayOfByte == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
+    public static <T extends Parcelable> void write(Parcel parcel,
+            int position, List<T> val, boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(parcel, position, 0);
             return;
         }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeByteArray(paramArrayOfByte);
-        writeInt_C(paramParcel, i);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt,
-            String[] paramArrayOfString, boolean paramBoolean) {
-        if (paramArrayOfString == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
-            return;
-        }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeStringArray(paramArrayOfString);
-        writeInt_C(paramParcel, i);
-    }
-
-    public static void a(Parcel paramParcel, int paramInt,
-            List<String> paramList, boolean paramBoolean) {
-        if (paramList == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
-            return;
-        }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeStringList(paramList);
-        writeInt_C(paramParcel, i);
-    }
-
-    public static <T extends Parcelable> void a(Parcel paramParcel,
-            int paramInt1, T[] paramArrayOfT, int paramInt2,
-            boolean paramBoolean) {
-        if (paramArrayOfT == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt1, 0);
-            return;
-        }
-        int i = writeInt_B(paramParcel, paramInt1);
-        int j = paramArrayOfT.length;
-        paramParcel.writeInt(j);
-        for (int k = 0; k < j; ++k) {
-            T t = paramArrayOfT[k];
+        int start = writeStart(parcel, position);
+        parcel.writeInt(val.size());
+        for (T t : val) {
             if (t == null)
-                paramParcel.writeInt(0);
+                parcel.writeInt(0);
             else
-                a(paramParcel, t, paramInt2);
+                writeArrayPart(parcel, t, 0);
         }
-        writeInt_C(paramParcel, i);
+        writeEnd(parcel, start);
     }
 
-    public static <T extends Parcelable> void b(Parcel paramParcel,
-            int paramInt, List<T> paramList, boolean paramBoolean) {
-        if (paramList == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
-            return;
-        }
-        int i = writeInt_B(paramParcel, paramInt);
-        int j = paramList.size();
-        paramParcel.writeInt(j);
-        for (int k = 0; k < j; ++k) {
-            Parcelable localParcelable = (Parcelable) paramList.get(k);
-            if (localParcelable == null)
-                paramParcel.writeInt(0);
-            else
-                a(paramParcel, localParcelable, 0);
-        }
-        writeInt_C(paramParcel, i);
-    }
-
-    private static <T extends Parcelable> void a(Parcel paramParcel, T paramT,
-            int paramInt) {
-        int i = paramParcel.dataPosition();
-        paramParcel.writeInt(1);
-        int j = paramParcel.dataPosition();
-        paramT.writeToParcel(paramParcel, paramInt);
-        int k = paramParcel.dataPosition();
-        paramParcel.setDataPosition(i);
-        paramParcel.writeInt(k - j);
-        paramParcel.setDataPosition(k);
-    }
-
-    public static void a(Parcel paramParcel1, int paramInt,
-            Parcel paramParcel2, boolean paramBoolean) {
-        if (paramParcel2 == null) {
-            if (paramBoolean)
-                b(paramParcel1, paramInt, 0);
-            return;
-        }
-        int i = writeInt_B(paramParcel1, paramInt);
-        paramParcel1.appendFrom(paramParcel2, 0, paramParcel2.dataSize());
-        writeInt_C(paramParcel1, i);
-    }
-
-    public static void writeList_c(Parcel paramParcel, int paramInt, List paramList,
-            boolean paramBoolean) {
-        if (paramList == null) {
-            if (paramBoolean)
-                b(paramParcel, paramInt, 0);
-            return;
-        }
-        int i = writeInt_B(paramParcel, paramInt);
-        paramParcel.writeList(paramList);
-        writeInt_C(paramParcel, i);
+    private static <T extends Parcelable> void writeArrayPart(Parcel parcel,
+            T val, int flags) {
+        int before = parcel.dataPosition();
+        parcel.writeInt(1);
+        int start = parcel.dataPosition();
+        val.writeToParcel(parcel, flags);
+        int end = parcel.dataPosition();
+        parcel.setDataPosition(before);
+        parcel.writeInt(end - start);
+        parcel.setDataPosition(end);
     }
 }

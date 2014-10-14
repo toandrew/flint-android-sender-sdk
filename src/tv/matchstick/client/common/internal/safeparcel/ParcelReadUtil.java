@@ -43,7 +43,7 @@ public class ParcelReadUtil {
         int first = readSingleInt(parcel);
         int length = readStart(parcel, first);
         int start = parcel.dataPosition();
-        if (halfOf(first) != 20293)
+        if (halfOf(first) != SafeParcelable.SAFE_PARCEL_MAGIC)
             throw new SafeParcel("Expected object header. Got 0x"
                     + Integer.toHexString(first), parcel);
         int end = start + length;

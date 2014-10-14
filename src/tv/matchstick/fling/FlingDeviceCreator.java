@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
+import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.exception.FlingRuntimeException;
-import tv.matchstick.server.common.internal.safeparcel.ParcelWritter;
 import android.os.Parcel;
 import android.os.Parcelable.Creator;
 
@@ -19,16 +20,16 @@ final class FlingDeviceCreator implements Creator {
     }
 
     public static void buildParcel(FlingDevice flingdevice, Parcel parcel) {
-        int i = ParcelWritter.a(parcel, 20293);
-        ParcelWritter.b(parcel, 1, flingdevice.getVersionCode());
-        ParcelWritter.a(parcel, 2, flingdevice.getDeviceId(), false);
-        ParcelWritter.a(parcel, 3, flingdevice.mHostAddress, false);
-        ParcelWritter.a(parcel, 4, flingdevice.getFriendlyName(), false);
-        ParcelWritter.a(parcel, 5, flingdevice.getModelName(), false);
-        ParcelWritter.a(parcel, 6, flingdevice.getDeviceVersion(), false);
-        ParcelWritter.b(parcel, 7, flingdevice.getServicePort());
-        ParcelWritter.b(parcel, 8, flingdevice.getIcons(), false);
-        ParcelWritter.b(parcel, i);
+        int position = ParcelWriteUtil.position(parcel);
+        ParcelWriteUtil.write(parcel, 1, flingdevice.getVersionCode());
+        ParcelWriteUtil.write(parcel, 2, flingdevice.getDeviceId(), false);
+        ParcelWriteUtil.write(parcel, 3, flingdevice.mHostAddress, false);
+        ParcelWriteUtil.write(parcel, 4, flingdevice.getFriendlyName(), false);
+        ParcelWriteUtil.write(parcel, 5, flingdevice.getModelName(), false);
+        ParcelWriteUtil.write(parcel, 6, flingdevice.getDeviceVersion(), false);
+        ParcelWriteUtil.write(parcel, 7, flingdevice.getServicePort());
+        ParcelWriteUtil.write(parcel, 8, flingdevice.getIcons(), false);
+        ParcelWriteUtil.writeEnd(parcel, position);
     }
 
     public final Object createFromParcel(Parcel parcel) {

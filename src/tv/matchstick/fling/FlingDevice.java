@@ -10,16 +10,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
-import tv.matchstick.server.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.server.fling.mdns.FlingDeviceHelper;
 
 /**
  * Contain all info about a Fling device.
  */
 public class FlingDevice implements SafeParcelable {
-	public static final android.os.Parcelable.Creator CREATOR = new FlingDeviceCreator();
+	public static final Creator CREATOR = new FlingDeviceCreator();
 
 	/**
 	 * Host address

@@ -13,16 +13,16 @@ public class WebImageCreator implements Parcelable.Creator<WebImage> {
 	static void buildParcel(WebImage paramWebImage, Parcel paramParcel,
 			int paramInt) {
 		int i = tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil
-				.p(paramParcel);
-		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.c(paramParcel, 1,
+				.position(paramParcel);
+		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.write(paramParcel, 1,
 				paramWebImage.getVersionCode());
-		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.a(paramParcel, 2,
+		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.write(paramParcel, 2,
 				paramWebImage.getUrl(), paramInt, false);
-		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.c(paramParcel, 3,
+		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.write(paramParcel, 3,
 				paramWebImage.getWidth());
-		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.c(paramParcel, 4,
+		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.write(paramParcel, 4,
 				paramWebImage.getHeight());
-		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.D(paramParcel, i);
+		tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil.writeEnd(paramParcel, i);
 	}
 
 	@Override

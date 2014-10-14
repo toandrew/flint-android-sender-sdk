@@ -14,13 +14,13 @@ class AccountInfoCreator implements
 
 	static void buildParcel(AccountInfo.AccountInfo_a parama,
 			Parcel paramParcel, int paramInt) {
-		int i = ParcelWriteUtil.p(paramParcel);
-		ParcelWriteUtil.a(paramParcel, 1, parama.getAccountName(), false);
-		ParcelWriteUtil.c(paramParcel, 1000, parama.getVersionCode());
-		ParcelWriteUtil.a(paramParcel, 2, parama.copyScopeUriList(), false);
-		ParcelWriteUtil.c(paramParcel, 3, parama.getGravityForPopups());
-		ParcelWriteUtil.a(paramParcel, 4, parama.getPackageName(), false);
-		ParcelWriteUtil.D(paramParcel, i);
+		int i = ParcelWriteUtil.position(paramParcel);
+		ParcelWriteUtil.write(paramParcel, 1, parama.getAccountName(), false);
+		ParcelWriteUtil.write(paramParcel, 1000, parama.getVersionCode());
+		ParcelWriteUtil.writeStringList(paramParcel, 2, parama.copyScopeUriList(), false);
+		ParcelWriteUtil.write(paramParcel, 3, parama.getGravityForPopups());
+		ParcelWriteUtil.write(paramParcel, 4, parama.getPackageName(), false);
+		ParcelWriteUtil.writeEnd(paramParcel, i);
 	}
 
 	public AccountInfo_a createFromParcel(Parcel paramParcel) {

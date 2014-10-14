@@ -59,13 +59,13 @@ class StatusCreator implements Parcelable.Creator<Status> {
 	 * @param paramInt
 	 */
 	static void buildParcel(Status paramStatus, Parcel paramParcel, int paramInt) {
-		int i = ParcelWriteUtil.p(paramParcel);
-		ParcelWriteUtil.c(paramParcel, 1, paramStatus.getStatusCode());
-		ParcelWriteUtil.c(paramParcel, 1000, paramStatus.getVersionCode());
+		int i = ParcelWriteUtil.position(paramParcel);
+		ParcelWriteUtil.write(paramParcel, 1, paramStatus.getStatusCode());
+		ParcelWriteUtil.write(paramParcel, 1000, paramStatus.getVersionCode());
 		ParcelWriteUtil
-				.a(paramParcel, 2, paramStatus.getStatusMessage(), false);
-		ParcelWriteUtil.a(paramParcel, 3, paramStatus.getPendingIntent(),
+				.write(paramParcel, 2, paramStatus.getStatusMessage(), false);
+		ParcelWriteUtil.write(paramParcel, 3, paramStatus.getPendingIntent(),
 				paramInt, false);
-		ParcelWriteUtil.D(paramParcel, i);
+		ParcelWriteUtil.writeEnd(paramParcel, i);
 	}
 }

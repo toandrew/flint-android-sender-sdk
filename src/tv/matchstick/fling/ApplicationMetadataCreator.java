@@ -18,19 +18,19 @@ class ApplicationMetadataCreator implements
         Parcelable.Creator<ApplicationMetadata> {
     static void buildParcel(ApplicationMetadata applicationmetadata,
             Parcel parcel, int flag) {
-        int i = ParcelWriteUtil.p(parcel);
-        ParcelWriteUtil.c(parcel, 1, applicationmetadata.getVersionCode());
-        ParcelWriteUtil.a(parcel, 2, applicationmetadata.getApplicationId(),
+        int i = ParcelWriteUtil.position(parcel);
+        ParcelWriteUtil.write(parcel, 1, applicationmetadata.getVersionCode());
+        ParcelWriteUtil.write(parcel, 2, applicationmetadata.getApplicationId(),
                 false);
-        ParcelWriteUtil.a(parcel, 3, applicationmetadata.getName(), false);
-        ParcelWriteUtil.b(parcel, 4, applicationmetadata.getImages(), false);
+        ParcelWriteUtil.write(parcel, 3, applicationmetadata.getName(), false);
+        ParcelWriteUtil.write(parcel, 4, applicationmetadata.getImages(), false);
         ParcelWriteUtil
-                .a(parcel, 5, applicationmetadata.getNamespaces(), false);
-        ParcelWriteUtil.a(parcel, 6,
+                .writeStringList(parcel, 5, applicationmetadata.getNamespaces(), false);
+        ParcelWriteUtil.write(parcel, 6,
                 applicationmetadata.getSenderAppIdentifier(), false);
-        ParcelWriteUtil.a(parcel, 7,
+        ParcelWriteUtil.write(parcel, 7,
                 applicationmetadata.getSenderAppLaunchUrl(), flag, false);
-        ParcelWriteUtil.D(parcel, i);
+        ParcelWriteUtil.writeEnd(parcel, i);
     }
 
     public ApplicationMetadata createFromParcel(Parcel parcel) {
