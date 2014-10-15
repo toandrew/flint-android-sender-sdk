@@ -138,15 +138,15 @@ public interface IFlingDeviceController extends IInterface {
         }
 
         private static class Proxy implements IFlingDeviceController {
-            private IBinder ky;
+            private IBinder mRemoted;
 
-            Proxy(IBinder paramIBinder) {
-                this.ky = paramIBinder;
+            Proxy(IBinder binder) {
+                this.mRemoted = binder;
             }
 
             @Override
             public IBinder asBinder() {
-                return this.ky;
+                return this.mRemoted;
             }
 
             @Override
@@ -155,7 +155,7 @@ public interface IFlingDeviceController extends IInterface {
                 try {
                     localParcel
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
-                    this.ky.transact(1, localParcel, null, 1);
+                    this.mRemoted.transact(1, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -170,7 +170,7 @@ public interface IFlingDeviceController extends IInterface {
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
                     localParcel.writeString(paramString);
                     localParcel.writeInt((paramBoolean) ? 1 : 0);
-                    this.ky.transact(2, localParcel, null, 1);
+                    this.mRemoted.transact(2, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -185,7 +185,7 @@ public interface IFlingDeviceController extends IInterface {
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
                     localParcel.writeString(paramString1);
                     localParcel.writeString(paramString2);
-                    this.ky.transact(3, localParcel, null, 1);
+                    this.mRemoted.transact(3, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -197,7 +197,7 @@ public interface IFlingDeviceController extends IInterface {
                 try {
                     localParcel
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
-                    this.ky.transact(4, localParcel, null, 1);
+                    this.mRemoted.transact(4, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -211,7 +211,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
                     localParcel.writeString(paramString);
-                    this.ky.transact(5, localParcel, null, 1);
+                    this.mRemoted.transact(5, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -223,7 +223,7 @@ public interface IFlingDeviceController extends IInterface {
                 try {
                     localParcel
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
-                    this.ky.transact(6, localParcel, null, 1);
+                    this.mRemoted.transact(6, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -239,7 +239,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel.writeDouble(paramDouble1);
                     localParcel.writeDouble(paramDouble2);
                     localParcel.writeInt((paramBoolean) ? 1 : 0);
-                    this.ky.transact(7, localParcel, null, 1);
+                    this.mRemoted.transact(7, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -255,7 +255,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel.writeInt((paramBoolean1) ? 1 : 0);
                     localParcel.writeDouble(paramDouble);
                     localParcel.writeInt((paramBoolean2) ? 1 : 0);
-                    this.ky.transact(8, localParcel, null, 1);
+                    this.mRemoted.transact(8, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -271,7 +271,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel.writeString(paramString1);
                     localParcel.writeString(paramString2);
                     localParcel.writeLong(paramLong);
-                    this.ky.transact(9, localParcel, null, 1);
+                    this.mRemoted.transact(9, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -287,7 +287,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel.writeString(namespace);
                     localParcel.writeByteArray(message);
                     localParcel.writeLong(requestId);
-                    this.ky.transact(10, localParcel, null, 1);
+                    this.mRemoted.transact(10, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -301,7 +301,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
                     localParcel.writeString(namespace);
-                    this.ky.transact(11, localParcel, null, 1);
+                    this.mRemoted.transact(11, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
@@ -315,7 +315,7 @@ public interface IFlingDeviceController extends IInterface {
                     localParcel
                             .writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceController");
                     localParcel.writeString(paramString);
-                    this.ky.transact(12, localParcel, null, 1);
+                    this.mRemoted.transact(12, localParcel, null, 1);
                 } finally {
                     localParcel.recycle();
                 }
