@@ -3,10 +3,10 @@ package tv.matchstick.server.fling.bridge;
 import tv.matchstick.client.internal.IFlingCallbacks;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.common.checker.EmptyChecker;
 import tv.matchstick.server.fling.FlingDeviceController;
-import tv.matchstick.server.utils.FlingStatusCodes;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 

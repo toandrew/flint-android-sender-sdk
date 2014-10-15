@@ -19,6 +19,7 @@ import tv.matchstick.client.internal.FlingChannel;
 import tv.matchstick.client.internal.MessageSender;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.PlatformChecker;
 import tv.matchstick.server.common.exception.FlingMessageLargeException;
@@ -32,7 +33,6 @@ import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.BinaryPayload;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.ApplicationInfo;
-import tv.matchstick.server.utils.FlingStatusCodes;
 import tv.matchstick.server.utils.LOG;
 
 public final class FlingDeviceController implements FlingSocketListener {
