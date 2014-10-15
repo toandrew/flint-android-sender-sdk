@@ -1,21 +1,21 @@
-
 package tv.matchstick.server.fling.bridge;
 
+import tv.matchstick.client.internal.IFlingDeviceControllerListener;
 import tv.matchstick.fling.ApplicationMetadata;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 
-public final class FlingDeviceControllerListener implements IFlingDeviceControllerListener {
+public final class FlingDeviceControllerListener implements
+        IFlingDeviceControllerListener {
     private IBinder mRemoted;
 
-    public FlingDeviceControllerListener(IBinder ibinder)
-    {
+    public FlingDeviceControllerListener(IBinder ibinder) {
         mRemoted = ibinder;
     }
 
-    public final void onDisconnected(int i) throws RemoteException
-    {
+    @Override
+    public final void onDisconnected(int i) throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -26,10 +26,10 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         }
     }
 
-    public final void onApplicationConnected(ApplicationMetadata applicationmetadata,
-            String applicationId,
-            String sessionId, boolean relaunched) throws RemoteException
-    {
+    @Override
+    public final void onApplicationConnected(
+            ApplicationMetadata applicationmetadata, String applicationId,
+            String sessionId, boolean relaunched) throws RemoteException {
         int i;
         Parcel parcel;
         i = 1;
@@ -55,9 +55,9 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         return;
     }
 
-    public final void notifyApplicationStatusOrVolumeChanged(String status, double volume,
-            boolean muteState) throws RemoteException
-    {
+    @Override
+    public final void notifyApplicationStatusOrVolumeChanged(String status,
+            double volume, boolean muteState) throws RemoteException {
         int i;
         Parcel parcel;
         i = 1;
@@ -75,8 +75,9 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         }
     }
 
-    public final void requestCallback(String namespace, long requestId) throws RemoteException
-    {
+    @Override
+    public final void requestCallback(String namespace, long requestId)
+            throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -89,8 +90,8 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         return;
     }
 
-    public final void requestCallback(String namespace, long requestId, int result) throws RemoteException
-    {
+    public final void requestCallback(String namespace, long requestId,
+            int result) throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -103,8 +104,9 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         }
     }
 
-    public final void onMessageReceived(String namespace, String message) throws RemoteException
-    {
+    @Override
+    public final void onMessageReceived(String namespace, String message)
+            throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -116,8 +118,9 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         }
     }
 
-    public final void onReceiveBinary(String s, byte abyte0[]) throws RemoteException
-    {
+    @Override
+    public final void onReceiveBinary(String s, byte abyte0[])
+            throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -130,13 +133,14 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         return;
     }
 
-    public final IBinder asBinder()
-    {
+    @Override
+    public final IBinder asBinder() {
         return mRemoted;
     }
 
-    public final void postApplicationConnectionResult(int i) throws RemoteException
-    {
+    @Override
+    public final void postApplicationConnectionResult(int i)
+            throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -148,8 +152,8 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         return;
     }
 
-    public final void onRequestResult(int i) throws RemoteException
-    {
+    @Override
+    public final void onRequestResult(int i) throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -160,8 +164,7 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         }
     }
 
-    public final void onRequestStatus(int result) throws RemoteException
-    {
+    public final void onRequestStatus(int result) throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");
@@ -173,8 +176,8 @@ public final class FlingDeviceControllerListener implements IFlingDeviceControll
         return;
     }
 
-    public final void onApplicationDisconnected(int i) throws RemoteException
-    {
+    @Override
+    public final void onApplicationDisconnected(int i) throws RemoteException {
         Parcel parcel = Parcel.obtain();
         try {
             parcel.writeInterfaceToken("tv.matchstick.fling.internal.IFlingDeviceControllerListener");

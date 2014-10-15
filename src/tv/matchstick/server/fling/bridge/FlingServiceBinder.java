@@ -1,6 +1,7 @@
 package tv.matchstick.server.fling.bridge;
 
 import tv.matchstick.client.internal.IFlingCallbacks;
+import tv.matchstick.client.internal.IFlingDeviceControllerListener;
 import tv.matchstick.client.internal.IFlingServiceBroker;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingService;
