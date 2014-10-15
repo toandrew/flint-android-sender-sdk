@@ -3,6 +3,8 @@ package tv.matchstick.server.fling.channels;
 
 import java.io.UnsupportedEncodingException;
 
+import tv.matchstick.client.internal.FlingChannel;
+
 public abstract class DeviceAuthChannel extends FlingChannel {
     private final String mTransId;
 
@@ -21,7 +23,8 @@ public abstract class DeviceAuthChannel extends FlingChannel {
 
     protected abstract void verifyDevAuthResult(int i);
 
-    public final void onReceivedMessage(byte abyte0[]) {
+    @Override
+    public final void onMessageReceived(byte abyte0[]) {
         verifyDevAuthResult(0);
     }
 }

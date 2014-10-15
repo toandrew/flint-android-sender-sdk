@@ -1,26 +1,27 @@
-
 package tv.matchstick.server.fling.channels;
+
+import java.io.IOException;
 
 import android.os.Build;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.FlingChannel;
+
 public final class ConnectionControlChannel extends FlingChannel {
     private static final String mUserAgent;
     private final String mPackage;
 
-    public ConnectionControlChannel(String pName)
-    {
-        super("urn:x-cast:com.google.cast.tp.connection", "ConnectionControlChannel");
+    public ConnectionControlChannel(String pName) {
+        super("urn:x-cast:com.google.cast.tp.connection",
+                "ConnectionControlChannel");
         mPackage = pName;
     }
 
-    public final void connect(String transportId)
-    {
+    public final void connect(String transportId) throws IOException {
         JSONObject jsonobject = new JSONObject();
-        try
-        {
+        try {
             jsonobject.put("type", "CONNECT");
             JSONObject jsonobject1 = new JSONObject();
             jsonobject1.put("package", mPackage);
@@ -28,22 +29,19 @@ public final class ConnectionControlChannel extends FlingChannel {
             jsonobject.put("userAgent", mUserAgent);
         } catch (JSONException jsonexception) {
         }
-        sendMessage(jsonobject.toString(), 0L, transportId);
+        sendTextMessage(jsonobject.toString(), 0L, transportId);
     }
 
-    public final void close(String s)
-    {
+    public final void close(String s) throws IOException {
         JSONObject jsonobject = new JSONObject();
-        try
-        {
+        try {
             jsonobject.put("type", "CLOSE");
         } catch (JSONException jsonexception) {
         }
-        sendMessage(jsonobject.toString(), 0L, s);
+        sendTextMessage(jsonobject.toString(), 0L, s);
     }
 
-    static
-    {
+    static {
         Object aobj[] = new Object[4];
         aobj[0] = Integer.valueOf(0x40be38);
         aobj[1] = Build.MODEL;

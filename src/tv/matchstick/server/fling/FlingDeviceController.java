@@ -8,23 +8,21 @@ import android.text.TextUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import tv.matchstick.client.internal.FlingChannel;
+import tv.matchstick.client.internal.MessageSender;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.PlatformChecker;
 import tv.matchstick.server.common.exception.FlingMessageLargeException;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
-import tv.matchstick.server.fling.channels.FlingChannel;
 import tv.matchstick.server.fling.channels.ConnectionControlChannel;
 import tv.matchstick.server.fling.channels.DeviceAuthChannel;
 import tv.matchstick.server.fling.channels.HeartbeatChannel;
@@ -35,7 +33,6 @@ import tv.matchstick.server.fling.socket.data.BinaryPayload;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.ApplicationInfo;
 import tv.matchstick.server.utils.FlingStatusCodes;
-import tv.matchstick.server.utils.IMsgSender;
 import tv.matchstick.server.utils.LOG;
 
 public final class FlingDeviceController implements FlingSocketListener {
@@ -45,7 +42,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         public void run() {
-            // TODO Auto-generated method stub
             long time = SystemClock.elapsedRealtime();
             if (mHeartbeatChannel != null && mHeartbeatChannel.isTimeout(time)) {
                 log.d("disconnecting due to heartbeat timeout");
@@ -80,7 +76,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         public void run() {
-            // TODO Auto-generated method stub
             if (mReconnectStrategy.wasReconnecting()) {
                 log.d("in reconnect Runnable", new Object[0]);
                 connectToDeviceInternal();
@@ -100,18 +95,17 @@ public final class FlingDeviceController implements FlingSocketListener {
     private final FlingSocket mFlingSocket;
     private AtomicLong h;
 
-    private final IMsgSender mMsgSender = new IMsgSender() {
+    private final MessageSender mMsgSender = new MessageSender() {
 
         @Override
-        public long getId() {
+        public long getRequestId() {
             // TODO Auto-generated method stub
             return h.incrementAndGet();
         }
 
         @Override
-        public void sendMessage(String namespace, String message, long id,
+        public void sendTextMessage(String namespace, String message, long id,
                 String transportId) {
-            // TODO Auto-generated method stub
             String transId;
             if (transportId == null)
                 transId = getTransId();
@@ -125,7 +119,6 @@ public final class FlingDeviceController implements FlingSocketListener {
         @Override
         public void sendBinaryMessage(String nameSpace, byte[] message,
                 long requestId, String transportId) {
-            // TODO Auto-generated method stub
             String transId;
             if (transportId == null)
                 transId = getTransId();
@@ -144,21 +137,18 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         protected void onRequestStatus(int j) {
-            // TODO Auto-generated method stub
             mFlingSrvController.onRequestStatus(j);
         }
 
         @Override
         protected void onConnectToApplicationAndNotify(ApplicationInfo appInfo) {
-            // TODO Auto-generated method stub
             connectToApplicationAndNotify(appInfo, true);
         }
 
         @Override
         protected void onStatusReceived(ApplicationInfo appInfo, double level,
                 boolean muted) {
-            // TODO Auto-generated method stub
-            mLogs.d("onStatusReceived");
+            mLogUtil.logd("onStatusReceived", new Object[0]);
             mVolumeLevel = level;
             processReceiverStatus(FlingDeviceController.this, appInfo, level,
                     muted);
@@ -166,7 +156,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         protected void onApplicationDisconnected() {
-            // TODO Auto-generated method stub
             int result;
             if (v)
                 result = 0;
@@ -180,18 +169,16 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         protected void onApplicationConnectionFailed(int result) {
-            // TODO Auto-generated method stub
             mFlingSrvController.onApplicationConnectionFailed(result);
         }
 
         @Override
         protected void onStatusRequestFailed(int statusCode) {
-            // TODO Auto-generated method stub
-            mLogs.d("onStatusRequestFailed: statusCode=%d", statusCode);
+            mLogUtil.logd("onStatusRequestFailed: statusCode=%d", new Object[] { statusCode });
 
             if (mApplicationId != null) {
                 if (mReconnectStrategy.b()) {
-                    mLogs.d("calling Listener.onConnectedWithoutApp()");
+                    mLogUtil.logd("calling Listener.onConnectedWithoutApp()", new Object[0]);
                     mFlingSrvController.onConnectedWithoutApp();
                 } else {
                     mFlingSrvController
@@ -208,7 +195,7 @@ public final class FlingDeviceController implements FlingSocketListener {
     private DeviceAuthChannel mDeviceAuthChannel;
     private HeartbeatChannel mHeartbeatChannel;
     private final Set mNamespaces = new HashSet();
-    private final Map mFlingChannelMap = new HashMap();
+    private final Map<String, FlingChannel> mFlingChannelMap = new HashMap<String, FlingChannel>();
     private final String p;
     private double mVolumeLevel;
     private ApplicationMetadata mApplicationMetadata;
@@ -653,8 +640,8 @@ public final class FlingDeviceController implements FlingSocketListener {
     }
 
     public final void a(FlingChannel flingChannel) {
-        flingChannel.a(mMsgSender);
-        mFlingChannelMap.put(flingChannel.nameSpace, flingChannel);
+        flingChannel.setMessageSender(mMsgSender);
+        mFlingChannelMap.put(flingChannel.getNamespace(), flingChannel);
     }
 
     public final void setSubTag(String tag) {
@@ -808,8 +795,8 @@ public final class FlingDeviceController implements FlingSocketListener {
     }
 
     public final void b(FlingChannel avn1) {
-        avn1.a((IMsgSender) null);
-        mFlingChannelMap.remove(avn1.nameSpace);
+        avn1.setMessageSender((MessageSender) null);
+        mFlingChannelMap.remove(avn1.getNamespace());
     }
 
     public final void stopApplication(String s1) {
@@ -869,7 +856,7 @@ public final class FlingDeviceController implements FlingSocketListener {
                 return;
 
             case 0: // '\0'
-                flingChannel.checkReceivedMessage(message.getMessage());
+                flingChannel.onMessageReceived(message.getMessage());
                 return;
 
             case 1: // '\001'
@@ -878,7 +865,7 @@ public final class FlingDeviceController implements FlingSocketListener {
             }
             byte abyte1[] = new byte[binaryPayload.getLength()];
             binaryPayload.copy(abyte1);
-            flingChannel.onReceivedMessage(abyte1);
+            flingChannel.onMessageReceived(abyte1);
             return;
         }
         boolean flag;
@@ -1104,7 +1091,7 @@ public final class FlingDeviceController implements FlingSocketListener {
                 b(mDeviceAuthChannel);
                 mDeviceAuthChannel = null;
                 if (result == 0) {
-                    mLogs.d("authentication succeeded");
+                    mLogUtil.logd("authentication succeeded", new Object[0]);
                     finishConnecting(FlingDeviceController.this);
                 } else {
                     handleConnectionFailure_s(FlingDeviceController.this);

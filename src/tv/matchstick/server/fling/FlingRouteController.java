@@ -10,6 +10,8 @@ import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.FlingChannel;
+import tv.matchstick.client.internal.MediaControlChannel;
 import tv.matchstick.client.internal.RequestTrackerCallback;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
@@ -18,7 +20,6 @@ import tv.matchstick.fling.MediaMetadata;
 import tv.matchstick.fling.MediaStatus;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.channels.IMediaChannelHelper;
-import tv.matchstick.server.fling.channels.MediaControlChannel;
 import tv.matchstick.server.fling.media.MediaItemStatusHelper;
 import tv.matchstick.server.fling.media.RouteController;
 import tv.matchstick.server.fling.media.RouteCtrlRequestCallback;
@@ -164,7 +165,7 @@ RequestTrackerCallback, IMediaChannelHelper {
         String s3;
         boolean flag;
         PendingIntent pendingintent;
-        MediaControlChannel avv1;
+        FlingChannel avv1;
         Bundle bundle3;
         long itemPosition;
         boolean flag1;
@@ -204,7 +205,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                     if (!flag3)
                         return true;
                     try {
-                        mMediaControlChannel.pause(jsonobject);
+                        mMediaControlChannel.pause(this, jsonobject);
                         // } catch (IOException ioexception4) {
                     } catch (Exception ioexception4) {
                         FlingMediaRouteProvider.getLogs_a().w(ioexception4,
@@ -219,7 +220,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                     if (!flag2)
                         return true;
                     try {
-                        mMediaControlChannel.play(jsonobject);
+                        mMediaControlChannel.play(this, jsonobject);
                         // } catch (IOException ioexception3) {
                     } catch (Exception ioexception3) {
                         FlingMediaRouteProvider.getLogs_a().w(ioexception3,
@@ -234,7 +235,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                     if (!flag1)
                         return true;
                     try {
-                        mMediaControlChannel.stop(jsonobject);
+                        mMediaControlChannel.stop(this, jsonobject);
                         // } catch (IOException ioexception2) {
                     } catch (Exception ioexception2) {
                         FlingMediaRouteProvider.getLogs_a().w(ioexception2,
@@ -253,7 +254,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                     try {
                         FlingMediaRouteProvider.getLogs_a().d(
                                 "seeking to %d ms", itemPosition);
-                        mMediaControlChannel.seekTime(this, itemPosition,
+                        mMediaControlChannel.seek(this, itemPosition, 0,
                                 jsonobject);
                         // } catch (IOException ioexception1) {
                     } catch (Exception ioexception1) {
@@ -294,7 +295,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                     try {
                         if (mLoadRequestId == -1L)
                             mLoadRequestId = mMediaControlChannel
-                                    .getStatus(this);
+                                    .requestStatus(this);
                         mSyncStatusRequest = awt1;
                         // } catch (IOException ioexception) {
                     } catch (Exception ioexception) {
@@ -485,7 +486,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                         .getParcelableExtra("android.media.intent.extra.ITEM_STATUS_UPDATE_RECEIVER");
                 try {
                     aws1 = new TrackedItem(this, mMediaControlChannel.load(
-                            this, info, pos, jsonobject1));
+                            this, info, true, pos, jsonobject1));
                     aws1.mPendingIntent = pendingintent1;
                     w.add(aws1);
 
@@ -717,9 +718,9 @@ RequestTrackerCallback, IMediaChannelHelper {
             MediaItemStatusHelper helper = new MediaItemStatusHelper(
                     playbackState)
                     .putContentDuration(
-                            mMediaControlChannel.getContentDuration())
+                            mMediaControlChannel.getStreamDuration())
                     .putContentPosition(
-                            mMediaControlChannel.getContentPosition())
+                            mMediaControlChannel.getStreamDuration())
                     .putTimestamp(SystemClock.uptimeMillis());
             Bundle bundle = a(mediaStatus.getCustomData());
             if (bundle != null)
@@ -892,12 +893,13 @@ RequestTrackerCallback, IMediaChannelHelper {
 
             // mMediaControlChannel_s = new C_awo(this);
             mMediaControlChannel = new MediaControlChannel() {
+                @Override
                 protected final void onStatusUpdated() {
                     FlingMediaRouteProvider.getLogs_a().d("onStatusUpdated");
                     sendItemStatusUpdate();
                 }
-
-                protected final void sendItemStatusUpdate_i() {
+                @Override
+                protected final void onMetadataUpdated() {
                     sendItemStatusUpdate();
                 }
             };
@@ -911,7 +913,7 @@ RequestTrackerCallback, IMediaChannelHelper {
         if (mLoadRequestId != -1L || mMediaControlChannel == null)
             return;
         try {
-            mLoadRequestId = mMediaControlChannel.getStatus(this);
+            mLoadRequestId = mMediaControlChannel.requestStatus(this);
         } catch (Exception ioexception1) {
             FlingMediaRouteProvider.getLogs_a().w(ioexception1,
                     "Exception while requesting media status");
