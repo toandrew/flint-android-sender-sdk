@@ -53,15 +53,15 @@ public final class FlingDeviceController implements FlingSocketListener {
                 return;
             }
             if (mReceiverControlChannel != null) {
-                mReceiverControlChannel.mLaunchRequestTracker.checkTimeout(
+                mReceiverControlChannel.mLaunchRequestTracker.trackRequestTimeout(
                         time, 15);
                 mReceiverControlChannel.mStopSessionRequestTracker
-                        .checkTimeout(time, 15);
-                mReceiverControlChannel.mGetStatusRequestTracker.checkTimeout(
+                        .trackRequestTimeout(time, 15);
+                mReceiverControlChannel.mGetStatusRequestTracker.trackRequestTimeout(
                         time, 15);
-                mReceiverControlChannel.mSetVolumeRequestTracker.checkTimeout(
+                mReceiverControlChannel.mSetVolumeRequestTracker.trackRequestTimeout(
                         time, 0);
-                mReceiverControlChannel.mSetMuteRequestTracker.checkTimeout(
+                mReceiverControlChannel.mSetMuteRequestTracker.trackRequestTimeout(
                         time, 0);
             }
             mHandler.postDelayed(mHeartbeatRunnable, 1000L);
@@ -797,11 +797,11 @@ public final class FlingDeviceController implements FlingSocketListener {
         }
         ReceiverControlChannel aun1 = mReceiverControlChannel;
         aun1.mTransportId = null;
-        aun1.mLaunchRequestTracker.a();
-        aun1.mStopSessionRequestTracker.a();
-        aun1.mGetStatusRequestTracker.a();
-        aun1.mSetVolumeRequestTracker.a();
-        aun1.mSetMuteRequestTracker.a();
+        aun1.mLaunchRequestTracker.clear();
+        aun1.mStopSessionRequestTracker.clear();
+        aun1.mGetStatusRequestTracker.clear();
+        aun1.mSetVolumeRequestTracker.clear();
+        aun1.mSetMuteRequestTracker.clear();
         aun1.mLevel = 0.0D;
         aun1.mMuted = false;
         aun1.mFirst = false;

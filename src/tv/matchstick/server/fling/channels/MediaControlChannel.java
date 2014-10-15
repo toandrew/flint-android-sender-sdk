@@ -8,11 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.RequestTracker;
+import tv.matchstick.client.internal.RequestTrackerCallback;
 import tv.matchstick.fling.MediaInfo;
 import tv.matchstick.fling.MediaStatus;
-import tv.matchstick.server.utils.IStatusRequest;
 import tv.matchstick.server.utils.LOG;
-import tv.matchstick.server.utils.RequestTracker;
 
 import java.util.concurrent.TimeUnit;
 
@@ -38,17 +38,17 @@ public class MediaControlChannel extends FlingChannel {
             boolean flag;
             p = false; // MediaControlChannel_avv.a(a);
             long time = SystemClock.elapsedRealtime();
-            mRequestTracker_h.checkTimeout(time, 3);
-            mRequestTracker_i.checkTimeout(time, 3);
-            mRequestTracker_l.checkTimeout(time, 3);
-            mRequestTracker_m.checkTimeout(time, 3);
-            mRequestTracker_n.checkTimeout(time, 3);
-            synchronized (RequestTracker.mLock_a) {
-                if (!mRequestTracker_h.isRunning()
-                        && !mRequestTracker_i.isRunning()
-                        && !mRequestTracker_l.isRunning()
-                        && !mRequestTracker_m.isRunning()
-                        && !mRequestTracker_n.isRunning())
+            mRequestTracker_h.trackRequestTimeout(time, 3);
+            mRequestTracker_i.trackRequestTimeout(time, 3);
+            mRequestTracker_l.trackRequestTimeout(time, 3);
+            mRequestTracker_m.trackRequestTimeout(time, 3);
+            mRequestTracker_n.trackRequestTimeout(time, 3);
+            synchronized (RequestTracker.mLock) {
+                if (!mRequestTracker_h.isRequestIdAvailable()
+                        && !mRequestTracker_i.isRequestIdAvailable()
+                        && !mRequestTracker_l.isRequestIdAvailable()
+                        && !mRequestTracker_m.isRequestIdAvailable()
+                        && !mRequestTracker_n.isRequestIdAvailable())
                     flag = false;
                 else
                     flag = true;
@@ -118,9 +118,9 @@ public class MediaControlChannel extends FlingChannel {
         a(false);
         mElapsedTime = 0L;
         mMediaStatus = null;
-        mRequestTracker_h.a();
-        mRequestTracker_i.a();
-        mRequestTracker_l.a();
+        mRequestTracker_h.clear();
+        mRequestTracker_i.clear();
+        mRequestTracker_l.clear();
     }
 
     public final long getContentPosition() {
@@ -150,10 +150,10 @@ public class MediaControlChannel extends FlingChannel {
         return duration;
     }
 
-    public final long getStatus(IStatusRequest avy) {
+    public final long getStatus(RequestTrackerCallback avy) {
         JSONObject jsonobject = new JSONObject();
         long l1 = getId();
-        mRequestTracker_n.start(l1, avy);
+        mRequestTracker_n.startTrack(l1, avy);
         a(true);
         try {
             jsonobject.put("requestId", l1);
@@ -169,13 +169,13 @@ public class MediaControlChannel extends FlingChannel {
         return l1;
     }
 
-    public final long seekTime(IStatusRequest avy, long currentTime,
+    public final long seekTime(RequestTrackerCallback avy, long currentTime,
             JSONObject customData) {
         JSONObject jsonobject1;
         long requestId;
         jsonobject1 = new JSONObject();
         requestId = getId();
-        mRequestTracker_i.start(requestId, avy);
+        mRequestTracker_i.startTrack(requestId, avy);
         a(true);
         try {
             jsonobject1.put("requestId", requestId);
@@ -191,13 +191,13 @@ public class MediaControlChannel extends FlingChannel {
         return requestId;
     }
 
-    public final long load(IStatusRequest avy, MediaInfo atz1,
+    public final long load(RequestTrackerCallback avy, MediaInfo atz1,
             long currentTime, JSONObject customData) {
         JSONObject jsonobject1;
         long requestId;
         jsonobject1 = new JSONObject();
         requestId = getId();
-        mRequestTracker_h.start(requestId, avy);
+        mRequestTracker_h.startTrack(requestId, avy);
         a(true);
         try {
             jsonobject1.put("requestId", requestId);
@@ -252,29 +252,29 @@ public class MediaControlChannel extends FlingChannel {
                     mMediaStatus = null;
                     onStatusUpdated();
                     sendItemStatusUpdate_i();
-                    mRequestTracker_n.onResult(requestId, 0);
+                    mRequestTracker_n.trackRequest(requestId, 0);
                     return;
                 }
 
                 JSONObject jsonobject5;
                 boolean flag;
                 jsonobject5 = jsonarray.getJSONObject(0);
-                flag = mRequestTracker_h.a(requestId);
+                flag = mRequestTracker_h.isCurrentRequestId(requestId);
 
                 boolean flag1 = false;
                 int k = 0;
                 int i1 = 0;
-                if (mRequestTracker_i.isRunning()
-                        && !mRequestTracker_i.a(requestId))
+                if (mRequestTracker_i.isRequestIdAvailable()
+                        && !mRequestTracker_i.isCurrentRequestId(requestId))
                     flag1 = true;
                 else
                     flag1 = false;
 
                 boolean flag2;
-                if (mRequestTracker_l.isRunning()
-                        && !mRequestTracker_l.a(requestId)
-                        || mRequestTracker_m.isRunning()
-                        && !mRequestTracker_m.a(requestId))
+                if (mRequestTracker_l.isRequestIdAvailable()
+                        && !mRequestTracker_l.isCurrentRequestId(requestId)
+                        || mRequestTracker_m.isRequestIdAvailable()
+                        && !mRequestTracker_m.isCurrentRequestId(requestId))
                     flag2 = true;
                 else
                     flag2 = false;
@@ -310,43 +310,43 @@ public class MediaControlChannel extends FlingChannel {
                     sendItemStatusUpdate_i();
                 }
 
-                mRequestTracker_h.onResult(requestId, 0);
-                mRequestTracker_i.onResult(requestId, 0);
-                mRequestTracker_l.onResult(requestId, 0);
-                mRequestTracker_m.onResult(requestId, 0);
-                mRequestTracker_n.onResult(requestId, 0);
+                mRequestTracker_h.trackRequest(requestId, 0);
+                mRequestTracker_i.trackRequest(requestId, 0);
+                mRequestTracker_l.trackRequest(requestId, 0);
+                mRequestTracker_m.trackRequest(requestId, 0);
+                mRequestTracker_n.trackRequest(requestId, 0);
                 return;
             }
             if (type.equals("INVALID_PLAYER_STATE")) {
                 mLogs.w("received unexpected error: Invalid Player State.",
                         new Object[0]);
                 jsonobject4 = jsonobject.optJSONObject("customData");
-                mRequestTracker_h.onResult(requestId, 1, jsonobject4);
-                mRequestTracker_i.onResult(requestId, 1, jsonobject4);
-                mRequestTracker_l.onResult(requestId, 1, jsonobject4);
-                mRequestTracker_m.onResult(requestId, 1, jsonobject4);
-                mRequestTracker_n.onResult(requestId, 1, jsonobject4);
+                mRequestTracker_h.trackRequest(requestId, 1, jsonobject4);
+                mRequestTracker_i.trackRequest(requestId, 1, jsonobject4);
+                mRequestTracker_l.trackRequest(requestId, 1, jsonobject4);
+                mRequestTracker_m.trackRequest(requestId, 1, jsonobject4);
+                mRequestTracker_n.trackRequest(requestId, 1, jsonobject4);
                 return;
             }
             if (type.equals("LOAD_FAILED")) {
                 jsonobject3 = jsonobject.optJSONObject("customData");
-                mRequestTracker_h.onResult(requestId, 1, jsonobject3);
+                mRequestTracker_h.trackRequest(requestId, 1, jsonobject3);
                 return;
             }
             if (type.equals("LOAD_CANCELLED")) {
                 jsonobject2 = jsonobject.optJSONObject("customData");
-                mRequestTracker_h.onResult(requestId, 2, jsonobject2);
+                mRequestTracker_h.trackRequest(requestId, 2, jsonobject2);
                 return;
             }
             if (type.equals("INVALID_REQUEST")) {
                 mLogs.w("received unexpected error: Invalid Request.",
                         new Object[0]);
                 jsonobject1 = jsonobject.optJSONObject("customData");
-                mRequestTracker_h.onResult(requestId, 1, jsonobject1);
-                mRequestTracker_i.onResult(requestId, 1, jsonobject1);
-                mRequestTracker_l.onResult(requestId, 1, jsonobject1);
-                mRequestTracker_m.onResult(requestId, 1, jsonobject1);
-                mRequestTracker_n.onResult(requestId, 1, jsonobject1);
+                mRequestTracker_h.trackRequest(requestId, 1, jsonobject1);
+                mRequestTracker_i.trackRequest(requestId, 1, jsonobject1);
+                mRequestTracker_l.trackRequest(requestId, 1, jsonobject1);
+                mRequestTracker_m.trackRequest(requestId, 1, jsonobject1);
+                mRequestTracker_n.trackRequest(requestId, 1, jsonobject1);
                 return;
             }
         } catch (JSONException e) {

@@ -1,4 +1,3 @@
-
 package tv.matchstick.server.fling.channels;
 
 import android.text.TextUtils;
@@ -7,10 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.RequestTracker;
+import tv.matchstick.client.internal.RequestTrackerCallback;
 import tv.matchstick.server.utils.ApplicationInfo;
-import tv.matchstick.server.utils.IStatusRequest;
 import tv.matchstick.server.utils.LOG;
-import tv.matchstick.server.utils.RequestTracker;
 
 public abstract class ReceiverControlChannel extends FlingChannel {
     public String mTransportId;
@@ -23,31 +22,34 @@ public abstract class ReceiverControlChannel extends FlingChannel {
     public boolean mMuted;
     public boolean mFirst;
     private final String mReceiverDestinationId;
-    private final IStatusRequest mLaunchAppResult;
-    private final IStatusRequest mStopSessionResult;
-    private final IStatusRequest mGetStatusResult;
+    private final RequestTrackerCallback mLaunchAppResult;
+    private final RequestTrackerCallback mStopSessionResult;
+    private final RequestTrackerCallback mGetStatusResult;
 
-    public ReceiverControlChannel(String receiverDestinationId)
-    {
+    public ReceiverControlChannel(String receiverDestinationId) {
         super("urn:x-cast:com.google.cast.receiver", "ReceiverControlChannel");
 
-        if (TextUtils.isEmpty(receiverDestinationId))
-        {
-            throw new IllegalArgumentException("receiverDestinationId can't be empty");
-        } else
-        {
+        if (TextUtils.isEmpty(receiverDestinationId)) {
+            throw new IllegalArgumentException(
+                    "receiverDestinationId can't be empty");
+        } else {
             mReceiverDestinationId = receiverDestinationId;
-            
-            mLaunchRequestTracker = new RequestTracker(30000L); //10000L
 
-            mLaunchAppResult = new IStatusRequest() {
+            mLaunchRequestTracker = new RequestTracker(30000L); // 10000L
+
+            mLaunchAppResult = new RequestTrackerCallback() {
 
                 @Override
-                public void requestStatus(long requestId, int result, JSONObject jsonobject) {
-                    // TODO Auto-generated method stub
+                public void onTrackRequest(long requestId, int result,
+                        JSONObject jsonobject) {
                     if (result != 0) {
                         onApplicationConnectionFailed(result);
                     }
+                }
+
+                @Override
+                public void onSignInRequired(long requestId) {
+
                 }
 
             };
@@ -55,14 +57,19 @@ public abstract class ReceiverControlChannel extends FlingChannel {
             mStopSessionRequestTracker = new RequestTracker(3000L);
 
             // n = new C_auq(this, (byte) 0);
-            mStopSessionResult = new IStatusRequest() {
+            mStopSessionResult = new RequestTrackerCallback() {
 
                 @Override
-                public void requestStatus(long requestId, int result, JSONObject jsonobject) {
-                    // TODO Auto-generated method stub
+                public void onTrackRequest(long requestId, int result,
+                        JSONObject jsonobject) {
                     if (result != 0) {
                         onRequestStatus(result);
                     }
+                }
+
+                @Override
+                public void onSignInRequired(long requestId) {
+
                 }
 
             };
@@ -70,14 +77,19 @@ public abstract class ReceiverControlChannel extends FlingChannel {
             mGetStatusRequestTracker = new RequestTracker(3000L);
 
             // o = new C_aup(this, (byte) 0);
-            mGetStatusResult = new IStatusRequest() {
+            mGetStatusResult = new RequestTrackerCallback() {
 
                 @Override
-                public void requestStatus(long requestId, int result, JSONObject jsonobject) {
-                    // TODO Auto-generated method stub
+                public void onTrackRequest(long requestId, int result,
+                        JSONObject jsonobject) {
                     if (result != 0) {
                         onStatusRequestFailed(result);
                     }
+                }
+
+                @Override
+                public void onSignInRequired(long requestId) {
+
                 }
 
             };
@@ -88,14 +100,12 @@ public abstract class ReceiverControlChannel extends FlingChannel {
         }
     }
 
-    public final void getStatus()
-    {
-        if (mGetStatusRequestTracker.isRunning())
+    public final void getStatus() {
+        if (mGetStatusRequestTracker.isRequestIdAvailable())
             return;
         long requestId = getId();
         JSONObject jsonobject = new JSONObject();
-        try
-        {
+        try {
             jsonobject.put("requestId", requestId);
             jsonobject.put("type", "GET_STATUS");
         } catch (JSONException e) {
@@ -104,11 +114,11 @@ public abstract class ReceiverControlChannel extends FlingChannel {
 
         sendMessage(jsonobject.toString(), requestId, mReceiverDestinationId);
 
-        mGetStatusRequestTracker.start(requestId, mGetStatusResult);
+        mGetStatusRequestTracker.startTrack(requestId, mGetStatusResult);
     }
 
-    public final void setVolume(double level, double expected_level, boolean muted)
-    {
+    public final void setVolume(double level, double expected_level,
+            boolean muted) {
         long requestId;
         JSONObject jsonobject;
         if (level < 0.0D)
@@ -117,8 +127,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
             level = 1.0D;
         requestId = getId();
         jsonobject = new JSONObject();
-        try
-        {
+        try {
             jsonobject.put("requestId", requestId);
             jsonobject.put("type", "SET_VOLUME");
             JSONObject jsonobject1 = new JSONObject();
@@ -134,17 +143,18 @@ public abstract class ReceiverControlChannel extends FlingChannel {
 
         sendMessage(jsonobject.toString(), requestId, mReceiverDestinationId);
 
-        mSetVolumeRequestTracker.start(requestId, null);
+        mSetVolumeRequestTracker.startTrack(requestId, null);
     }
 
     protected abstract void onRequestStatus(int j);
 
-    protected abstract void onConnectToApplicationAndNotify(ApplicationInfo appInfo);
+    protected abstract void onConnectToApplicationAndNotify(
+            ApplicationInfo appInfo);
 
-    protected abstract void onStatusReceived(ApplicationInfo atn1, double level, boolean muted);
+    protected abstract void onStatusReceived(ApplicationInfo atn1,
+            double level, boolean muted);
 
-    public final void launchApplication(String appId, String param)
-    {
+    public final void launchApplication(String appId, String param) {
         long requestId = getId();
         JSONObject jsonobject = new JSONObject();
         try {
@@ -160,16 +170,14 @@ public abstract class ReceiverControlChannel extends FlingChannel {
 
         sendMessage(jsonobject.toString(), requestId, mReceiverDestinationId);
 
-        mLaunchRequestTracker.start(requestId, mLaunchAppResult);
+        mLaunchRequestTracker.startTrack(requestId, mLaunchAppResult);
         return;
     }
 
-    public final void setMute(boolean muted, double level, boolean isMuted)
-    {
+    public final void setMute(boolean muted, double level, boolean isMuted) {
         long requestId = getId();
         JSONObject jsonobject = new JSONObject();
-        try
-        {
+        try {
             jsonobject.put("requestId", requestId);
             jsonobject.put("type", "SET_VOLUME");
             JSONObject jsonobject1 = new JSONObject();
@@ -185,18 +193,15 @@ public abstract class ReceiverControlChannel extends FlingChannel {
 
         sendMessage(jsonobject.toString(), requestId, mReceiverDestinationId);
 
-        mSetMuteRequestTracker.start(requestId, null);
+        mSetMuteRequestTracker.startTrack(requestId, null);
     }
 
-    public final void checkReceivedMessage(String message)
-    {
+    public final void checkReceivedMessage(String message) {
         char c1;
         char c2;
         c1 = '\u07D1';
         c2 = '\r';
-        this.mLogs.d("Received: %s", new Object[] {
-                message
-        });
+        this.mLogs.d("Received: %s", new Object[] { message });
 
         try {
             JSONObject jsonobject;
@@ -217,12 +222,11 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                     int len;
                     JSONObject firstApplication;
                     ApplicationInfo atn2;
-                    try
-                    {
-                        applications = statusJsonObj.getJSONArray("applications");
+                    try {
+                        applications = statusJsonObj
+                                .getJSONArray("applications");
                         len = applications.length();
-                    } catch (JSONException e)
-                    {
+                    } catch (JSONException e) {
                         LOG avu1 = this.mLogs;
                         Object aobj[] = new Object[2];
                         aobj[0] = e.getMessage();
@@ -237,11 +241,11 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                         appInfo = atn2;
                     }
                 }
-                mGetStatusRequestTracker.onResult(reuestId, 0);
-                if (mLaunchRequestTracker.onResult(reuestId, 0)) {
-                    if (appInfo != null)
-                    {
-                        this.mLogs.d("application launch has completed", new Object[0]);
+                mGetStatusRequestTracker.trackRequest(reuestId, 0);
+                if (mLaunchRequestTracker.trackRequest(reuestId, 0)) {
+                    if (appInfo != null) {
+                        this.mLogs.d("application launch has completed",
+                                new Object[0]);
                         onConnectToApplicationAndNotify(appInfo);
                     }
                     return;
@@ -255,7 +259,8 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                     flag1 = true;
                 }
 
-                boolean flag2 = mStopSessionRequestTracker.onResult(reuestId, 0);
+                boolean flag2 = mStopSessionRequestTracker.trackRequest(
+                        reuestId, 0);
 
                 if (flag1) // goto _L13; else goto _L12
                 {
@@ -267,10 +272,12 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                     } else {
                         onApplicationDisconnected();
                     }
-                    synchronized (RequestTracker.mLock_a) {
-                        mSetVolumeRequestTracker.onResult(reuestId, 0);
-                        mSetMuteRequestTracker.onResult(reuestId, 0);
-                        if (mSetVolumeRequestTracker.isRunning() || mSetMuteRequestTracker.isRunning())
+                    synchronized (RequestTracker.mLock) {
+                        mSetVolumeRequestTracker.trackRequest(reuestId, 0);
+                        mSetMuteRequestTracker.trackRequest(reuestId, 0);
+                        if (mSetVolumeRequestTracker.isRequestIdAvailable()
+                                || mSetMuteRequestTracker
+                                        .isRequestIdAvailable())
                             ignoreVolume = true;
                         else
                             ignoreVolume = false;
@@ -281,15 +288,17 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                     aobj1[1] = Boolean.valueOf(ignoreVolume);
                     avu2.d("requestId = %d, ignoreVolume = %b", aobj1);
                     if (!mFirst) {
-                        this.mLogs.d("first status received, so not ignoring volume change",
-                                new Object[0]);
+                        this.mLogs
+                                .d("first status received, so not ignoring volume change",
+                                        new Object[0]);
                         mFirst = true;
                         ignoreVolume = false;
                     }
                     if (!statusJsonObj.has("volume") || ignoreVolume) {
 
                     } else {
-                        JSONObject jsonobject3 = statusJsonObj.getJSONObject("volume");
+                        JSONObject jsonobject3 = statusJsonObj
+                                .getJSONObject("volume");
                         mLevel = jsonobject3.getDouble("level");
                         mMuted = jsonobject3.getBoolean("muted");
                     }
@@ -300,7 +309,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                 String reason;
                 reason = jsonobject.getString("reason");
                 if ("BAD_PARAMETER".equals(reason)) {
-                    mLaunchRequestTracker.onResult(reuestId, c1);
+                    mLaunchRequestTracker.trackRequest(reuestId, c1);
                     return;
                 } else if ("CANCELLED".equals(reason)) {
                     c1 = '\u07D2';
@@ -313,15 +322,16 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                 } else {
                     c1 = c2;
                 }
-                mLaunchRequestTracker.onResult(reuestId, c1);
+                mLaunchRequestTracker.trackRequest(reuestId, c1);
                 return;
             } else if ("INVALID_REQUEST".equals(type)) {
                 String reason = jsonobject.getString("reason");
-                if ("INVALID_COMMAND".equals(reason) || "DUPLICATE_REQUEST_ID".equals(reason))
+                if ("INVALID_COMMAND".equals(reason)
+                        || "DUPLICATE_REQUEST_ID".equals(reason))
                     c2 = c1;
-                mLaunchRequestTracker.onResult(reuestId, c2);
-                mStopSessionRequestTracker.onResult(reuestId, c2);
-                mGetStatusRequestTracker.onResult(reuestId, c2);
+                mLaunchRequestTracker.trackRequest(reuestId, c2);
+                mStopSessionRequestTracker.trackRequest(reuestId, c2);
+                mGetStatusRequestTracker.trackRequest(reuestId, c2);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -333,8 +343,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
 
     protected abstract void onApplicationConnectionFailed(int j);
 
-    public final void stopSession(String sessionId)
-    {
+    public final void stopSession(String sessionId) {
         JSONObject jsonobject;
         long requestId;
         jsonobject = new JSONObject();
@@ -350,17 +359,15 @@ public abstract class ReceiverControlChannel extends FlingChannel {
         }
         sendMessage(jsonobject.toString(), requestId, mReceiverDestinationId);
 
-        mStopSessionRequestTracker.start(requestId, mStopSessionResult);
+        mStopSessionRequestTracker.startTrack(requestId, mStopSessionResult);
         return;
     }
 
     protected abstract void onStatusRequestFailed(int j);
 
-    public final void setTransportId(String transId)
-    {
-        mLogs.d("current transport id (in control channel) is now: %s", new Object[] {
-                transId
-        });
+    public final void setTransportId(String transId) {
+        mLogs.d("current transport id (in control channel) is now: %s",
+                new Object[] { transId });
         mTransportId = transId;
     }
 }

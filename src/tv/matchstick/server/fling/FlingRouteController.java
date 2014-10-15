@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.RequestTrackerCallback;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.MediaInfo;
@@ -22,7 +23,6 @@ import tv.matchstick.server.fling.media.MediaItemStatusHelper;
 import tv.matchstick.server.fling.media.RouteController;
 import tv.matchstick.server.fling.media.RouteCtrlRequestCallback;
 import tv.matchstick.server.utils.C_dt;
-import tv.matchstick.server.utils.IStatusRequest;
 
 import java.util.Calendar;
 import java.util.Iterator;
@@ -30,7 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public final class FlingRouteController extends RouteController implements
-        IStatusRequest, IMediaChannelHelper {
+RequestTrackerCallback, IMediaChannelHelper {
     public final FlingDevice mFlingDevice;
     public FlingDeviceController mFlingDeviceController;
     double c;
@@ -751,7 +751,8 @@ public final class FlingRouteController extends RouteController implements
         }
     }
 
-    public final void requestStatus(long loadRequestId, int status,
+    @Override
+    public final void onTrackRequest(long loadRequestId, int status,
             JSONObject jsonobject) {
         Iterator iterator = w.iterator();
         TrackedItem aws1;
@@ -1109,5 +1110,10 @@ public final class FlingRouteController extends RouteController implements
                 a(mTrackedItem);
             }
         }
+    }
+
+    @Override
+    public void onSignInRequired(long requestId) {
+        
     }
 }
