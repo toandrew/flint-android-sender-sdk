@@ -1,7 +1,7 @@
 
 package tv.matchstick.server.fling.mdns;
 
-import tv.matchstick.server.common.checker.EmptyChecker;
+import tv.matchstick.client.internal.ValueChecker;
 
 public final class MdnsClientPrivData
 {
@@ -18,7 +18,7 @@ public final class MdnsClientPrivData
             bool = true;
         }
 
-        EmptyChecker.b(bool);
+        ValueChecker.checkTrue(bool);
         this.a = paramArrayOfByte;
         this.mCurrentTime = System.currentTimeMillis();
         this.c = paramInt;

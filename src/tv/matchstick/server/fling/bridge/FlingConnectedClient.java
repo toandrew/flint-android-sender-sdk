@@ -1,11 +1,11 @@
 package tv.matchstick.server.fling.bridge;
 
 import tv.matchstick.client.internal.IFlingCallbacks;
+import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
-import tv.matchstick.server.common.checker.EmptyChecker;
 import tv.matchstick.server.fling.FlingDeviceController;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
@@ -50,7 +50,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
 
 		mFlingService = flingservice;
 
-		mFlingCallbacks = (IFlingCallbacks) EmptyChecker.isValid(callbacks);
+		mFlingCallbacks = (IFlingCallbacks) ValueChecker.checkNullPointer(callbacks);
 		mFlingDevice = flingdevice;
 		mLastAppId = lastApplicationId;
 		mLastSessionId = lastSessionId;
