@@ -3,7 +3,10 @@ package tv.matchstick.fling;
 import java.util.ArrayList;
 import java.util.List;
 
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil.SafeParcel;
 import tv.matchstick.fling.images.WebImage;
 import android.net.Uri;
 import android.os.Parcel;
@@ -16,180 +19,258 @@ import android.os.Parcelable;
  * {@link Fling.ApplicationConnectionResult}
  */
 public final class ApplicationMetadata implements SafeParcelable {
-    /**
-     * Parcelable creator
-     */
-    public static final Parcelable.Creator<ApplicationMetadata> CREATOR = new ApplicationMetadataCreator();
+	/**
+	 * Parcelable creator
+	 */
+	public static final Parcelable.Creator<ApplicationMetadata> CREATOR = new Parcelable.Creator<ApplicationMetadata>() {
 
-    /**
-     * Version code
-     */
-    private final int mVersionCode;
+		@Override
+		public ApplicationMetadata createFromParcel(Parcel source) {
+			// TODO Auto-generated method stub
 
-    /**
-     * Fling Application Id
-     */
-    String mApplicationId;
+			int size = ParcelReadUtil.readStart(source);
+			int versionCode = 0;
+			String applicationId = null;
+			String name = null;
+			ArrayList<WebImage> images = null;
+			ArrayList<String> namespaces = null;
+			String senderAppIdentifier = null;
+			Uri senderAppLaunchUrl = null;
+			while (source.dataPosition() < size) {
+				int type = ParcelReadUtil.readSingleInt(source);
+				switch (ParcelReadUtil.halfOf(type)) {
+				case 1:
+					versionCode = ParcelReadUtil.readInt(source, type);
+					break;
+				case 2:
+					applicationId = ParcelReadUtil.readString(source, type);
+					break;
+				case 3:
+					name = ParcelReadUtil.readString(source, type);
+					break;
+				case 4:
+					images = ParcelReadUtil.readCreatorList(source, type,
+							WebImage.CREATOR);
+					break;
+				case 5:
+					namespaces = ParcelReadUtil.readStringList(source, type);
+					break;
+				case 6:
+					senderAppIdentifier = ParcelReadUtil.readString(source,
+							type);
+					break;
+				case 7:
+					senderAppLaunchUrl = (Uri) ParcelReadUtil.readParcelable(
+							source, type, Uri.CREATOR);
+					break;
+				default:
+					ParcelReadUtil.skip(source, type);
+				}
+			}
+			if (source.dataPosition() != size)
+				throw new SafeParcel("Overread allowed size end=" + size,
+						source);
 
-    /**
-     * Application name
-     */
-    String mName;
+			return new ApplicationMetadata(versionCode, applicationId, name,
+					images, namespaces, senderAppIdentifier, senderAppLaunchUrl);
+		}
 
-    /**
-     * Web images
-     */
-    List<WebImage> mImages;
+		@Override
+		public ApplicationMetadata[] newArray(int size) {
+			// TODO Auto-generated method stub
 
-    /**
-     * Related namespace
-     */
-    List<String> mNamespaces;
+			return new ApplicationMetadata[size];
+		}
+	};
 
-    /**
-     * Sender application's identifier
-     */
-    String mSenderAppIdentifier;
+	/**
+	 * Version code
+	 */
+	private final int mVersionCode;
 
-    /**
-     * Sender application's url
-     */
-    Uri mSenderAppLaunchUrl;
+	/**
+	 * Fling Application Id
+	 */
+	String mApplicationId;
 
-    /**
-     * ApplicationMetadata constructor.
-     * 
-     * @param versionCode
-     *            sdk's version code
-     * @param applicationId
-     *            application Id
-     * @param name
-     *            application name
-     * @param images
-     *            icons
-     * @param namespaces
-     *            namespace list
-     * @param senderAppIdentifier
-     *            sender application's indentifier
-     * @param senderAppLaunchUrl
-     *            sender application's url
-     */
-    //TODO: need public?
-    public ApplicationMetadata(int versionCode, String applicationId, String name,
-            List<WebImage> images, List<String> namespaces,
-            String senderAppIdentifier, Uri senderAppLaunchUrl) {
-        this.mVersionCode = versionCode;
-        this.mApplicationId = applicationId;
-        this.mName = name;
-        this.mImages = images;
-        this.mNamespaces = namespaces;
-        this.mSenderAppIdentifier = senderAppIdentifier;
-        this.mSenderAppLaunchUrl = senderAppLaunchUrl;
-    }
+	/**
+	 * Application name
+	 */
+	String mName;
 
-    /**
-     * default constructor.
-     */
-    private ApplicationMetadata() {
-        this.mVersionCode = 1;
-        this.mImages = new ArrayList<WebImage>();
-        this.mNamespaces = new ArrayList<String>();
-    }
+	/**
+	 * Web images
+	 */
+	List<WebImage> mImages;
 
-    /**
-     * Version code.
-     * 
-     * @return version code
-     */
-    int getVersionCode() {
-        return this.mVersionCode;
-    }
+	/**
+	 * Related namespace
+	 */
+	List<String> mNamespaces;
 
-    /**
-     * Get related application Id.
-     * 
-     * @return application Id
-     */
-    public String getApplicationId() {
-        return this.mApplicationId;
-    }
+	/**
+	 * Sender application's identifier
+	 */
+	String mSenderAppIdentifier;
 
-    /**
-     * Get related application name.
-     * 
-     * @return application name
-     */
-    public String getName() {
-        return this.mName;
-    }
+	/**
+	 * Sender application's url
+	 */
+	Uri mSenderAppLaunchUrl;
 
-    /**
-     * Check whether the specific namespace is supported by this application.
-     * 
-     * @param namespace
-     *            the specific namespace
-     * @return true for supported
-     */
-    public boolean isNamespaceSupported(String namespace) {
-        return ((this.mNamespaces != null) && (this.mNamespaces
-                .contains(namespace)));
-    }
+	/**
+	 * ApplicationMetadata constructor.
+	 * 
+	 * @param versionCode
+	 *            sdk's version code
+	 * @param applicationId
+	 *            application Id
+	 * @param name
+	 *            application name
+	 * @param images
+	 *            icons
+	 * @param namespaces
+	 *            namespace list
+	 * @param senderAppIdentifier
+	 *            sender application's indentifier
+	 * @param senderAppLaunchUrl
+	 *            sender application's url
+	 */
+	// TODO: need public?
+	public ApplicationMetadata(int versionCode, String applicationId,
+			String name, List<WebImage> images, List<String> namespaces,
+			String senderAppIdentifier, Uri senderAppLaunchUrl) {
+		this.mVersionCode = versionCode;
+		this.mApplicationId = applicationId;
+		this.mName = name;
+		this.mImages = images;
+		this.mNamespaces = namespaces;
+		this.mSenderAppIdentifier = senderAppIdentifier;
+		this.mSenderAppLaunchUrl = senderAppLaunchUrl;
+	}
 
-    /**
-     * Check whether the specific namespaces are supported by the application.
-     * 
-     * @param namespaces
-     *            namespace list
-     * @return true for supported
-     */
-    public boolean areNamespacesSupported(List<String> namespaces) {
-        return ((this.mNamespaces != null) && (this.mNamespaces
-                .containsAll(namespaces)));
-    }
+	/**
+	 * default constructor.
+	 */
+	private ApplicationMetadata() {
+		this.mVersionCode = 1;
+		this.mImages = new ArrayList<WebImage>();
+		this.mNamespaces = new ArrayList<String>();
+	}
 
-    /**
-     * Get sender application's identifier.
-     * 
-     * @return application's identifier
-     */
-    public String getSenderAppIdentifier() {
-        return this.mSenderAppIdentifier;
-    }
+	/**
+	 * Version code.
+	 * 
+	 * @return version code
+	 */
+	int getVersionCode() {
+		return this.mVersionCode;
+	}
 
-    /**
-     * Get sender application's launch url.
-     * 
-     * @return launch url
-     */
-    public Uri getSenderAppLaunchUrl() {
-        return this.mSenderAppLaunchUrl;
-    }
+	/**
+	 * Get related application Id.
+	 * 
+	 * @return application Id
+	 */
+	public String getApplicationId() {
+		return this.mApplicationId;
+	}
 
-    /**
-     * Get applications images(icons,etc).
-     * 
-     * @return WebImage list object
-     */
-    public List<WebImage> getImages() {
-        return this.mImages;
-    }
-    
-    public List<String> getNamespaces() {
-        return this.mNamespaces;
-    }
+	/**
+	 * Get related application name.
+	 * 
+	 * @return application name
+	 */
+	public String getName() {
+		return this.mName;
+	}
 
-    @Override
-    public String toString() {
-        return this.mName;
-    }
+	/**
+	 * Check whether the specific namespace is supported by this application.
+	 * 
+	 * @param namespace
+	 *            the specific namespace
+	 * @return true for supported
+	 */
+	public boolean isNamespaceSupported(String namespace) {
+		return ((this.mNamespaces != null) && (this.mNamespaces
+				.contains(namespace)));
+	}
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
+	/**
+	 * Check whether the specific namespaces are supported by the application.
+	 * 
+	 * @param namespaces
+	 *            namespace list
+	 * @return true for supported
+	 */
+	public boolean areNamespacesSupported(List<String> namespaces) {
+		return ((this.mNamespaces != null) && (this.mNamespaces
+				.containsAll(namespaces)));
+	}
 
-    @Override
-    public void writeToParcel(Parcel out, int flags) {
-        ApplicationMetadataCreator.buildParcel(this, out, flags);
-    }
+	/**
+	 * Get sender application's identifier.
+	 * 
+	 * @return application's identifier
+	 */
+	public String getSenderAppIdentifier() {
+		return this.mSenderAppIdentifier;
+	}
+
+	/**
+	 * Get sender application's launch url.
+	 * 
+	 * @return launch url
+	 */
+	public Uri getSenderAppLaunchUrl() {
+		return this.mSenderAppLaunchUrl;
+	}
+
+	/**
+	 * Get applications images(icons,etc).
+	 * 
+	 * @return WebImage list object
+	 */
+	public List<WebImage> getImages() {
+		return this.mImages;
+	}
+
+	public List<String> getNamespaces() {
+		return this.mNamespaces;
+	}
+
+	@Override
+	public String toString() {
+		return this.mName;
+	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel out, int flags) {
+		buildParcel(out, flags);
+	}
+
+	/**
+	 * Build application meta parcel data
+	 * 
+	 * @param applicationmetadata
+	 * @param parcel
+	 * @param flag
+	 */
+	private void buildParcel(Parcel parcel, int flag) {
+		int i = ParcelWriteUtil.position(parcel);
+		ParcelWriteUtil.write(parcel, 1, getVersionCode());
+		ParcelWriteUtil.write(parcel, 2, getApplicationId(), false);
+		ParcelWriteUtil.write(parcel, 3, getName(), false);
+		ParcelWriteUtil.write(parcel, 4, getImages(), false);
+		ParcelWriteUtil.writeStringList(parcel, 5, getNamespaces(), false);
+		ParcelWriteUtil.write(parcel, 6, getSenderAppIdentifier(), false);
+		ParcelWriteUtil.write(parcel, 7, getSenderAppLaunchUrl(), flag, false);
+		ParcelWriteUtil.writeEnd(parcel, i);
+	}
 }

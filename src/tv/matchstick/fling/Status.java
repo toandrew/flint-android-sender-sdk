@@ -1,12 +1,15 @@
 package tv.matchstick.fling;
 
 import tv.matchstick.client.common.api.CommonStatusCodes;
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.client.internal.MyStringBuilder;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.IntentSender;
 import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Represents the results of work.
@@ -30,7 +33,51 @@ public class Status implements Result, SafeParcelable {
 	/**
 	 * Status Creator
 	 */
-	public static final StatusCreator CREATOR = new StatusCreator();
+	public static final Parcelable.Creator<Status> CREATOR = new Parcelable.Creator<Status>() {
+
+		@Override
+		public Status createFromParcel(Parcel source) {
+			// TODO Auto-generated method stub
+
+			int i = ParcelReadUtil.readStart(source);
+			int j = 0;
+			int k = 0;
+			String str = null;
+			PendingIntent localPendingIntent = null;
+			while (source.dataPosition() < i) {
+				int l = ParcelReadUtil.readSingleInt(source);
+				switch (ParcelReadUtil.halfOf(l)) {
+				case 1:
+					k = ParcelReadUtil.readInt(source, l);
+					break;
+				case 1000:
+					j = ParcelReadUtil.readInt(source, l);
+					break;
+				case 2:
+					str = ParcelReadUtil.readString(source, l);
+					break;
+				case 3:
+					localPendingIntent = (PendingIntent) ParcelReadUtil
+							.readParcelable(source, l, PendingIntent.CREATOR);
+					break;
+				default:
+					ParcelReadUtil.skip(source, l);
+				}
+			}
+			if (source.dataPosition() != i)
+				throw new ParcelReadUtil.SafeParcel(
+						"Overread allowed size end=" + i, source);
+
+			return new Status(j, k, str, localPendingIntent);
+		}
+
+		@Override
+		public Status[] newArray(int size) {
+			// TODO Auto-generated method stub
+			return new Status[size];
+		}
+
+	};
 
 	/**
 	 * Client's version code
@@ -103,15 +150,12 @@ public class Status implements Result, SafeParcelable {
 	 * @throws IntentSender.SendIntentException
 	 */
 	/*
-	public void startResolutionForResult(Activity activity, int requestCode)
-			throws IntentSender.SendIntentException {
-		if (!(hasResolution())) {
-			return;
-		}
-		activity.startIntentSenderForResult(mPendingIntent.getIntentSender(),
-				requestCode, null, 0, 0, 0);
-	}
-	*/
+	 * public void startResolutionForResult(Activity activity, int requestCode)
+	 * throws IntentSender.SendIntentException { if (!(hasResolution())) {
+	 * return; }
+	 * activity.startIntentSenderForResult(mPendingIntent.getIntentSender(),
+	 * requestCode, null, 0, 0, 0); }
+	 */
 
 	/**
 	 * Get current pending intent
@@ -146,10 +190,8 @@ public class Status implements Result, SafeParcelable {
 	 * @return
 	 */
 	/*
-	public boolean hasResolution() {
-		return (mPendingIntent != null);
-	}
-	*/
+	 * public boolean hasResolution() { return (mPendingIntent != null); }
+	 */
 
 	/**
 	 * Whether operation was successful
@@ -184,10 +226,8 @@ public class Status implements Result, SafeParcelable {
 	 * @return pending intent
 	 */
 	/*
-	public PendingIntent getResolution() {
-		return this.mPendingIntent;
-	}
-	*/
+	 * public PendingIntent getResolution() { return this.mPendingIntent; }
+	 */
 
 	@Override
 	public int hashCode() {
@@ -235,7 +275,7 @@ public class Status implements Result, SafeParcelable {
 
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
-		StatusCreator.buildParcel(this, out, flags);
+		buildParcel(out, flags);
 	}
 
 	/**
@@ -246,5 +286,21 @@ public class Status implements Result, SafeParcelable {
 	@Override
 	public Status getStatus() {
 		return this;
+	}
+
+	/**
+	 * Build parcel status data
+	 * 
+	 * @param paramParcel
+	 * @param paramInt
+	 */
+	private void buildParcel(Parcel paramParcel, int paramInt) {
+		int i = ParcelWriteUtil.position(paramParcel);
+		ParcelWriteUtil.write(paramParcel, 1, getStatusCode());
+		ParcelWriteUtil.write(paramParcel, 1000, getVersionCode());
+		ParcelWriteUtil.write(paramParcel, 2, getStatusMessage(), false);
+		ParcelWriteUtil.write(paramParcel, 3, getPendingIntent(), paramInt,
+				false);
+		ParcelWriteUtil.writeEnd(paramParcel, i);
 	}
 }
