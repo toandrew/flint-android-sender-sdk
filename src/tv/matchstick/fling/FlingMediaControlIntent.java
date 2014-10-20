@@ -9,7 +9,9 @@ import android.text.TextUtils;
  * Fling media control intent.
  *
  * Intent constants for use with the Fling MediaRouteProvider. <br>
- * This class also contains utility methods for creating a control category for discovering Fling media routes that support a specific app and/or set of namespaces, to be used with MediaRouteSelector. 
+ * This class also contains utility methods for creating a control category for
+ * discovering Fling media routes that support a specific app and/or set of
+ * namespaces, to be used with MediaRouteSelector.
  */
 public class FlingMediaControlIntent {
 	/**
@@ -30,42 +32,49 @@ public class FlingMediaControlIntent {
 	/**
 	 * Sync status action.
 	 *
-	 * A Fling extension action for requesting the current media status when the current item ID is not known to the client application.
+	 * A Fling extension action for requesting the current media status when the
+	 * current item ID is not known to the client application.
 	 */
 	public static final String ACTION_SYNC_STATUS = "tv.matchstick.fling.ACTION_SYNC_STATUS";
 
 	/**
 	 * Extra data for custom data.
 	 *
-	 * The extra that contains a compact JSON string of custom data to pass with a media request.
+	 * The extra that contains a compact JSON string of custom data to pass with
+	 * a media request.
 	 */
 	public static final String EXTRA_CUSTOM_DATA = "tv.matchstick.fling.EXTRA_CUSTOM_DATA";
 
 	/**
 	 * Extra data for application Id.
 	 *
-	 * The extra that contains the ID of the application to launch for an ACTION_START_SESSION request.
+	 * The extra that contains the ID of the application to launch for an
+	 * ACTION_START_SESSION request.
 	 */
 	public static final String EXTRA_FLING_APPLICATION_ID = "tv.matchstick.fling.EXTRA_FLING_APPLICATION_ID";
 
 	/**
 	 * Extra data for relaunch application.
 	 *
-	 * The extra that indicates whether the application should be relaunched if it is already running (the default behavior) or whether an attempt should be made to join the application first.
+	 * The extra that indicates whether the application should be relaunched if
+	 * it is already running (the default behavior) or whether an attempt should
+	 * be made to join the application first.
 	 */
 	public static final String EXTRA_FLING_RELAUNCH_APPLICATION = "tv.matchstick.fling.EXTRA_FLING_RELAUNCH_APPLICATION";
 
 	/**
 	 * Extra data for stop application when end session.
 	 *
-	 * The extra that indicates that the receiver application should be stopped when the session ends.
+	 * The extra that indicates that the receiver application should be stopped
+	 * when the session ends.
 	 */
 	public static final String EXTRA_FLING_STOP_APPLICATION_WHEN_SESSION_ENDS = "tv.matchstick.fling.EXTRA_FLING_STOP_APPLICATION_WHEN_SESSION_ENDS";
 
 	/**
 	 * Extra data for debug log enabled.
 	 *
-	 * The extra that indicates whether debug logging should be enabled for the Fling session.
+	 * The extra that indicates whether debug logging should be enabled for the
+	 * Fling session.
 	 */
 	public static final String EXTRA_DEBUG_LOGGING_ENABLED = "tv.matchstick.fling.EXTRA_DEBUG_LOGGING_ENABLED";
 
@@ -84,21 +93,25 @@ public class FlingMediaControlIntent {
 	/**
 	 * Session start failed.
 	 *
-	 * An error code indicating that the request could not be processed because the session could not be started.
+	 * An error code indicating that the request could not be processed because
+	 * the session could not be started.
 	 */
 	public static final int ERROR_CODE_SESSION_START_FAILED = 2;
 
 	/**
 	 * temporarily disconnected.
 	 *
-	 * An error code indicating that the connection to the Fling device has been lost, but the system is actively trying to re-establish the connection.
+	 * An error code indicating that the connection to the Fling device has been
+	 * lost, but the system is actively trying to re-establish the connection.
 	 */
 	public static final int ERROR_CODE_TEMPORARILY_DISCONNECTED = 3;
 
 	/**
 	 * Get media remote playback category.
 	 *
-	 * Returns a custom control category for discovering Fling devices which support the default Android remote playback actions using the specified Fling player.
+	 * Returns a custom control category for discovering Fling devices which
+	 * support the default Android remote playback actions using the specified
+	 * Fling player.
 	 * 
 	 * @param applicationId
 	 *            application's id
@@ -117,7 +130,8 @@ public class FlingMediaControlIntent {
 	/**
 	 * Get default remote media playback category.
 	 *
-	 * Returns a custom control category for discovering Fling devices which support the Default Media Receiver.
+	 * Returns a custom control category for discovering Fling devices which
+	 * support the Default Media Receiver.
 	 * 
 	 * @return media remote playback category
 	 */
@@ -128,7 +142,9 @@ public class FlingMediaControlIntent {
 	/**
 	 * Get fling category with application Id.
 	 *
-	 * Returns a custom control category for discovering Fling devices that support running the specified app, independent of whether the app is running or not.
+	 * Returns a custom control category for discovering Fling devices that
+	 * support running the specified app, independent of whether the app is
+	 * running or not.
 	 * 
 	 * @param applicationId
 	 *            application's Id
@@ -146,7 +162,8 @@ public class FlingMediaControlIntent {
 	/**
 	 * Get fling category with specific namespace.
 	 *
-	 * Returns a custom control category for discovering Fling devices currently running an application which supports the specified namespaces.
+	 * Returns a custom control category for discovering Fling devices currently
+	 * running an application which supports the specified namespaces.
 	 * 
 	 * @param namespaces
 	 *            namespace list
@@ -164,7 +181,8 @@ public class FlingMediaControlIntent {
 	/**
 	 * Get Fling category with specific application and it's namespace list.
 	 *
-	 * Returns a custom control category for discovering Fling devices meeting both application ID and namespace restrictions.
+	 * Returns a custom control category for discovering Fling devices meeting
+	 * both application ID and namespace restrictions.
 	 * 
 	 * @param applicationId
 	 *            application Id

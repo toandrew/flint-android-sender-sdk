@@ -5,9 +5,7 @@ import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
 import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.client.internal.MyStringBuilder;
-import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.IntentSender;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -64,9 +62,11 @@ public class Status implements Result, SafeParcelable {
 					ParcelReadUtil.skip(source, l);
 				}
 			}
-			if (source.dataPosition() != i)
+
+			if (source.dataPosition() != i) {
 				throw new ParcelReadUtil.SafeParcel(
 						"Overread allowed size end=" + i, source);
+			}
 
 			return new Status(j, k, str, localPendingIntent);
 		}
@@ -141,23 +141,6 @@ public class Status implements Result, SafeParcelable {
 	}
 
 	/**
-	 * Start resolution activity
-	 *
-	 * @param activity
-	 *            activity context
-	 * @param requestCode
-	 *            status code
-	 * @throws IntentSender.SendIntentException
-	 */
-	/*
-	 * public void startResolutionForResult(Activity activity, int requestCode)
-	 * throws IntentSender.SendIntentException { if (!(hasResolution())) {
-	 * return; }
-	 * activity.startIntentSenderForResult(mPendingIntent.getIntentSender(),
-	 * requestCode, null, 0, 0, 0); }
-	 */
-
-	/**
 	 * Get current pending intent
 	 *
 	 * @return pending intent
@@ -171,7 +154,7 @@ public class Status implements Result, SafeParcelable {
 	 *
 	 * @return status message
 	 */
-	String getStatusMessage() {
+	public String getStatusMessage() {
 		return mStatusMessage;
 	}
 
@@ -180,18 +163,9 @@ public class Status implements Result, SafeParcelable {
 	 *
 	 * @return version code
 	 */
-	int getVersionCode() {
+	public int getVersionCode() {
 		return mVersionCode;
 	}
-
-	/**
-	 * Whether there's resolution pending intent
-	 *
-	 * @return
-	 */
-	/*
-	 * public boolean hasResolution() { return (mPendingIntent != null); }
-	 */
 
 	/**
 	 * Whether operation was successful
@@ -219,15 +193,6 @@ public class Status implements Result, SafeParcelable {
 	public int getStatusCode() {
 		return this.mStatusCode;
 	}
-
-	/**
-	 * A pending intent to resolve the failure.
-	 *
-	 * @return pending intent
-	 */
-	/*
-	 * public PendingIntent getResolution() { return this.mPendingIntent; }
-	 */
 
 	@Override
 	public int hashCode() {

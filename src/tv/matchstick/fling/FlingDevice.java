@@ -38,60 +38,56 @@ public class FlingDevice implements SafeParcelable {
 			String deviceId = null;
 			int versionCode = 0;
 
-			do {
-				if (source.dataPosition() < length) {
-					int position = source.readInt();
-					switch (0xffff & position) {
-					default:
-						ParcelReadUtil.skip(source, position);
-						break;
+			while (source.dataPosition() < length) {
+				int position = source.readInt();
+				switch (0xffff & position) {
+				default:
+					ParcelReadUtil.skip(source, position);
+					break;
 
-					case 1:
-						versionCode = ParcelReadUtil.readInt(source, position);
-						break;
+				case 1:
+					versionCode = ParcelReadUtil.readInt(source, position);
+					break;
 
-					case 2:
-						deviceId = ParcelReadUtil.readString(source, position);
-						break;
+				case 2:
+					deviceId = ParcelReadUtil.readString(source, position);
+					break;
 
-					case 3:
-						hostAddress = ParcelReadUtil.readString(source,
-								position);
-						break;
+				case 3:
+					hostAddress = ParcelReadUtil.readString(source, position);
+					break;
 
-					case 4:
-						friendlyName = ParcelReadUtil.readString(source,
-								position);
-						break;
+				case 4:
+					friendlyName = ParcelReadUtil.readString(source, position);
+					break;
 
-					case 5:
-						modelName = ParcelReadUtil.readString(source, position);
-						break;
+				case 5:
+					modelName = ParcelReadUtil.readString(source, position);
+					break;
 
-					case 6:
-						deviceVersion = ParcelReadUtil.readString(source,
-								position);
-						break;
+				case 6:
+					deviceVersion = ParcelReadUtil.readString(source, position);
+					break;
 
-					case 7:
-						servicePor = ParcelReadUtil.readInt(source, position);
-						break;
+				case 7:
+					servicePor = ParcelReadUtil.readInt(source, position);
+					break;
 
-					case 8:
-						icons = ParcelReadUtil.readCreatorList(source,
-								position, WebImage.CREATOR);
-						break;
-					}
-				} else if (source.dataPosition() != length) {
-					throw new FlingRuntimeException((new StringBuilder(
-							"Overread allowed size end=")).append(length)
-							.toString(), source);
-				} else {
-					return new FlingDevice(versionCode, deviceId, hostAddress,
-							friendlyName, modelName, deviceVersion, servicePor,
-							icons);
+				case 8:
+					icons = ParcelReadUtil.readCreatorList(source, position,
+							WebImage.CREATOR);
+					break;
 				}
-			} while (true);
+			}
+
+			if (source.dataPosition() != length) {
+				throw new FlingRuntimeException((new StringBuilder(
+						"Overread allowed size end=")).append(length)
+						.toString(), source);
+			}
+
+			return new FlingDevice(versionCode, deviceId, hostAddress,
+					friendlyName, modelName, deviceVersion, servicePor, icons);
 		}
 
 		@Override

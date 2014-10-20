@@ -21,17 +21,15 @@ import android.view.View;
 /**
  * Fling Manager interface.
  *
- * Before any operation is executed, the FlingManager must be connected using the connect() method. The device is not considered connected until the onConnected(Bundle) callback has been called.
- * When your app is done using this connection, call disconnect(), even if the async result from connect() has not yet been delivered.
- * You should instantiate a client object in your Activity's onCreate(Bundle) method and then call connect() in onStart() and disconnect() in onStop(), regardless of the state. 
+ * Before any operation is executed, the FlingManager must be connected using
+ * the connect() method. The device is not considered connected until the
+ * onConnected(Bundle) callback has been called. When your app is done using
+ * this connection, call disconnect(), even if the async result from connect()
+ * has not yet been delivered. You should instantiate a client object in your
+ * Activity's onCreate(Bundle) method and then call connect() in onStart() and
+ * disconnect() in onStop(), regardless of the state.
  */
 public interface FlingManager {
-	// unused
-	/*
-	public <A extends Api.ConnectionApi, T extends MatchStickApiImpl<? extends Result, A>> T a(
-			T flingApi);
-	*/
-	
 	/**
 	 * Execute task.
 	 *
@@ -66,7 +64,8 @@ public interface FlingManager {
 	/**
 	 * Reconnect to Fling service.
 	 * 
-	 * Closes the current connection to Fling service and creates a new connection.
+	 * Closes the current connection to Fling service and creates a new
+	 * connection.
 	 */
 	public void reconnect();
 
@@ -87,8 +86,10 @@ public interface FlingManager {
 	/**
 	 * Block connect to Fling service.
 	 *
-	 * @param timeout the maximum time to wait
-	 * @param paramTimeUnit the time unit of the timeout argument
+	 * @param timeout
+	 *            the maximum time to wait
+	 * @param paramTimeUnit
+	 *            the time unit of the timeout argument
 	 * @return one ConnectionResult object
 	 */
 	public ConnectionResult blockingConnect(long timeout, TimeUnit paramTimeUnit);
@@ -105,7 +106,8 @@ public interface FlingManager {
 	/**
 	 * Check whether the specific callback is already registered.
 	 *
-	 * If the specified listener is currently registered to receive connection events, return true
+	 * If the specified listener is currently registered to receive connection
+	 * events, return true
 	 * 
 	 * @param callbacks
 	 * @return
@@ -116,6 +118,7 @@ public interface FlingManager {
 	 * Unregister Connection Callback.
 	 *
 	 * Removes a connection listener from this FlingManager.
+	 * 
 	 * @param callbacks
 	 */
 	public void unregisterConnectionCallbacks(ConnectionCallbacks callbacks);
@@ -123,7 +126,9 @@ public interface FlingManager {
 	/**
 	 * Register listener which will be notified when connection failed.
 	 *
-	 * Registers a listener to receive connection failed events from this FlingManager.
+	 * Registers a listener to receive connection failed events from this
+	 * FlingManager.
+	 * 
 	 * @param failedListener
 	 */
 	public void registerConnectionFailedListener(
@@ -132,7 +137,9 @@ public interface FlingManager {
 	/**
 	 * Whether the specified connection failed listener is registered.
 	 *
-	 * If the specified listener is currently registered to receive connection failed events.
+	 * If the specified listener is currently registered to receive connection
+	 * failed events.
+	 * 
 	 * @param failedListener
 	 * @return
 	 */
@@ -222,12 +229,16 @@ public interface FlingManager {
 		/**
 		 * Build Constructor.
 		 *
-		 * @param context The context to use for the connection
-		 * @param connectedListener The listener where the results of the asynchronous connect() call are delivered.
-		 * @param connectionFailedListener the listener which will be notified if the connection attempt fails.
+		 * @param context
+		 *            The context to use for the connection
+		 * @param connectedListener
+		 *            The listener where the results of the asynchronous
+		 *            connect() call are delivered.
+		 * @param connectionFailedListener
+		 *            the listener which will be notified if the connection
+		 *            attempt fails.
 		 */
-		public Builder(
-				Context context,
+		public Builder(Context context,
 				FlingManager.ConnectionCallbacks connectedListener,
 				FlingManager.OnConnectionFailedListener connectionFailedListener) {
 			this(context);
@@ -243,7 +254,8 @@ public interface FlingManager {
 		/**
 		 * Set handler.
 		 * 
-		 * Sets a Handler to indicate which thread to use when invoking callbacks.
+		 * Sets a Handler to indicate which thread to use when invoking
+		 * callbacks.
 		 *
 		 * @param handler
 		 * @return
@@ -258,6 +270,7 @@ public interface FlingManager {
 		 * Add connection callback function.
 		 *
 		 * Registers a listener to receive connection events from FlingManager.
+		 * 
 		 * @param callback
 		 * @return
 		 */
@@ -270,7 +283,8 @@ public interface FlingManager {
 		/**
 		 * Add Connection Failed listener.
 		 *
-		 * Adds a listener to register to receive connection failed events from FlingManager.
+		 * Adds a listener to register to receive connection failed events from
+		 * FlingManager.
 		 *
 		 * @param listener
 		 * @return
@@ -375,7 +389,8 @@ public interface FlingManager {
 	/**
 	 * Interface for connection failed listener.
 	 *
-	 * Provides callbacks for scenarios that result in a failed attempt to connect the client to the service. 
+	 * Provides callbacks for scenarios that result in a failed attempt to
+	 * connect the client to the service.
 	 */
 	public interface OnConnectionFailedListener extends
 			FlingPlayServicesClient.OnConnectionFailedListener {
@@ -384,9 +399,10 @@ public interface FlingManager {
 	/**
 	 * Connection callback.
 	 *
-	 * Provides callbacks that are called when the client is connected or disconnected from the service. 
+	 * Provides callbacks that are called when the client is connected or
+	 * disconnected from the service.
 	 * <p>
-	 * Most applications implement onConnected(Bundle) to start making requests. 
+	 * Most applications implement onConnected(Bundle) to start making requests.
 	 */
 	public interface ConnectionCallbacks {
 		/**
@@ -399,14 +415,16 @@ public interface FlingManager {
 		/**
 		 * Network lost.
 		 *
-		 * A suspension cause informing you that a peer device connection was lost.
+		 * A suspension cause informing you that a peer device connection was
+		 * lost.
 		 */
 		public static final int CAUSE_NETWORK_LOST = 2;
 
 		/**
 		 * Called when connected.
 		 *
-		 * After calling connect(), this method will be invoked asynchronously when the connect request has successfully completed.
+		 * After calling connect(), this method will be invoked asynchronously
+		 * when the connect request has successfully completed.
 		 *
 		 * @param connectionHint
 		 */
@@ -416,6 +434,7 @@ public interface FlingManager {
 		 * Called when suspended.
 		 *
 		 * Called when the client is temporarily in a disconnected state.
+		 * 
 		 * @param cause
 		 */
 		public void onConnectionSuspended(int cause);
