@@ -4,61 +4,116 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
-import tv.matchstick.client.internal.AccountInfoCreator;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.View;
 
 public class AccountInfo {
 
-	private final AccountInfo_a accountInfo;
+	private final AccountInfoData mData;
 	private final View mView;
 
 	public AccountInfo(String accountName,
 			Collection<String> scopeUriCollection, int gravityForPopups,
 			View view, String packageName) {
-		accountInfo = new AccountInfo_a(accountName, scopeUriCollection,
+		mData = new AccountInfoData(accountName, scopeUriCollection,
 				gravityForPopups, packageName);
 		mView = view;
 	}
 
 	public String getAccountName() {
-		return accountInfo.getAccountName();
+		return mData.getAccountName();
 	}
 
 	public String getAccountNameNotNull() {
-		return accountInfo.getAccountNameNotNull();
+		return mData.getAccountNameNotNull();
 	}
 
 	public int getGravityForPopups() {
-		return accountInfo.getGravityForPopups();
+		return mData.getGravityForPopups();
 	}
 
 	public List<String> copyScopeUriList() {
-		return accountInfo.copyScopeUriList();
+		return mData.copyScopeUriList();
 	}
 
 	public String[] convertListToArray() {
-		return accountInfo.copyScopeUriList().toArray(new String[0]);
+		return mData.copyScopeUriList().toArray(new String[0]);
 	}
 
 	public String getPackageName() {
-		return accountInfo.getPackageName();
+		return mData.getPackageName();
 	}
 
 	public View getView() {
 		return mView;
 	}
 
-	public static final class AccountInfo_a implements SafeParcelable {
-		public static final AccountInfoCreator CREATOR = new AccountInfoCreator();
+	public static final class AccountInfoData implements SafeParcelable {
+		public static final Parcelable.Creator<AccountInfoData> CREATOR = new Parcelable.Creator<AccountInfoData>() {
+
+			@Override
+			public AccountInfoData createFromParcel(Parcel source) {
+				// TODO Auto-generated method stub
+
+				int size = ParcelReadUtil.readStart(source);
+				int version = 0;
+				String name = null;
+				ArrayList<String> scopeUriList = null;
+				int gravity = 0;
+				String packageName = null;
+				while (source.dataPosition() < size) {
+					int type = ParcelReadUtil.readSingleInt(source);
+					switch (ParcelReadUtil.halfOf(type)) {
+					case 1:
+						name = ParcelReadUtil.readString(source, type);
+						break;
+					case 1000:
+						version = ParcelReadUtil.readInt(source, type);
+						break;
+					case 2:
+						scopeUriList = ParcelReadUtil.readStringList(source,
+								type);
+						break;
+					case 3:
+						gravity = ParcelReadUtil.readInt(source, type);
+						break;
+					case 4:
+						packageName = ParcelReadUtil.readString(source, type);
+						break;
+					default:
+						ParcelReadUtil.skip(source, type);
+					}
+				}
+
+				if (source.dataPosition() != size) {
+					throw new ParcelReadUtil.SafeParcel(
+							"Overread allowed size end=" + size, source);
+				}
+
+				return new AccountInfoData(version, name, scopeUriList,
+						gravity, packageName);
+			}
+
+			@Override
+			public AccountInfoData[] newArray(int size) {
+				// TODO Auto-generated method stub
+
+				return new AccountInfoData[size];
+			}
+
+		};
+
 		private final int mVersionCode;
 		private final String mAccountName;
 		private final List<String> mScopeUriList;
 		private final int mGravityForPopups;
 		private final String mPackageName;
 
-		AccountInfo_a(int versionCode, String accountName,
+		AccountInfoData(int versionCode, String accountName,
 				List<String> scopeUriList, int gravityForPopups,
 				String packageName) {
 			mScopeUriList = new ArrayList<String>();
@@ -71,7 +126,7 @@ public class AccountInfo {
 			mPackageName = packageName;
 		}
 
-		public AccountInfo_a(String accountName,
+		public AccountInfoData(String accountName,
 				Collection<String> scopeUriCollection, int gravityForPopups,
 				String packageName) {
 			this(3, accountName, new ArrayList<String>(scopeUriCollection),
@@ -99,16 +154,28 @@ public class AccountInfo {
 			return new ArrayList<String>(mScopeUriList);
 		}
 
+		@Override
 		public int describeContents() {
 			return 0;
 		}
 
+		@Override
 		public void writeToParcel(Parcel out, int flags) {
-			AccountInfoCreator.buildParcel(this, out, flags);
+			buildParcel(out, flags);
 		}
 
 		public int getVersionCode() {
 			return mVersionCode;
+		}
+
+		private void buildParcel(Parcel out, int flags) {
+			int i = ParcelWriteUtil.position(out);
+			ParcelWriteUtil.write(out, 1, getAccountName(), false);
+			ParcelWriteUtil.write(out, 1000, getVersionCode());
+			ParcelWriteUtil.writeStringList(out, 2, copyScopeUriList(), false);
+			ParcelWriteUtil.write(out, 3, getGravityForPopups());
+			ParcelWriteUtil.write(out, 4, getPackageName(), false);
+			ParcelWriteUtil.writeEnd(out, i);
 		}
 	}
 
