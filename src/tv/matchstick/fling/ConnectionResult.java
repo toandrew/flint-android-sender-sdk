@@ -123,33 +123,6 @@ public final class ConnectionResult {
 	}
 
 	/**
-	 * Resolves an error by starting any intents requiring user interaction.
-	 * 
-	 * @param activity
-	 *            action context
-	 * @param requestCode
-	 *            request code
-	 * @throws IntentSender.SendIntentException
-	 */
-	/*
-	 * public void startResolutionForResult(Activity activity, int requestCode)
-	 * throws IntentSender.SendIntentException { if (!(hasResolution())) return;
-	 * activity.startIntentSenderForResult(
-	 * this.mPendingIntent.getIntentSender(), requestCode, null, 0, 0, 0); }
-	 */
-
-	/**
-	 * Returns true if calling startResolutionForResult(Activity, int) will
-	 * start any intents requiring user interaction.
-	 * 
-	 * @return
-	 */
-	/*
-	 * public boolean hasResolution() { return ((this.mStatusCode != 0) &&
-	 * (this.mPendingIntent != null)); }
-	 */
-
-	/**
 	 * Whether the connection was successful.
 	 * 
 	 * @return true if success
@@ -166,15 +139,6 @@ public final class ConnectionResult {
 	public int getErrorCode() {
 		return this.mStatusCode;
 	}
-
-	/**
-	 * A pending intent to resolve the connection failure.
-	 * 
-	 * @return
-	 */
-	/*
-	 * public PendingIntent getResolution() { return this.mPendingIntent; }
-	 */
 
 	/**
 	 * Get readable status message with current status code
