@@ -34,7 +34,7 @@ public class MatchStickApi {
 	 *            connection api
 	 */
 	public static abstract class MatchStickApiImpl<R extends Result, A extends Api.ConnectionApi>
-			implements PendingResult<R>, ResultCallback_c<R>,
+			implements PendingResult<R>, ResultCallback<R>,
 			FlingApiClientTask<A> {
 
 		/**
@@ -117,7 +117,7 @@ public class MatchStickApi {
 		 * Release resource
 		 */
 		public void release() {
-			release_dv();
+			releaseInternal();
 			this.mReleaseFlag = true;
 		}
 
@@ -131,7 +131,7 @@ public class MatchStickApi {
 		/**
 		 * Execute connection api
 		 */
-		public final void execute_b(A connectionApi) throws DeadObjectException {
+		public final void exec(A connectionApi) throws DeadObjectException {
 			this.mHandler = new FlingApiHandler<R>(connectionApi.getLooper());
 			try {
 				execute(connectionApi);
@@ -146,8 +146,7 @@ public class MatchStickApi {
 		/**
 		 * Set callback function which will be called when release
 		 */
-		public void setReleaseCallback(
-				FlingManagerImpl.ReleaseCallback callback) {
+		public void setReleaseCallback(FlingManagerImpl.ReleaseCallback callback) {
 			this.mReleaseCallback = callback;
 		}
 
@@ -211,7 +210,7 @@ public class MatchStickApi {
 					"await must not be called on the UI thread");
 			try {
 				this.mCounter.await();
-			} catch (InterruptedException localInterruptedException) {
+			} catch (InterruptedException e) {
 				synchronized (this.mLock) {
 					postResult(createResult(Status.InterruptedStatus));
 					this.mIsInterrupted = true;
@@ -239,7 +238,7 @@ public class MatchStickApi {
 						postResult(createResult(Status.TimeOutStatus));
 						this.mIsInterrupted = true;
 					}
-			} catch (InterruptedException localInterruptedException1) {
+			} catch (InterruptedException e) {
 				synchronized (this.mLock) {
 					postResult(createResult(Status.InterruptedStatus));
 					this.mIsInterrupted = true;
@@ -303,7 +302,7 @@ public class MatchStickApi {
 						"Result has already been consumed");
 				this.mCurrentResult = result;
 				if (this.mReleaseFlag) {
-					release_dv();
+					releaseInternal();
 					return;
 				}
 				this.mCounter.countDown();
@@ -332,14 +331,6 @@ public class MatchStickApi {
 		 */
 		void consumeResult() {
 			this.mIsResultConsumed = true;
-			/*
-			 * If zi set to null here, the
-			 * callbacks(ApplicationConnectionResult) who are implemented by app
-			 * cannot be called correctly. According to the code from smali
-			 * files, zi is set to null indeed. I don't know why! Anyway,
-			 * comment this line and demo app could run!
-			 */
-			// this.zi = null;
 			if (this.mReleaseCallback == null) {
 				return;
 			}
@@ -349,20 +340,20 @@ public class MatchStickApi {
 		/**
 		 * Release resource
 		 */
-		private void release_dv() {
+		private void releaseInternal() {
 			if ((this.mCurrentResult == null)
 					|| (!(this instanceof Releasable))) {
 				return;
 			}
 			try {
 				((Releasable) this).release();
-			} catch (Exception localException) {
-				Log.w("GoogleApi", "Unable to release " + this, localException);
+			} catch (Exception e) {
+				Log.w("MatchStickApi", "Unable to release " + this, e);
 			}
 		}
 	}
 
-	/*
+	/**
 	 * Fling Api Handler
 	 */
 	public static class FlingApiHandler<R extends Result> extends Handler {
@@ -370,8 +361,8 @@ public class MatchStickApi {
 			this(Looper.getMainLooper());
 		}
 
-		public FlingApiHandler(Looper paramLooper) {
-			super(paramLooper);
+		public FlingApiHandler(Looper looper) {
+			super(looper);
 		}
 
 		/**
@@ -391,7 +382,8 @@ public class MatchStickApi {
 		 * @param delayMillis
 		 *            delay time
 		 */
-		public void setTimeoutTimer(MatchStickApiImpl<R, ?> obj, long delayMillis) {
+		public void setTimeoutTimer(MatchStickApiImpl<R, ?> obj,
+				long delayMillis) {
 			sendMessageDelayed(obtainMessage(2, obj), delayMillis);
 		}
 
@@ -406,14 +398,12 @@ public class MatchStickApi {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case 1: // post result
-				Pair localPair = (Pair) msg.obj;
-				notifyCallback((ResultCallback<R>) localPair.first,
-						(R) localPair.second);
+				Pair pair = (Pair) msg.obj;
+				notifyCallback((ResultCallback<R>) pair.first, (R) pair.second);
 				return;
 			case 2: // time out
 				MatchStickApiImpl flingApi = (MatchStickApiImpl) msg.obj;
-				flingApi.postResult(flingApi
-						.createResult(Status.TimeOutStatus));
+				flingApi.postResult(flingApi.createResult(Status.TimeOutStatus));
 				return;
 			}
 			Log.wtf("FlingApi", "Don't know how to handle this message.");
@@ -422,20 +412,11 @@ public class MatchStickApi {
 		/**
 		 * Notify callback function
 		 * 
-		 * @param paramResultCallback
-		 * @param paramR
+		 * @param callback
+		 * @param result
 		 */
-		protected void notifyCallback(ResultCallback<R> paramResultCallback,
-				R paramR) {
-			paramResultCallback.onResult(paramR);
+		protected void notifyCallback(ResultCallback<R> callback, R result) {
+			callback.onResult(result);
 		}
 	}
-
-	/**
-	 * ResultCallback interface
-	 */
-	public interface ResultCallback_c<R> {
-		public void onResult(R paramR);
-	}
-
 }

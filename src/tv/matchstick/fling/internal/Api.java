@@ -87,8 +87,7 @@ public final class Api {
 		 * @return the specific class instance
 		 */
 		public T build(Context context, Looper looper, AccountInfo account,
-				ApiOptions options,
-				FlingManager.ConnectionCallbacks callbacks,
+				ApiOptions options, FlingManager.ConnectionCallbacks callbacks,
 				FlingManager.OnConnectionFailedListener failedListener);
 
 		/**

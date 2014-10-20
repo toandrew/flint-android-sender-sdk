@@ -260,7 +260,7 @@ public final class FlingManagerImpl implements FlingManager {
 			}
 
 			A connection = getConnectionApi(task.getConnectionBuiler());
-			task.execute_b(connection);
+			task.exec(connection);
 		} finally {
 			mLock.unlock();
 		}
@@ -629,7 +629,7 @@ public final class FlingManagerImpl implements FlingManager {
 	public interface FlingApiClientTask<A extends Api.ConnectionApi> {
 		public Api.ConnectionBuilder<A> getConnectionBuiler();
 
-		public void execute_b(A connection) throws DeadObjectException;
+		public void exec(A connection) throws DeadObjectException;
 
 		public void setReleaseCallback(ReleaseCallback callback);
 
