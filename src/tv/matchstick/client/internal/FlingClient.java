@@ -44,7 +44,7 @@ import android.util.Log;
  */
 public abstract class FlingClient<T extends IInterface> implements
 		FlingPlayServicesClient, Api.ConnectionApi,
-		FlingClientEvents.FmsClientEventCallback {
+		FlingClientEvents.ClientEventCallback {
 
 	static final int CONNECTION_STATUS_DISCONNECTED = 1;
 	static final int CONNECTION_STATUS_CONNECTING = 2;

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.client.internal;
 
 import java.util.HashMap;
@@ -6,12 +22,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.Fling;
+import tv.matchstick.fling.Fling.ApplicationConnectionResult;
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.FlingManager;
+import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.ResultCallback;
 import tv.matchstick.fling.Status;
-import tv.matchstick.fling.Fling.ApplicationConnectionResult;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,35 +42,51 @@ import android.text.TextUtils;
  * This class will communicate with Fling service.
  */
 public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
+	private static final LogUtil log = new LogUtil("FlingClientImpl");
 
-	private static final LogUtil mLogUtil = new LogUtil("FlingClientImpl");
-	private static final Object mLock_xU = new Object();
-	private static final Object mLock_xV = new Object();
+	private static final Object mLock_x = new Object();
+	private static final Object mLock_y = new Object();
 
 	private final FlingDevice mFlingDevice;
+
 	private final Fling.Listener mFlingListener;
+
 	private final Handler mHandler;
+
 	private final IFlingDeviceControllerListener mIFlingDeviceControllerListener;
+
 	private final Map<String, Fling.MessageReceivedCallback> mMessageReceivedCallbacksMap; // key->namespace,
 																							// value->MessageReceivedCallback
 	private final long mFlingFlags;
 
 	private ApplicationMetadata mApplicationMetadata;
-	private String mApplicationStatus;
-	private boolean mIsMute;
-	private boolean mFirstStatusUpdate;
-	private boolean mIsConnectedDevice;
-	private double mVolume;
-	private final AtomicLong mRequestIdCreator;
-	private String mApplicationId;
-	private String mSessionId;
-	private Bundle mExtraMessage;
-	private Map<Long, ResultCallback<Status>> mResultCallbackMap;
-	private ResultCallback<Fling.ApplicationConnectionResult> mResultCallback;
-	private ResultCallback<Status> mResultCallback_xT;
 
-	public static LogUtil getLogUtil() {
-		return FlingClientImpl.mLogUtil;
+	private String mApplicationStatus;
+
+	private boolean mIsMute;
+
+	private boolean mFirstStatusUpdate;
+
+	private boolean mIsConnectedDevice;
+
+	private double mVolume;
+
+	private final AtomicLong mRequestIdCreator;
+
+	private String mApplicationId;
+
+	private String mSessionId;
+
+	private Bundle mExtraMessage;
+
+	private Map<Long, ResultCallback<Status>> mResultCallbackMap;
+
+	private ResultCallback<Fling.ApplicationConnectionResult> mResultCallback;
+
+	private ResultCallback<Status> mStatusResultCallback;
+
+	public static LogUtil log() {
+		return FlingClientImpl.log;
 	}
 
 	/**
@@ -63,19 +95,21 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	 * @param context
 	 * @param looper
 	 * @param device
-	 * @param flag
+	 * @param flags
 	 * @param flingListener
 	 * @param callbacks
 	 * @param failedListener
 	 */
 	public FlingClientImpl(Context context, Looper looper, FlingDevice device,
-			long flag, Fling.Listener flingListener,
+			long flags, Fling.Listener flingListener,
 			FlingManager.ConnectionCallbacks callbacks,
 			FlingManager.OnConnectionFailedListener failedListener) {
+
 		super(context, looper, callbacks, failedListener, null);
+
 		this.mFlingDevice = device;
 		this.mFlingListener = flingListener;
-		this.mFlingFlags = flag;
+		this.mFlingFlags = flags;
 		this.mHandler = new Handler(looper);
 		this.mMessageReceivedCallbacksMap = new HashMap();
 		this.mIsConnectedDevice = false;
@@ -96,8 +130,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		this.mIFlingDeviceControllerListener = new IFlingDeviceControllerListener.Stub() {
 			@Override
 			public void onDisconnected(int statusCode) {
-				mLogUtil.logd(
-						"IFlingDeviceControllerListener.onDisconnected: %d",
+				log.logd("IFlingDeviceControllerListener.onDisconnected: %d",
 						new Object[] { Integer.valueOf(statusCode) });
 				mIsConnectedDevice = false;
 				mApplicationMetadata = null;
@@ -111,18 +144,17 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			 * Application connected.
 			 */
 			@Override
-			public void onApplicationConnected(
-					ApplicationMetadata applicatonMetadata,
+			public void onApplicationConnected(ApplicationMetadata data,
 					String applicationId, String sessionId, boolean relaunched) {
-				mApplicationMetadata = applicatonMetadata;
-				mApplicationId = applicatonMetadata.getApplicationId();
+				mApplicationMetadata = data;
+				mApplicationId = data.getApplicationId();
 				mSessionId = sessionId;
-				synchronized (mLock_xU) {
+				synchronized (mLock_x) {
 					if (mResultCallback != null) {
 						mResultCallback
 								.onResult(new ApplicationConnectionResultImpl(
-										new Status(0), applicatonMetadata,
-										applicationId, sessionId, relaunched));
+										new Status(0), data, applicationId,
+										sessionId, relaunched));
 						mResultCallback = null;
 					}
 				}
@@ -130,7 +162,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 
 			@Override
 			public void postApplicationConnectionResult(int statusCode) {
-				synchronized (mLock_xU) {
+				synchronized (mLock_x) {
 					if (mResultCallback != null) {
 						mResultCallback
 								.onResult(new ApplicationConnectionResultImpl(
@@ -193,7 +225,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			@Override
 			public void onMessageReceived(final String namespace,
 					final String message) {
-				mLogUtil.logd("Receive (type=text, ns=%s) %s", new Object[] {
+				log.logd("Receive (type=text, ns=%s) %s", new Object[] {
 						namespace, message });
 				mHandler.post(new Runnable() {
 					public void run() {
@@ -206,7 +238,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 							localMessageReceivedCallback.onMessageReceived(
 									mFlingDevice, namespace, message);
 						} else {
-							mLogUtil.logd(
+							log.logd(
 									"Discarded message for unknown namespace '%s'",
 									new Object[] { namespace });
 						}
@@ -219,7 +251,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			 */
 			@Override
 			public void onReceiveBinary(String namespace, byte[] message) {
-				mLogUtil.logd(
+				log.logd(
 						"IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
 						new Object[] { namespace,
 								Integer.valueOf(message.length) });
@@ -249,10 +281,10 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			}
 
 			private boolean notifyCallback(int statusCode) {
-				synchronized (mLock_xV) {
-					if (mResultCallback_xT != null) {
-						mResultCallback_xT.onResult(new Status(statusCode));
-						mResultCallback_xT = null;
+				synchronized (mLock_y) {
+					if (mStatusResultCallback != null) {
+						mStatusResultCallback.onResult(new Status(statusCode));
+						mStatusResultCallback = null;
 						return true;
 					}
 				}
@@ -289,10 +321,9 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 				}
 				getService().disconnect();
 			}
-		} catch (RemoteException localRemoteException) {
-			mLogUtil.logd(
-					"Error while disconnecting the controller interface: %s",
-					new Object[] { localRemoteException.getMessage() });
+		} catch (RemoteException e) {
+			log.logd("Error while disconnecting the controller interface: %s",
+					new Object[] { e.getMessage() });
 		} finally {
 			super.disconnect();
 		}
@@ -321,20 +352,24 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	public void sendMessage(String namespace, String payloadMessage,
 			ResultCallback<Status> callback) throws IllegalArgumentException,
 			IllegalStateException, RemoteException {
+
 		if (TextUtils.isEmpty(payloadMessage)) {
 			throw new IllegalArgumentException(
 					"The message payload cannot be null or empty");
 		}
+
 		if ((namespace == null) || (namespace.length() > 128)) {
 			throw new IllegalArgumentException("Invalid namespace length");
 		}
+
 		if (payloadMessage.length() > 65536) {
 			throw new IllegalArgumentException("Message exceeds maximum size");
 		}
+
 		checkConnectedDeviceThrowable();
 		long requestId = mRequestIdCreator.incrementAndGet();
 		getService().sendMessage(namespace, payloadMessage, requestId);
-		mResultCallbackMap.put(Long.valueOf(requestId), callback);
+		mResultCallbackMap.put(requestId, callback);
 	}
 
 	/**
@@ -376,7 +411,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	 */
 	private void setApplicationConnectionResultCallback(
 			ResultCallback<Fling.ApplicationConnectionResult> callback) {
-		synchronized (mLock_xU) {
+		synchronized (mLock_x) {
 			if (mResultCallback != null) {
 				mResultCallback.onResult(new ApplicationConnectionResultImpl(
 						new Status(FlingStatusCodes.CANCELED)));
@@ -418,12 +453,12 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	 * @param callback
 	 */
 	private void setStatusCallback(ResultCallback<Status> callback) {
-		synchronized (mLock_xV) {
-			if (this.mResultCallback_xT != null) {
+		synchronized (mLock_y) {
+			if (this.mStatusResultCallback != null) {
 				callback.onResult(new Status(FlingStatusCodes.INVALID_REQUEST));
 				return;
 			}
-			this.mResultCallback_xT = callback;
+			this.mStatusResultCallback = callback;
 		}
 	}
 
@@ -500,14 +535,17 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			Fling.MessageReceivedCallback callback)
 			throws IllegalArgumentException, IllegalStateException,
 			RemoteException {
+
 		if (TextUtils.isEmpty(channelNameSpace)) {
 			throw new IllegalArgumentException(
 					"Channel namespace cannot be null or empty");
 		}
+
 		removeMessageReceivedCallbacks(channelNameSpace);
 		if (callback == null) {
 			return;
 		}
+
 		synchronized (mMessageReceivedCallbacksMap) {
 			mMessageReceivedCallbacksMap.put(channelNameSpace, callback);
 		}
@@ -523,25 +561,26 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	 */
 	public void removeMessageReceivedCallbacks(String channelNameSpace)
 			throws IllegalArgumentException, RemoteException {
+
 		if (TextUtils.isEmpty(channelNameSpace)) {
 			throw new IllegalArgumentException(
 					"Channel namespace cannot be null or empty");
 		}
+
 		Fling.MessageReceivedCallback localMessageReceivedCallback;
 		synchronized (mMessageReceivedCallbacksMap) {
 			localMessageReceivedCallback = mMessageReceivedCallbacksMap
 					.remove(channelNameSpace);
 		}
+
 		if (localMessageReceivedCallback == null)
 			return;
+
 		try {
 			getService().removeMessageReceivedCallbacks(channelNameSpace);
-		} catch (IllegalStateException localIllegalStateException) {
-			mLogUtil.logd_a(
-					localIllegalStateException,
-					"Error unregistering namespace (%s): %s",
-					new Object[] { channelNameSpace,
-							localIllegalStateException.getMessage() });
+		} catch (IllegalStateException e) {
+			log.logd_a(e, "Error unregistering namespace (%s): %s",
+					new Object[] { channelNameSpace, e.getMessage() });
 		}
 	}
 
@@ -586,6 +625,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		if ((mFlingListener != null) && (hasChange || mFirstStatusUpdate)) {
 			mFlingListener.onApplicationStatusChanged();
 		}
+
 		hasChange = false;
 		if (volume != mVolume) {
 			mVolume = volume;
@@ -595,7 +635,8 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			mIsMute = isMute;
 			hasChange = true;
 		}
-		mLogUtil.logd(
+
+		log.logd(
 				"hasChange=%b, mFirstStatusUpdate=%b",
 				new Object[] { Boolean.valueOf(hasChange),
 						Boolean.valueOf(mFirstStatusUpdate) });
@@ -626,7 +667,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	private static final class ApplicationConnectionResultImpl implements
 			ApplicationConnectionResult {
 		private final Status status;
-		private final ApplicationMetadata applicationMetadata;
+		private final ApplicationMetadata data;
 		private final String applicationStatus;
 		private final String sessionId;
 		private final boolean wasLaunched;
@@ -635,7 +676,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 				ApplicationMetadata applicationMetadata,
 				String applicationStatus, String sessionId, boolean wasLaunched) {
 			this.status = paramStatus;
-			this.applicationMetadata = applicationMetadata;
+			this.data = applicationMetadata;
 			this.applicationStatus = applicationStatus;
 			this.sessionId = sessionId;
 			this.wasLaunched = wasLaunched;
@@ -650,7 +691,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		}
 
 		public ApplicationMetadata getApplicationMetadata() {
-			return this.applicationMetadata;
+			return this.data;
 		}
 
 		public String getApplicationStatus() {
@@ -666,9 +707,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		}
 	}
 
-	/*******************************************************/
-	// implemented from super class FmsClient_eh.class
-	/*******************************************************/
 	@Override
 	protected String getServiceName() {
 		return "tv.matchstick.fling.service.FLING";
@@ -693,7 +731,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	@Override
 	protected void getServiceFromBroker(IFlingServiceBroker serviceBroker,
 			IFlingCallbackImpl flingCallback) throws RemoteException {
-		mLogUtil.logd(
+		log.logd(
 				"getServiceFromBroker(): mLastApplicationId=%s, mLastSessionId=%s",
 				new Object[] { mApplicationId, mSessionId });
 		Bundle bundle = new Bundle();
@@ -711,6 +749,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		 */
 		serviceBroker.initFlingService(flingCallback, 4323000, getContext()
 				.getPackageName(), mIFlingDeviceControllerListener.asBinder(),
-				bundle);
+				bundle); // TODO
 	}
 }

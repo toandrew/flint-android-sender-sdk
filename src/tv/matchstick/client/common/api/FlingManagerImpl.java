@@ -119,7 +119,7 @@ public final class FlingManagerImpl implements FlingManager {
 	/*
 	 * b$3.smali : OK
 	 */
-	private final FlingClientEvents.FmsClientEventCallback mFmsClientEventCallback = new FlingClientEvents.FmsClientEventCallback() {
+	private final FlingClientEvents.ClientEventCallback mFmsClientEventCallback = new FlingClientEvents.ClientEventCallback() {
 		public boolean canReceiveEvent() {
 			return mCanReceiveEvent;
 		}
