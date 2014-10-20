@@ -220,7 +220,7 @@ public final class FlingDeviceController implements FlingSocketListener {
         mFlingSrvController = axy1;
         setDebugLevel(debugLevel);
         mDisconnectStatusCode = 0;
-        mFlingSocket = new FlingSocket(context, this);
+        mFlingSocket = new FlingSocket(this);
         a(mReceiverControlChannel);
         mConnectionControlChannel = new ConnectionControlChannel(packageName);
         a(mConnectionControlChannel);

@@ -1,8 +1,5 @@
-
 package tv.matchstick.server.fling.socket;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.SystemClock;
 
 import java.io.IOException;
@@ -22,91 +19,85 @@ import tv.matchstick.server.utils.LOG;
 public final class FlingSocketMultiplexer {
     private static LOG mLogs = new LOG("FlingSocketMultiplexer");
     private static FlingSocketMultiplexer mInstance;
-    private final LinkedList mRegistedFlingSocketList = new LinkedList();
-    private final LinkedList mAllFlingSocketList = new LinkedList();
+    private final LinkedList<FlingSocket> mRegistedFlingSocketList = new LinkedList<FlingSocket>();
+    private final LinkedList<FlingSocket> mAllFlingSocketList = new LinkedList<FlingSocket>();
     private Selector mSelector;
     private volatile boolean mQuitLoop;
     private volatile boolean g;
     private volatile Thread mFlingSocketMultiplexerThread;
     private final AtomicBoolean mReadyToConnect = new AtomicBoolean(false);
     private volatile Throwable j;
-    private final Context mContext;
 
     private CountDownLatch mCountDownLatch;
 
-    private FlingSocketMultiplexer(Context context)
-    {
-        mContext = context;
+    private FlingSocketMultiplexer() {
     }
 
-    public static FlingSocketMultiplexer getInstance(Context context)
-    {
+    public static FlingSocketMultiplexer getInstance() {
         if (mInstance == null) {
-            mInstance = new FlingSocketMultiplexer(context);
+            mInstance = new FlingSocketMultiplexer();
         }
 
         return mInstance;
     }
 
-    static CountDownLatch getCountDownLatch(FlingSocketMultiplexer atv1)
-    {
-        return atv1.mCountDownLatch;
-    }
-
-    static synchronized void processData(FlingSocketMultiplexer multiplexer)
-    {
-        ArrayList errorFlingSocketList = new ArrayList();
+    synchronized void processData() {
+        ArrayList<FlingSocket> errorFlingSocketList = new ArrayList<FlingSocket>();
 
         int i1 = 0;
-        while (!multiplexer.mQuitLoop) {
+        while (!mQuitLoop) {
             long elapsedRealtime_l1 = SystemClock.elapsedRealtime();
-            if (multiplexer.mReadyToConnect.getAndSet(false)) {
-                synchronized (multiplexer.mAllFlingSocketList) {
-                    Iterator iterator3 = multiplexer.mAllFlingSocketList.iterator();
+            if (mReadyToConnect.getAndSet(false)) {
+                synchronized (mAllFlingSocketList) {
+                    Iterator<FlingSocket> iterator3 = mAllFlingSocketList
+                            .iterator();
                     while (iterator3.hasNext()) {
-                        FlingSocket flingSocket = (FlingSocket) iterator3.next();
+                        FlingSocket flingSocket = (FlingSocket) iterator3
+                                .next();
                         try {
-                            flingSocket.startConnecd().register(multiplexer.mSelector, 0).attach(flingSocket);
+                            flingSocket.startConnecd().register(mSelector, 0)
+                                    .attach(flingSocket);
 
-                            // atv1.mContext_k.startService(atv1.mIntent_l);
-                            multiplexer.mRegistedFlingSocketList.add(flingSocket);
+                            mRegistedFlingSocketList.add(flingSocket);
                         } catch (Exception e) {
-                            mLogs.d(e, "Error while connecting socket.", new Object[0]);
+                            mLogs.d(e, "Error while connecting socket.",
+                                    new Object[0]);
                             errorFlingSocketList.add(flingSocket);
                         }
                     }
-                    multiplexer.mAllFlingSocketList.clear();
+                    mAllFlingSocketList.clear();
                 }
             }
 
-            if (!errorFlingSocketList.isEmpty())
-            {
-                for (Iterator iterator2 = errorFlingSocketList.iterator(); iterator2.hasNext(); ((FlingSocket) iterator2
+            if (!errorFlingSocketList.isEmpty()) {
+                for (Iterator<FlingSocket> iterator2 = errorFlingSocketList
+                        .iterator(); iterator2.hasNext(); ((FlingSocket) iterator2
                         .next()).onConnectError())
                     ;
                 errorFlingSocketList.clear();
             }
 
             boolean flag = false;
-            synchronized (multiplexer.mRegistedFlingSocketList) {
-                Iterator iterator = multiplexer.mRegistedFlingSocketList.iterator();
+            synchronized (mRegistedFlingSocketList) {
+                Iterator<FlingSocket> iterator = mRegistedFlingSocketList
+                        .iterator();
 
-                while (iterator.hasNext())
-                {
+                while (iterator.hasNext()) {
                     FlingSocket flingSocket = (FlingSocket) iterator.next();
-                    SocketChannel socketchannel = flingSocket.getSocketChannel();
+                    SocketChannel socketchannel = flingSocket
+                            .getSocketChannel();
                     if (socketchannel == null
-                            || socketchannel.keyFor(multiplexer.mSelector) == null
+                            || socketchannel.keyFor(mSelector) == null
                             || !flingSocket.checkInterestOps(
-                                    socketchannel.keyFor(multiplexer.mSelector), elapsedRealtime_l1))
-                    {
+                                    socketchannel.keyFor(mSelector),
+                                    elapsedRealtime_l1)) {
                         iterator.remove();
-                    } else
-                    {
+                    } else {
                         boolean flag2;
-                        if (flingSocket.isConnecting() || flingSocket.isDisconnecting()) // need
-                                                                                           // check.
-                                                                                           // todo
+                        if (flingSocket.isConnecting()
+                                || flingSocket.isDisconnecting()) // need
+                                                                  // check.
+                                                                  // todo
                             flag2 = true;
                         else
                             flag2 = flag;
@@ -114,11 +105,6 @@ public final class FlingSocketMultiplexer {
                     }
                 }
             }
-            boolean flag1;
-            if (multiplexer.mRegistedFlingSocketList.isEmpty() && multiplexer.mAllFlingSocketList.isEmpty())
-                flag1 = true;
-            else
-                flag1 = false;
 
             long l2;
             if (flag)
@@ -127,29 +113,31 @@ public final class FlingSocketMultiplexer {
                 l2 = 0L;
 
             try {
-                i1 = multiplexer.mSelector.select(l2);
+                i1 = mSelector.select(l2);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             if (i1 != 0) {
-                if (multiplexer.mQuitLoop) {
+                if (mQuitLoop) {
                     return;
                 }
 
-                Iterator iterator1 = multiplexer.mSelector.selectedKeys().iterator();
-                while (iterator1.hasNext())
-                {
-                    try
-                    {
-                        SelectionKey selectionkey = (SelectionKey) iterator1.next();
-                        FlingSocket flingSocket = (FlingSocket) selectionkey.attachment();
-                        if (selectionkey.isConnectable() && !flingSocket.onConnectable())
-                            multiplexer.mRegistedFlingSocketList.remove(flingSocket);
+                Iterator<SelectionKey> iterator1 = mSelector.selectedKeys()
+                        .iterator();
+                while (iterator1.hasNext()) {
+                    try {
+                        SelectionKey selectionkey = (SelectionKey) iterator1
+                                .next();
+                        FlingSocket flingSocket = (FlingSocket) selectionkey
+                                .attachment();
+                        if (selectionkey.isConnectable()
+                                && !flingSocket.onConnectable())
+                            mRegistedFlingSocketList.remove(flingSocket);
                         if (selectionkey.isReadable() && !flingSocket.onRead())
-                            multiplexer.mRegistedFlingSocketList.remove(flingSocket);
+                            mRegistedFlingSocketList.remove(flingSocket);
                         if (selectionkey.isWritable() && !flingSocket.onWrite())
-                            multiplexer.mRegistedFlingSocketList.remove(flingSocket);
+                            mRegistedFlingSocketList.remove(flingSocket);
                     } catch (CancelledKeyException e) {
                     }
                     iterator1.remove();
@@ -158,31 +146,18 @@ public final class FlingSocketMultiplexer {
         }
     }
 
-    static LOG c()
-    {
-        return mLogs;
-    }
-
-    static Thread d(FlingSocketMultiplexer atv1)
-    {
-        atv1.mFlingSocketMultiplexerThread = null;
-        return null;
-    }
-
-    private void checkStatus()
-    {
-        if (g)
-        {
+    private void checkStatus() {
+        if (g) {
             StringBuffer stringbuffer = new StringBuffer();
             stringbuffer.append("selector thread aborted due to ");
-            if (j != null)
-            {
+            if (j != null) {
                 stringbuffer.append(j.getClass().getName());
                 StackTraceElement astacktraceelement[] = j.getStackTrace();
-                stringbuffer.append(" at ").append(astacktraceelement[0].getFileName()).append(':')
+                stringbuffer.append(" at ")
+                        .append(astacktraceelement[0].getFileName())
+                        .append(':')
                         .append(astacktraceelement[0].getLineNumber());
-            } else
-            {
+            } else {
                 stringbuffer.append("unknown condition");
             }
             throw new IllegalStateException(stringbuffer.toString());
@@ -193,8 +168,7 @@ public final class FlingSocketMultiplexer {
             return;
     }
 
-    final synchronized void init() throws IOException
-    {
+    final synchronized void init() throws IOException {
         if (mFlingSocketMultiplexerThread != null) {
             return;
         }
@@ -210,22 +184,20 @@ public final class FlingSocketMultiplexer {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
-                    try
-                    {
+                    try {
                         mCountDownLatch.countDown();
-                        processData(FlingSocketMultiplexer.this);
+                        processData();
                         return;
-                    } catch (Throwable localThrowable)
-                    {
-                        FlingSocketMultiplexer.c().e(localThrowable,
-                                "Unexpected throwable in selector loop", new Object[0]);
+                    } catch (Throwable localThrowable) {
+                        mLogs.e(localThrowable,
+                                "Unexpected throwable in selector loop",
+                                new Object[0]);
                         j = localThrowable;
                         g = true;
                         return;
-                    } finally
-                    {
-                        mLogs.d("**** selector loop thread exiting", new Object[0]);
+                    } finally {
+                        mLogs.d("**** selector loop thread exiting",
+                                new Object[0]);
                         mFlingSocketMultiplexerThread = null;
                     }
                 }
@@ -244,17 +216,15 @@ public final class FlingSocketMultiplexer {
             return;
         }
 
-        throw new IOException("timed out or interrupted waiting for muxer thread to start");
+        throw new IOException(
+                "timed out or interrupted waiting for muxer thread to start");
     }
 
-    public final synchronized void doConnect(FlingSocket flingSocket)
-    {
+    public final synchronized void doConnect(FlingSocket flingSocket) {
         try {
             checkStatus();
-            synchronized (mAllFlingSocketList)
-            {
+            synchronized (mAllFlingSocketList) {
                 mLogs.d("added socket", new Object[0]);
-                // mContext_k.startService(mIntent_l);
                 mAllFlingSocketList.add(flingSocket);
             }
             mReadyToConnect.set(true);
@@ -266,8 +236,7 @@ public final class FlingSocketMultiplexer {
         return;
     }
 
-    public final synchronized void wakeup()
-    {
+    public final synchronized void wakeup() {
         try {
             checkStatus();
             mSelector.wakeup();
