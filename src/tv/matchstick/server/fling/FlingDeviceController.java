@@ -208,9 +208,7 @@ public final class FlingDeviceController implements FlingSocketListener {
     private String mSessionId_y;
     private final long z = 10000L;
     
-    private static IFlingSrvController mFlingConnectedClient;
     private static FlingDeviceController mFlingDeviceController;
-    private static FlingSrvControllerImpl mListener;
 
     private FlingDeviceController(Context context, Handler handler,
             FlingDevice device, String packageName, long debugLevel,
@@ -237,28 +235,13 @@ public final class FlingDeviceController implements FlingSocketListener {
         return volumeLevel;
     }
 
-    static void setListener(FlingSrvControllerImpl listener) {
-        if (mFlingConnectedClient != null) {
-            if(mFlingConnectedClient instanceof FlingConnectedClient)
-                ((FlingConnectedClient) mFlingConnectedClient).setListener(listener);
-            mListener = null;
-        } else {
-            mListener = listener;
-        }
-    }
-
     public static FlingDeviceController create(Context context,
             Handler handler, String packageName, FlingDevice device,
             long debugLevel, IFlingSrvController axy1) {
         FlingDeviceController controller = new FlingDeviceController(context,
                 handler, device, packageName, debugLevel, axy1);
         controller.generateId();
-        if (mListener != null) {
-            if(axy1 instanceof FlingConnectedClient)
-                ((FlingConnectedClient) axy1).setListener(mListener);
-            mListener = null;
-        }
-        mFlingConnectedClient = axy1;
+
         mFlingDeviceController = controller;
         return controller;
     }

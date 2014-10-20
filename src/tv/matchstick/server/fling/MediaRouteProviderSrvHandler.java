@@ -75,8 +75,8 @@ public class MediaRouteProviderSrvHandler extends Handler {
                     if (volume < 0) {
                         flag = false;
                     } else {
-                        flag = MediaRouteProviderSrv.setRouteVolume(routeProvider, messenger,
-                                requestId, arg, volume);
+//                        flag = MediaRouteProviderSrv.setRouteVolume(routeProvider, messenger,
+//                                requestId, arg, volume);
                     }
                     break;
                 case 8: // CLIENT_MSG_UPDATE_ROUTE_VOLUME
@@ -84,19 +84,19 @@ public class MediaRouteProviderSrvHandler extends Handler {
                     if (volume == 0) {
                         flag = false;
                     } else {
-                        flag = MediaRouteProviderSrv.updateRouteVolume(routeProvider,
-                                messenger,
-                                requestId, arg, volume);
+//                        flag = MediaRouteProviderSrv.updateRouteVolume(routeProvider,
+//                                messenger,
+//                                requestId, arg, volume);
                     }
                     break;
                 case 9: // CLIENT_MSG_ROUTE_CONTROL_REQUEST
                     if (!(obj instanceof Intent)) {
                         flag = false;
                     } else {
-                        flag = MediaRouteProviderSrv.routeControlRequest(routeProvider,
-                                messenger,
-                                requestId, arg,
-                                (Intent) obj);
+//                        flag = MediaRouteProviderSrv.routeControlRequest(routeProvider,
+//                                messenger,
+//                                requestId, arg,
+//                                (Intent) obj);
                     }
 
                     break;

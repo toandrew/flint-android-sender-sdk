@@ -10,9 +10,7 @@ import org.json.JSONObject;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
-import tv.matchstick.server.fling.socket.data.BinaryPayload;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
-import tv.matchstick.server.utils.LOG;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,37 +13,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import tv.matchstick.client.internal.IFlingCallbacks;
-import tv.matchstick.client.internal.IFlingDeviceControllerListener;
-import tv.matchstick.client.internal.IFlingServiceBroker;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingDeviceService;
-import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.common.checker.MainThreadChecker;
-import tv.matchstick.server.fling.bridge.FlingConnectedClient;
 import tv.matchstick.server.fling.mdns.DeviceScanner;
 import tv.matchstick.server.fling.mdns.IDeviceScanListener;
 import tv.matchstick.server.fling.mdns.MdnsDeviceScanner;
 import tv.matchstick.server.fling.mdns.MediaRouteDescriptorPrivateData;
 import tv.matchstick.server.fling.media.RouteController;
-import tv.matchstick.server.utils.C_bcx;
 import tv.matchstick.server.utils.LOG;
 
 public class FlingMediaRouteProvider extends MediaRouteProvider {
-    public static final C_bcx i = C_bcx.a(
-            "gms:cast:media:generic_player_app_id", "CC1AD845");
-    public static final C_bcx j = C_bcx.a("gms:cast:media:use_tdls", true);
     private static final LOG mLogs = new LOG("FlingMediaRouteProvider");
     private static FlingMediaRouteProvider mInstance;
-    private static final String mPlayActions[] = {
-            "android.media.intent.action.PAUSE",
-            "android.media.intent.action.RESUME",
-            "android.media.intent.action.STOP",
-            "android.media.intent.action.SEEK",
-            "android.media.intent.action.GET_STATUS",
-            "android.media.intent.action.START_SESSION",
-            "android.media.intent.action.GET_SESSION_STATUS",
-            "android.media.intent.action.END_SESSION" };
+
     private final DeviceScanner mMdnsDeviceScanner;
 
     private final IDeviceScanListener mDeviceScannerListener = new IDeviceScanListener() {
@@ -110,7 +92,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     private boolean s;
     private final DeviceFilter mFlingDeviceFilter;
     private final Set<DiscoveryCriteria> mDiscoveryCriteriaHashSet = new HashSet<DiscoveryCriteria>();
-    private final List<IntentFilter> mIntentFilterList = getAllIntentFilters();
     private final Map<Integer, String> mErrorMap = new HashMap<Integer, String>();
 
     private static final String[] mFlingMimeTypes = { "image/jpeg",
@@ -131,7 +112,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 "Disconnected from Fling Device but trying to reconnect");
 
         mFlingDeviceFilter = new DeviceFilter(context,
-                mDiscoveryCriteriaHashSet, "gms_cast_mrp") {
+                mDiscoveryCriteriaHashSet, context.getPackageName()) {
 
             @Override
             protected void setDeviceOffline(FlingDevice flingdevice) {
@@ -149,7 +130,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 addFlingDevice(FlingMediaRouteProvider.this, flingdevice, set);
                 publishRoutes();
             }
-
         };
 
         mMdnsDeviceScanner = new MdnsDeviceScanner(context);
@@ -173,16 +153,13 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     public static void setDeviceControllerListener(FlingMediaRouteProvider provider,
             FlingRouteController controller) {
-        FlingDevice flingdevice = controller.mFlingDevice;
+        FlingDevice flingdevice = controller.getFlingDevice();
         String id = flingdevice.getDeviceId();
         FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) provider.mFlingDeviceControllerMap
                 .get(id);
         if (awu1 == null) {
             awu1 = new FlingDeviceControllerHelper(provider);
             mLogs.d("set FlingDeviceController Listener %s", flingdevice);
-            FlingSrvControllerImpl awe1 = new FlingSrvControllerImpl(provider,
-                    awu1);
-            FlingDeviceController.setListener(awe1);
             provider.mFlingDeviceControllerMap.put(id, awu1);
         }
         awu1.e.add(controller);
@@ -243,9 +220,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                     && !isEquals(category,
                             "tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK"))
                 continue;
-            for (Iterator iterator1 = mIntentFilterList.iterator(); iterator1
-                    .hasNext(); arraylist.add((IntentFilter) iterator1.next()))
-                ;
         }
 
         mLogs.d("buildRouteDescriptorForDevice: id=%s, description=%s, connecting=%b, volume=%d",
@@ -330,7 +304,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     }
 
     public static void b(FlingMediaRouteProvider awb1, FlingRouteController awn1) {
-        FlingDevice flingdevice = awn1.mFlingDevice;
+        FlingDevice flingdevice = awn1.getFlingDevice();
         String id = flingdevice.getDeviceId();
         FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) awb1.mFlingDeviceControllerMap
                 .get(id);
@@ -378,20 +352,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             flag1 = false;
             while (index < size) {
                 String category = (String) list.get(index);
-                if (category
-                        .equals("android.media.intent.category.REMOTE_PLAYBACK")) {
-                    try {
-                        String s2 = (String) i.b();
-                        DiscoveryCriteria aty2 = new DiscoveryCriteria();
-                        aty2.mCategory = "android.media.intent.category.REMOTE_PLAYBACK";
-                        aty2.mAppid = s2;
-                        mDiscoveryCriteriaHashSet.add(aty2);
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    } finally {
-                        flag2 = isStartScan;
-                    }
-                } else if (!category
+                if (!category
                         .equals("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK")
                         && !category
                                 .startsWith("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK/")
@@ -445,48 +406,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     static DeviceFilter getFlingDeviceFilter(FlingMediaRouteProvider awb1) {
         return awb1.mFlingDeviceFilter;
-    }
-
-    private List<IntentFilter> getAllIntentFilters() {
-        int i1 = 0;
-        ArrayList<IntentFilter> arraylist = new ArrayList<IntentFilter>();
-        IntentFilter intentfilter = new IntentFilter();
-        intentfilter
-                .addCategory("android.media.intent.category.REMOTE_PLAYBACK");
-        intentfilter.addAction("android.media.intent.action.PLAY");
-        intentfilter.addDataScheme("http");
-        intentfilter.addDataScheme("https");
-        // String as[] =
-        // super.mContext_a.getResources().getStringArray(0x7f0e0002);
-        String mimeTypes[] = mFlingMimeTypes;
-        int j1 = mimeTypes.length;
-        int k1 = 0;
-        while (k1 < j1) {
-            String s2 = mimeTypes[k1];
-            try {
-                intentfilter.addDataType(s2);
-            } catch (android.content.IntentFilter.MalformedMimeTypeException malformedmimetypeexception) {
-                throw new RuntimeException(malformedmimetypeexception);
-            }
-            k1++;
-        }
-        arraylist.add(intentfilter);
-        String as1[] = mPlayActions;
-        for (int l1 = as1.length; i1 < l1; i1++) {
-            String s1 = as1[i1];
-            IntentFilter intentfilter2 = new IntentFilter();
-            intentfilter2
-                    .addCategory("android.media.intent.category.REMOTE_PLAYBACK");
-            intentfilter2.addAction(s1);
-            arraylist.add(intentfilter2);
-        }
-
-        IntentFilter intentfilter1 = new IntentFilter();
-        intentfilter1
-                .addCategory("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK");
-        intentfilter1.addAction("tv.matchstick.fling.ACTION_SYNC_STATUS");
-        arraylist.add(intentfilter1);
-        return Collections.unmodifiableList(arraylist);
     }
 
     static Map e(FlingMediaRouteProvider awb1) {

@@ -1,7 +1,6 @@
 
 package tv.matchstick.server.fling.media;
 
-import tv.matchstick.server.utils.C_dt;
 import android.os.Bundle;
 import android.os.SystemClock;
 
@@ -26,7 +25,7 @@ public final class MediaItemStatus {
         stringbuilder = new StringBuilder();
         stringbuilder.append("MediaItemStatus{ ");
         stringbuilder.append("timestamp=");
-        C_dt.a(SystemClock.elapsedRealtime() - mBundle.getLong("timestamp"), stringbuilder);
+        stringbuilder.append(SystemClock.elapsedRealtime() - mBundle.getLong("timestamp"));
         stringbuilder.append(" ms ago");
         stringbuilder1 = stringbuilder.append(", playbackState=");
         playbackState = mBundle.getInt("playbackState", 7);

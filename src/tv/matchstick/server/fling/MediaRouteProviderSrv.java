@@ -184,84 +184,6 @@ public abstract class MediaRouteProviderSrv extends IntentService
         return routeProvider.register(messenger, requestId, arg);
     }
 
-    static boolean setRouteVolume(MediaRouteProviderSrv routeProvider, Messenger messenger,
-            int requestId, int controllerId, int volume)
-    {
-        FlingDeathRecipient deathRecipient = routeProvider.getFlingDeathRecipient(messenger);
-        if (deathRecipient != null)
-        {
-            RouteController routeController = deathRecipient.getRouteController(controllerId);
-            if (routeController != null)
-            {
-                routeController.onSetVolume(volume);
-                
-                if (DEBUG)
-                    Log.d("MediaRouteProviderSrv", deathRecipient + ": Route volume changed, controllerId=" + controllerId + ", volume=" + volume);  
-
-                sendReplyMsg(messenger, requestId);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    static boolean routeControlRequest(final MediaRouteProviderSrv mediaRouteProvider,
-            final Messenger messenger,
-            final int requestId, final int controllerId, final Intent intent)
-    {
-        final FlingDeathRecipient deathRecipient = mediaRouteProvider
-                .getFlingDeathRecipient(messenger);
-        if (deathRecipient != null)
-        {
-            RouteController routeController = deathRecipient.getRouteController(controllerId);
-            if (routeController != null)
-            {
-                RouteCtrlRequestCallback request = null;
-                if (requestId != 0) {
-                    request = new RouteCtrlRequestCallback() {
-                        public final void onResult(Bundle bundle)
-                        {
-                            if (isDebugable())
-                                Log.d("MediaRouteProviderSrv", deathRecipient +  ": Route control request succeeded, controllerId=" + controllerId +  ", intent=" + intent + ", data=" + bundle); 
-
-                            if (mediaRouteProvider.getFlingDeathRecipitentListIndex(messenger) >= 0)
-                                sendReplyMsg(messenger, 3, requestId, bundle,
-                                        null); // 3:SERVICE_MSG_CONTROL_REQUEST_SUCCEEDED
-                        }
-
-                        public final void onError(String error, Bundle bundle)
-                        {
-                            if (isDebugable())
-                                Log.d("MediaRouteProviderSrv", deathRecipient + ": Route control request failed, controllerId=" + controllerId + ", intent=" + intent + ", error=" + error + ", data=" + bundle);
-
-                            if (mediaRouteProvider.getFlingDeathRecipitentListIndex(messenger) >= 0)
-                            {
-                                if (error == null) {
-                                    sendReplyMsg(messenger, 4, requestId, bundle,
-                                            null); // 4:SERVICE_MSG_CONTROL_REQUEST_FAILED
-                                } else {
-                                    Bundle bundle1 = new Bundle();
-                                    bundle1.putString("error", error);
-                                    sendReplyMsg(messenger, 4, requestId, bundle,
-                                            bundle1);
-                                }
-                            }
-                            return;
-                        }
-                    };
-                }
-                if (routeController.onControlRequest(intent, request))
-                {
-                    if (DEBUG)
-                        Log.d("MediaRouteProviderSrv",deathRecipient + ": Route control request delivered, controllerId=" + controllerId + ", intent=" + intent);  
-
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     static boolean createRouteController(MediaRouteProviderSrv routeProvider,
             Messenger messenger,
             int requestId, int controllerId, String routeId)
@@ -442,27 +364,6 @@ public abstract class MediaRouteProviderSrv extends IntentService
         {
             return false;
         }
-    }
-
-    static boolean updateRouteVolume(MediaRouteProviderSrv routeProvider, Messenger messenger,
-            int requestId, int controllerId, int delta)
-    {
-        FlingDeathRecipient deathRecipient = routeProvider.getFlingDeathRecipient(messenger);
-        if (deathRecipient != null)
-        {
-            RouteController routeController = deathRecipient.getRouteController(controllerId);
-            if (routeController != null)
-            {
-                routeController.onUpdateVolume(delta);
-                
-                if (DEBUG)
-                    Log.d("MediaRouteProviderSrv", deathRecipient + ": Route volume updated, controllerId=" + controllerId + ", delta=" + delta);
-
-                sendReplyMsg(messenger, requestId);
-                return true;
-            }
-        }
-        return false;
     }
 
     private int getFlingDeathRecipitentListIndex(Messenger messenger)
