@@ -209,7 +209,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
         char c2;
         c1 = '\u07D1';
         c2 = '\r';
-        mLogUtil.logd("Received: %s", new Object[] { message });
+        log.logd("Received: %s", new Object[] { message });
 
         try {
             JSONObject jsonobject;
@@ -238,7 +238,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                         Object aobj[] = new Object[2];
                         aobj[0] = e.getMessage();
                         aobj[1] = message;
-                        mLogUtil.logw(
+                        log.logw(
                                 "Message is malformed (%s); ignoring: %s", aobj);
                         return;
                     }
@@ -252,7 +252,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                 mGetStatusRequestTracker.trackRequest(reuestId, 0);
                 if (mLaunchRequestTracker.trackRequest(reuestId, 0)) {
                     if (appInfo != null) {
-                        mLogUtil.logd("application launch has completed",
+                        log.logd("application launch has completed",
                                 new Object[0]);
                         onConnectToApplicationAndNotify(appInfo);
                     }
@@ -272,7 +272,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
 
                 if (flag1) // goto _L13; else goto _L12
                 {
-                    mLogUtil.logd("application has stopped", new Object[0]);
+                    log.logd("application has stopped", new Object[0]);
                 }
                 {
                     if (!flag1 && !flag2) {
@@ -293,9 +293,9 @@ public abstract class ReceiverControlChannel extends FlingChannel {
                     Object aobj1[] = new Object[2];
                     aobj1[0] = Long.valueOf(reuestId);
                     aobj1[1] = Boolean.valueOf(ignoreVolume);
-                    mLogUtil.logd("requestId = %d, ignoreVolume = %b", aobj1);
+                    log.logd("requestId = %d, ignoreVolume = %b", aobj1);
                     if (!mFirst) {
-                        mLogUtil.logd(
+                        log.logd(
                                 "first status received, so not ignoring volume change",
                                 new Object[0]);
                         mFirst = true;
@@ -374,7 +374,7 @@ public abstract class ReceiverControlChannel extends FlingChannel {
     protected abstract void onStatusRequestFailed(int j);
 
     public final void setTransportId(String transId) {
-        mLogUtil.logd("current transport id (in control channel) is now: %s",
+        log.logd("current transport id (in control channel) is now: %s",
                 new Object[] { transId });
         mTransportId = transId;
     }

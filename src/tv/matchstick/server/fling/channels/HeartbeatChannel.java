@@ -38,7 +38,7 @@ public final class HeartbeatChannel extends FlingChannel {
             if (mCounter < 5) {
                 android.util.Log.d("HeartbeatChannel", "retry PING: "
                         + mCounter);
-                mLogUtil.logv("retry PING", new Object[0]);
+                log.logv("retry PING", new Object[0]);
                 sendPing();
                 mCounter++;
             } else {
@@ -57,7 +57,7 @@ public final class HeartbeatChannel extends FlingChannel {
 
     private void sendPing() {
         JSONObject jsonobject;
-        mLogUtil.logv("sending PING", new Object[0]);
+        log.logv("sending PING", new Object[0]);
         jsonobject = new JSONObject();
         try {
             jsonobject.put("type", "PING");
@@ -76,7 +76,7 @@ public final class HeartbeatChannel extends FlingChannel {
     @Override
     public final void onMessageReceived(String message) {
         reset();
-        mLogUtil.logv("Received: %s", new Object[] { message });
+        log.logv("Received: %s", new Object[] { message });
         boolean flag;
         JSONObject jsonobject;
         try {
@@ -85,13 +85,13 @@ public final class HeartbeatChannel extends FlingChannel {
             Object aobj[] = new Object[2];
             aobj[0] = jsonexception.getMessage();
             aobj[1] = message;
-            mLogUtil.logw("Message is malformed (%s); ignoring: %s", aobj);
+            log.logw("Message is malformed (%s); ignoring: %s", aobj);
             return;
         }
         if (!flag) {
             return;
         }
-        mLogUtil.logv("sending PONG", new Object[0]);
+        log.logv("sending PONG", new Object[0]);
         jsonobject = new JSONObject();
         try {
             jsonobject.put("type", "PONG");
