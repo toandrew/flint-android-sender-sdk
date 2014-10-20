@@ -33,7 +33,6 @@ import java.util.List;
 public final class FlingRouteController extends RouteController implements
 RequestTrackerCallback, IMediaChannelHelper {
     public final FlingDevice mFlingDevice;
-    public FlingDeviceController mFlingDeviceController;
     double c;
     String d;
     public MediaRouteSession mMediaRouteSession;
@@ -101,7 +100,7 @@ RequestTrackerCallback, IMediaChannelHelper {
     }
 
     private void a(Intent intent) {
-        long l1 = mFlingDeviceController.h();
+        long l1 = getFlingDeviceController().h();
         Bundle bundle = intent.getExtras();
         if (bundle
                 .containsKey("tv.matchstick.fling.EXTRA_DEBUG_LOGGING_ENABLED")) {
@@ -113,7 +112,7 @@ RequestTrackerCallback, IMediaChannelHelper {
                 l1 &= -2L;
             FlingMediaRouteProvider.getLogs_a().setDebugEnabled(flag);
         }
-        mFlingDeviceController.setDebugLevel(l1);
+        getFlingDeviceController().setDebugLevel(l1);
     }
 
     private void a(TrackedItem aws1) {
@@ -540,7 +539,7 @@ RequestTrackerCallback, IMediaChannelHelper {
             if (i1 == 1) {
                 o = awt1;
                 h = true;
-                if (mFlingDeviceController.isConnected()) {
+                if (getFlingDeviceController().isConnected()) {
                     startSession(0);
                 } else {
                     f = 2;
@@ -555,7 +554,7 @@ RequestTrackerCallback, IMediaChannelHelper {
             }
             if (currentSessionId == null) {
                 o = awt1;
-                if (mFlingDeviceController.isConnected()) {
+                if (getFlingDeviceController().isConnected()) {
                     resumeSession(sessionId);
                 } else {
                     f = 2;
@@ -740,12 +739,12 @@ RequestTrackerCallback, IMediaChannelHelper {
     public final void onSetVolume(int volume) {
         FlingMediaRouteProvider.getLogs_a()
                 .d("onSetVolume() volume=%d", volume);
-        if (mFlingDeviceController == null) {
+        if (getFlingDeviceController() == null) {
             return;
         }
         double d1 = (double) volume / 20D;
         try {
-            mFlingDeviceController.setVolume(d1, c, false);
+            getFlingDeviceController().setVolume(d1, c, false);
         } catch (IllegalStateException e) {
             FlingMediaRouteProvider.getLogs_a().d("Unable to set volume: %s",
                     e.getMessage());
@@ -903,8 +902,8 @@ RequestTrackerCallback, IMediaChannelHelper {
                     sendItemStatusUpdate();
                 }
             };
-
-            mFlingDeviceController.a(mMediaControlChannel);
+            if (getFlingDeviceController() != null)
+                getFlingDeviceController().a(mMediaControlChannel);
             if (o != null) {
                 processRemotePlaybackRequest(o);
                 o = null;
@@ -962,21 +961,25 @@ RequestTrackerCallback, IMediaChannelHelper {
 
     public final void onSelect() {
         FlingMediaRouteProvider.getLogs_a().d("onSelect");
-        mFlingDeviceController = FlingMediaRouteProvider
-                .createDeviceController(mFlingMediaRouteProvider, this);
-        mMediaRouteSession = new MediaRouteSession(mFlingDeviceController,
+        FlingMediaRouteProvider
+                .setDeviceControllerListener(mFlingMediaRouteProvider, this);
+        mMediaRouteSession = new MediaRouteSession(
                 this,
                 ((MediaRouteProvider) (mFlingMediaRouteProvider)).mHandler);
+    }
+    
+    private FlingDeviceController getFlingDeviceController() {
+        return FlingDeviceController.getCurrentController();
     }
 
     public final void onUpdateVolume(int delta) {
         FlingMediaRouteProvider.getLogs_a().d("onUpdateVolume() delta=%d",
                 delta);
-        if (mFlingDeviceController == null)
+        if (getFlingDeviceController() == null)
             return;
         try {
             double d1 = c + (double) delta / 20D;
-            mFlingDeviceController.setVolume(d1, c, false);
+            getFlingDeviceController().setVolume(d1, c, false);
             return;
         } catch (IllegalStateException illegalstateexception) {
             FlingMediaRouteProvider.getLogs_a().d(
@@ -998,7 +1001,7 @@ RequestTrackerCallback, IMediaChannelHelper {
         FlingMediaRouteProvider.getLogs_a().d("onUnselect");
         endSession();
         FlingMediaRouteProvider.b(mFlingMediaRouteProvider, this);
-        mFlingDeviceController = null;
+        FlingDeviceController.setListener(null);
     }
 
     public final void onApplicationDisconnected(int statusCode) {
@@ -1035,8 +1038,8 @@ RequestTrackerCallback, IMediaChannelHelper {
         if (!i) {
             FlingMediaRouteProvider.getLogs_a().d("detachMediaChannel");
             if (mMediaControlChannel != null) {
-                if (mFlingDeviceController != null)
-                    mFlingDeviceController.b(mMediaControlChannel);
+                if (getFlingDeviceController() != null)
+                    getFlingDeviceController().b(mMediaControlChannel);
                 mMediaControlChannel = null;
             }
         }

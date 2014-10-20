@@ -10,7 +10,7 @@ import tv.matchstick.server.common.checker.ObjEqualChecker;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.utils.LOG;
 
-final class FlingSrvControllerImpl implements IFlingSrvController {
+public final class FlingSrvControllerImpl implements IFlingSrvController {
     final FlingDeviceControllerHelper mFlingDeviceControllerHelper;
     final FlingMediaRouteProvider mFlingMediaRouteProvider;
 
@@ -66,7 +66,7 @@ final class FlingSrvControllerImpl implements IFlingSrvController {
                 {
                     FlingMediaRouteProvider.getLogs_a().d("MRP trying to reconnect");
                     mFlingDeviceControllerHelper.c = true;
-                    mFlingDeviceControllerHelper.mFlingDeviceController.connectDevice();
+                    mFlingDeviceControllerHelper.getController().connectDevice();
                 }
                 FlingMediaRouteProvider.publishRoutes(mFlingMediaRouteProvider);
             }
@@ -144,7 +144,7 @@ final class FlingSrvControllerImpl implements IFlingSrvController {
                     // double d;
                     LOG avu1;
                     Object aobj[];
-                    if (awn1.mFlingDeviceController != null
+                    if (FlingDeviceController.getCurrentController() != null
                             && !ObjEqualChecker.isEquals(s, awn1.d))
                     {
                         awn1.d = s;
@@ -155,7 +155,7 @@ final class FlingSrvControllerImpl implements IFlingSrvController {
                     }
                     flag2 = flag | flag1;
                     // d = b;
-                    if (awn1.mFlingDeviceController == null) {
+                    if (FlingDeviceController.getCurrentController() == null) {
                         flag3 = false;
                         flag = flag3 | flag2;
                         continue;

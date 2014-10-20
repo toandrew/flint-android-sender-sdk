@@ -8,6 +8,7 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
+import tv.matchstick.server.fling.FlingSrvControllerImpl;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 
@@ -29,6 +30,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     private final IFlingCallbacks mFlingCallbacks;
     private final String mPackageName;
     private final long mFlags;
+    private FlingSrvControllerImpl mListener;
 
     /**
      * Fling Client which will be interacted with app side to do all media
@@ -162,15 +164,22 @@ public final class FlingConnectedClient implements IFlingSrvController {
         FlingService.removeFlingClient(client.mFlingService, client);
     }
 
+    public void setListener(FlingSrvControllerImpl flingSrvControllerImpl) {
+        mListener = flingSrvControllerImpl;
+    }
+    
     /**
      * Invoked when connected with fling device. The app side will be notified
      * the current connected status(0)
      * 
      */
+    @Override
     public final void onConnected() {
         try {
             mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
                     mStubImpl.asBinder(), null);
+            if (mListener != null)
+                mListener.onConnected();
             FlingService.log().d("Connected to device.");
         } catch (RemoteException remoteexception) {
             FlingService.log().w(remoteexception,
@@ -184,10 +193,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
      * 
      * @status the disconnected reason
      */
+    @Override
     public final void onDisconnected(int status) {
         FlingService.log().d("onDisconnected: status=%d", status);
         try {
             mFlingDeviceControllerListener.onDisconnected(status);
+            if (mListener != null)
+                mListener.onDisconnected(status);
         } catch (RemoteException remoteexception) {
             FlingService.log().d(remoteexception,
                     "client died while brokering service", new Object[0]);
@@ -208,6 +220,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * Called when disconnected with application
      */
+    @Override
     public final void onApplicationConnected(
             ApplicationMetadata applicationmetadata, String applicationId,
             String sessionId, boolean relaunched) {
@@ -216,6 +229,8 @@ public final class FlingConnectedClient implements IFlingSrvController {
         try {
             mFlingDeviceControllerListener.onApplicationConnected(
                     applicationmetadata, applicationId, sessionId, relaunched);
+            if (mListener != null)
+                mListener.onApplicationConnected(applicationmetadata, applicationId, sessionId, relaunched);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -224,13 +239,15 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * Called when fling device's volume changed
      */
+    @Override
     public final void onVolumeChanged(String status, double volume,
             boolean muteState) {
         try {
             mFlingDeviceControllerListener
                     .notifyApplicationStatusOrVolumeChanged(status, volume,
                             muteState);
-            return;
+            if (mListener != null)
+                mListener.onVolumeChanged(status, volume, muteState);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -239,10 +256,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * called for request callback
      */
+    @Override
     public final void onRequestCallback(String namespace, long requestId) {
         try {
             mFlingDeviceControllerListener
                     .requestCallback(namespace, requestId);
+            if (mListener != null)
+                mListener.onRequestCallback(namespace, requestId);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -251,11 +271,14 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * called for request callback
      */
+    @Override
     public final void onRequestCallback(String namespace, long requestId,
             int result) {
         try {
             mFlingDeviceControllerListener.requestCallback(namespace,
                     requestId, result);
+            if (mListener != null)
+                mListener.onRequestCallback(namespace, requestId, result);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -264,10 +287,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notified app when message received
      */
+    @Override
     public final void notifyOnMessageReceived(String namespace, String message) {
         try {
             mFlingDeviceControllerListener
                     .onMessageReceived(namespace, message);
+            if (mListener != null)
+                mListener.notifyOnMessageReceived(namespace, message);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -276,9 +302,12 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notified app when binary message is received
      */
+    @Override
     public final void onReceiveBinary(String namespace, byte message[]) {
         try {
             mFlingDeviceControllerListener.onReceiveBinary(namespace, message);
+            if (mListener != null)
+                mListener.onReceiveBinary(namespace, message);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -287,10 +316,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notify app when connected to device without app
      */
+    @Override
     public final void onConnectedWithoutApp() {
         try {
             mFlingCallbacks
                     .onPostInitComplete(1001, mStubImpl.asBinder(), null);
+            if (mListener != null)
+                mListener.onConnectedWithoutApp();
             FlingService.log().d("Connected to device without app.");
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -302,10 +334,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notify app when failed connected with application
      */
+    @Override
     public final void onApplicationConnectionFailed(int reason) {
         try {
             mFlingDeviceControllerListener
                     .postApplicationConnectionResult(reason);
+            if (mListener != null)
+                mListener.onApplicationConnectionFailed(reason);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -314,10 +349,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notify app when failed to connect to device
      */
+    @Override
     public final void onConnectionFailed() {
         try {
             mFlingCallbacks.onPostInitComplete(FlingStatusCodes.NETWORK_ERROR,
                     null, null);
+            if (mListener != null)
+                mListener.onConnectionFailed();
         } catch (RemoteException e) {
             e.printStackTrace();
             FlingService.log().d(e, "client died while brokering service",
@@ -328,9 +366,12 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notify app the current request status
      */
+    @Override
     public final void onRequestStatus(int result) {
         try {
             mFlingDeviceControllerListener.onRequestStatus(result);
+            if (mListener != null)
+                mListener.onRequestStatus(result);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -339,10 +380,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notify app that the request is invalid
      */
+    @Override
     public final void onInvalidRequest() {
         try {
             mFlingDeviceControllerListener
                     .onRequestResult(FlingStatusCodes.INVALID_REQUEST); // 2001
+            if (mListener != null)
+                mListener.onInvalidRequest();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -351,9 +395,12 @@ public final class FlingConnectedClient implements IFlingSrvController {
     /**
      * notify app that application is disconnected for some reason
      */
+    @Override
     public final void onApplicationDisconnected(int reason) {
         try {
             mFlingDeviceControllerListener.onApplicationDisconnected(reason);
+            if (mListener != null)
+                mListener.onApplicationDisconnected(reason);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

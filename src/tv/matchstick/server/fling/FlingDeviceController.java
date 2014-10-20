@@ -23,6 +23,7 @@ import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.PlatformChecker;
 import tv.matchstick.server.common.exception.FlingMessageLargeException;
+import tv.matchstick.server.fling.bridge.FlingConnectedClient;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.fling.channels.ConnectionControlChannel;
 import tv.matchstick.server.fling.channels.DeviceAuthChannel;
@@ -206,6 +207,10 @@ public final class FlingDeviceController implements FlingSocketListener {
     private String mApplicationId;
     private String mSessionId_y;
     private final long z = 10000L;
+    
+    private static IFlingSrvController mFlingConnectedClient;
+    private static FlingDeviceController mFlingDeviceController;
+    private static FlingSrvControllerImpl mListener;
 
     private FlingDeviceController(Context context, Handler handler,
             FlingDevice device, String packageName, long debugLevel,
@@ -232,23 +237,34 @@ public final class FlingDeviceController implements FlingSocketListener {
         return volumeLevel;
     }
 
+    static void setListener(FlingSrvControllerImpl listener) {
+        if (mFlingConnectedClient != null) {
+            if(mFlingConnectedClient instanceof FlingConnectedClient)
+                ((FlingConnectedClient) mFlingConnectedClient).setListener(listener);
+            mListener = null;
+        } else {
+            mListener = listener;
+        }
+    }
+
     public static FlingDeviceController create(Context context,
             Handler handler, String packageName, FlingDevice device,
             long debugLevel, IFlingSrvController axy1) {
         FlingDeviceController controller = new FlingDeviceController(context,
                 handler, device, packageName, debugLevel, axy1);
         controller.generateId();
+        if (mListener != null) {
+            if(axy1 instanceof FlingConnectedClient)
+                ((FlingConnectedClient) axy1).setListener(mListener);
+            mListener = null;
+        }
+        mFlingConnectedClient = axy1;
+        mFlingDeviceController = controller;
         return controller;
     }
 
-    public static FlingDeviceController create(Context context,
-            Handler handler, String packageName, FlingDevice device,
-            IFlingSrvController axy1) {
-        return create(context, handler, packageName, device, 0L, axy1);
-    }
-
-    static IFlingSrvController getFlingSrvController(FlingDeviceController axs1) {
-        return axs1.mFlingSrvController;
+    public static FlingDeviceController getCurrentController() {
+        return mFlingDeviceController;
     }
 
     private void connectToApplicationAndNotify(ApplicationInfo applicationInfo,

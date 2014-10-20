@@ -12,9 +12,9 @@ import android.os.RemoteException;
  * a bridge to Fling Service
  */
 public interface IFlingServiceBroker extends IInterface {
-    public void initFlingService(IFlingCallbacks flingCallbacks, int requestVersion,
-            String packageName, IBinder binder, Bundle bundle)
-            throws RemoteException;
+    public void initFlingService(IFlingCallbacks flingCallbacks,
+            int requestVersion, String packageName, IBinder binder,
+            Bundle bundle) throws RemoteException;
 
     public static abstract class Stub extends Binder implements
             IFlingServiceBroker {
@@ -79,6 +79,7 @@ public interface IFlingServiceBroker extends IInterface {
                 return mRemote;
             }
 
+            @Override
             public void initFlingService(IFlingCallbacks flingCallbacks,
                     int version, String pakcageName, IBinder binder,
                     Bundle bundle) throws RemoteException {

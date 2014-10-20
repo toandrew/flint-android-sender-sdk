@@ -8,7 +8,6 @@ import android.os.Handler;
 
 public final class MediaRouteSession {
     private static final LOG log = new LOG("MediaRouteSession");
-    private final FlingDeviceController mFlingDeviceController;
     private final IMediaChannelHelper mMediaChannelHelper;
     private final Handler mHandler;
     private int mState;
@@ -18,10 +17,9 @@ public final class MediaRouteSession {
     private SessionPrivateData mSessionPrivateData;
     private boolean j;
 
-    public MediaRouteSession(FlingDeviceController axs1, IMediaChannelHelper helper,
+    public MediaRouteSession(IMediaChannelHelper helper,
             Handler handler)
     {
-        mFlingDeviceController = axs1;
         mMediaChannelHelper = helper;
         mHandler = handler;
         mState = 4;
@@ -33,12 +31,16 @@ public final class MediaRouteSession {
         return axe1.mMediaChannelHelper;
     }
 
+    private FlingDeviceController getController() {
+        return FlingDeviceController.getCurrentController();
+    }
+    
     private void launchApplication(String applicationId, String sessionId,
             boolean relaunchIfRunning)
     {
         mState = 1;
         mSessionPrivateData = null;
-        mFlingDeviceController.launchApplication(applicationId, sessionId, relaunchIfRunning);
+        getController().launchApplication(applicationId, sessionId, relaunchIfRunning);
     }
 
     private void c()
@@ -48,11 +50,11 @@ public final class MediaRouteSession {
         {
             j = false;
             mApplicationMetadata = null;
-            mFlingDeviceController.stopApplication("");
+            getController().stopApplication("");
             return;
         } else
         {
-            mFlingDeviceController.leaveApplication();
+            getController().leaveApplication();
             return;
         }
     }
@@ -166,7 +168,7 @@ public final class MediaRouteSession {
             throw new IllegalStateException("session is not currently stopped! state=" + mState);
 
         mState = 1;
-        mFlingDeviceController.joinApplication(applicationId, sessionId);
+        getController().joinApplication(applicationId, sessionId);
     }
 
     public final synchronized void startSession(String applicationId, String sessionId, boolean relaunchIfRunning)

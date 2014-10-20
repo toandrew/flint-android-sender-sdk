@@ -8,7 +8,6 @@ import tv.matchstick.fling.service.FlingService;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.IInterface;
 
 /**
  * Fling Service's binder
