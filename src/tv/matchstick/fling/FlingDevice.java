@@ -1,8 +1,5 @@
 package tv.matchstick.fling;
 
-import android.os.Bundle;
-import android.os.Parcel;
-
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -10,16 +7,100 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
+import tv.matchstick.server.common.exception.FlingRuntimeException;
 import tv.matchstick.server.fling.mdns.FlingDeviceHelper;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Contain all info about a Fling device.
  */
 public class FlingDevice implements SafeParcelable {
-	public static final Creator CREATOR = new FlingDeviceCreator();
+	public static final Parcelable.Creator<FlingDevice> CREATOR = new Parcelable.Creator<FlingDevice>() {
+
+		@Override
+		public FlingDevice createFromParcel(Parcel source) {
+			// TODO Auto-generated method stub
+
+			int servicePor = 0;
+			ArrayList<WebImage> icons = null;
+			int length = ParcelReadUtil.readStart(source);
+			String deviceVersion = null;
+			String modelName = null;
+			String friendlyName = null;
+			String hostAddress = null;
+			String deviceId = null;
+			int versionCode = 0;
+
+			do {
+				if (source.dataPosition() < length) {
+					int position = source.readInt();
+					switch (0xffff & position) {
+					default:
+						ParcelReadUtil.skip(source, position);
+						break;
+
+					case 1:
+						versionCode = ParcelReadUtil.readInt(source, position);
+						break;
+
+					case 2:
+						deviceId = ParcelReadUtil.readString(source, position);
+						break;
+
+					case 3:
+						hostAddress = ParcelReadUtil.readString(source,
+								position);
+						break;
+
+					case 4:
+						friendlyName = ParcelReadUtil.readString(source,
+								position);
+						break;
+
+					case 5:
+						modelName = ParcelReadUtil.readString(source, position);
+						break;
+
+					case 6:
+						deviceVersion = ParcelReadUtil.readString(source,
+								position);
+						break;
+
+					case 7:
+						servicePor = ParcelReadUtil.readInt(source, position);
+						break;
+
+					case 8:
+						icons = ParcelReadUtil.readCreatorList(source,
+								position, WebImage.CREATOR);
+						break;
+					}
+				} else if (source.dataPosition() != length) {
+					throw new FlingRuntimeException((new StringBuilder(
+							"Overread allowed size end=")).append(length)
+							.toString(), source);
+				} else {
+					return new FlingDevice(versionCode, deviceId, hostAddress,
+							friendlyName, modelName, deviceVersion, servicePor,
+							icons);
+				}
+			} while (true);
+		}
+
+		@Override
+		public FlingDevice[] newArray(int size) {
+			// TODO Auto-generated method stub
+			return new FlingDevice[size];
+		}
+
+	};
 
 	/**
 	 * Host address
@@ -73,14 +154,22 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Create fling device.
 	 *
-	 * @param versionCode SDK version code
-	 * @param deviceId Fling device Id
-	 * @param hostAddress device's Host Address
-	 * @param friendlyName device's name
-	 * @param modelName device's model name
-	 * @param deviceVersion device's version
-	 * @param servicePor device's service port
-	 * @param icons device icons
+	 * @param versionCode
+	 *            SDK version code
+	 * @param deviceId
+	 *            Fling device Id
+	 * @param hostAddress
+	 *            device's Host Address
+	 * @param friendlyName
+	 *            device's name
+	 * @param modelName
+	 *            device's model name
+	 * @param deviceVersion
+	 *            device's version
+	 * @param servicePor
+	 *            device's service port
+	 * @param icons
+	 *            device icons
 	 */
 	public FlingDevice(int versionCode, String deviceId, String hostAddress,
 			String friendlyName, String modelName, String deviceVersion,
@@ -106,8 +195,10 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set device's service port.
 	 *
-	 * @param flingdevice Fling device
-	 * @param port device service port
+	 * @param flingdevice
+	 *            Fling device
+	 * @param port
+	 *            device service port
 	 * @return port device service port
 	 */
 	public static int setServicePort(FlingDevice flingdevice, int port) {
@@ -118,8 +209,10 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Create fling device's container.
 	 *
-	 * @param deviceId device Id
-	 * @param inet4address device address
+	 * @param deviceId
+	 *            device Id
+	 * @param inet4address
+	 *            device address
 	 * @return fling device's container
 	 */
 	public static FlingDeviceHelper createHelper(String deviceId,
@@ -132,8 +225,10 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set fling device's id.
 	 *
-	 * @param flingdevice Fling device
-	 * @param deviceID device Id
+	 * @param flingdevice
+	 *            Fling device
+	 * @param deviceID
+	 *            device Id
 	 * @return device Id
 	 */
 	public static String setDeviceId(FlingDevice flingdevice, String deviceID) {
@@ -144,7 +239,8 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Get fling device's host.
 	 *
-	 * @param flingdevice Fling device
+	 * @param flingdevice
+	 *            Fling device
 	 * @return device's host address.
 	 */
 	public static Inet4Address getHost(FlingDevice flingdevice) {
@@ -154,8 +250,10 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set device's host.
 	 *
-	 * @param flingdevice Fling device
-	 * @param inet4address host address
+	 * @param flingdevice
+	 *            Fling device
+	 * @param inet4address
+	 *            host address
 	 * @return device address
 	 */
 	public static Inet4Address setHost(FlingDevice flingdevice,
@@ -167,8 +265,10 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set icon list.
 	 *
-	 * @param flingdevice Fling device
-	 * @param list icon list
+	 * @param flingdevice
+	 *            Fling device
+	 * @param list
+	 *            icon list
 	 * @return icon list
 	 */
 	public static List<WebImage> setIconList(FlingDevice flingdevice,
@@ -180,24 +280,28 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Get device from bundle data.
 	 *
-	 * @param bundle bundle data which contains device info
+	 * @param bundle
+	 *            bundle data which contains device info
 	 * @return Fling device
 	 */
 	public static FlingDevice getFromBundle(Bundle bundle) {
 		if (bundle == null) {
 			return null;
-		} else {
-			bundle.setClassLoader(FlingDevice.class.getClassLoader());
-			return (FlingDevice) bundle
-					.getParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE");
 		}
+
+		bundle.setClassLoader(FlingDevice.class.getClassLoader());
+
+		return (FlingDevice) bundle
+				.getParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE");
 	}
 
 	/**
 	 * Set friendly name.
 	 *
-	 * @param flingdevice Fling device
-	 * @param name device name
+	 * @param flingdevice
+	 *            Fling device
+	 * @param name
+	 *            device name
 	 * @return device name
 	 */
 	public static String setFriendlyName(FlingDevice flingdevice, String name) {
@@ -208,8 +312,10 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set model name.
 	 *
-	 * @param flingdevice Fling device
-	 * @param name device model name
+	 * @param flingdevice
+	 *            Fling device
+	 * @param name
+	 *            device model name
 	 * @return device model name
 	 */
 	public static String setModelName(FlingDevice flingdevice, String name) {
@@ -220,11 +326,14 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set device's version.
 	 *
-	 * @param flingdevice Fling device
-	 * @param version device version
+	 * @param flingdevice
+	 *            Fling device
+	 * @param version
+	 *            device version
 	 * @return device version
 	 */
-	public static String setDeviceVersion(FlingDevice flingdevice, String version) {
+	public static String setDeviceVersion(FlingDevice flingdevice,
+			String version) {
 		flingdevice.mDeviceVersion = version;
 		return version;
 	}
@@ -239,17 +348,17 @@ public class FlingDevice implements SafeParcelable {
 	}
 
 	/**
-	 * Fill device's bundle data with FlingDevice data 
+	 * Fill device's bundle data with FlingDevice data
 	 *
-	 * @param bundle FlingDevice bundle data
+	 * @param bundle
+	 *            FlingDevice bundle data
 	 */
 	public final void putInBundle(Bundle bundle) {
 		if (bundle == null) {
 			return;
-		} else {
-			bundle.putParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE", this);
-			return;
 		}
+
+		bundle.putParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE", this);
 	}
 
 	/**
@@ -305,19 +414,24 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Check whether they are the same Fling device.
 	 *
-	 * @param flingDevice Fling device
+	 * @param flingDevice
+	 *            Fling device
 	 * @return true for same device, or false
 	 */
 	public final boolean isSameDevice(FlingDevice flingDevice) {
-		if (flingDevice == null)
+		if (flingDevice == null) {
 			return false;
-		if (getDeviceId() == null)
+		}
+
+		if (getDeviceId() == null) {
 			return (flingDevice.getDeviceId() == null);
-		return ObjEqualChecker
-				.isEquals(getDeviceId(), flingDevice.getDeviceId());
+		}
+
+		return ObjEqualChecker.isEquals(getDeviceId(),
+				flingDevice.getDeviceId());
 
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == this) {
@@ -333,10 +447,10 @@ public class FlingDevice implements SafeParcelable {
 		if (mDeviceId == null) {
 			if (flingDevice.mDeviceId == null) {
 				return true;
-			} else {
-				return false;
 			}
+			return false;
 		}
+
 		if (ObjEqualChecker.isEquals(mDeviceId, flingDevice.mDeviceId)
 				&& ObjEqualChecker.isEquals(mHost, flingDevice.mHost)
 				&& ObjEqualChecker.isEquals(mModleName, flingDevice.mModleName)
@@ -381,8 +495,10 @@ public class FlingDevice implements SafeParcelable {
 	 */
 	public final WebImage getIcon(int preferredWidth, int preferredHeight) {
 		if (mIconList != null && !mIconList.isEmpty()) {
-			if ((preferredWidth <= 0) || (preferredHeight <= 0))
+			if ((preferredWidth <= 0) || (preferredHeight <= 0)) {
 				return ((WebImage) this.mIconList.get(0));
+			}
+
 			WebImage image1 = null;
 			WebImage image2 = null;
 			for (int i = 0; i < mIconList.size(); i++) {
@@ -392,8 +508,9 @@ public class FlingDevice implements SafeParcelable {
 				if ((width >= preferredWidth) && (height >= height)) {
 					if ((image1 == null)
 							|| ((image1.getWidth() > width) && (image1
-									.getHeight() > height)))
+									.getHeight() > height))) {
 						image1 = image;
+					}
 				} else if ((width < preferredWidth)
 						&& (height < preferredHeight)
 						&& (((image2 == null) || ((image2.getWidth() < width) && (image2
@@ -403,12 +520,14 @@ public class FlingDevice implements SafeParcelable {
 			}
 			if (image1 != null) {
 				return image1;
-			} else if (image2 != null) {
-				return image2;
-			} else {
-				return (WebImage) mIconList.get(0);
 			}
+			if (image2 != null) {
+				return image2;
+			}
+
+			return (WebImage) mIconList.get(0);
 		}
+
 		return null;
 	}
 
@@ -423,22 +542,34 @@ public class FlingDevice implements SafeParcelable {
 
 	@Override
 	public int hashCode() {
-		if (mDeviceId == null)
+		if (mDeviceId == null) {
 			return 0;
-		else
-			return mDeviceId.hashCode();
+		}
+
+		return mDeviceId.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		Object aobj[] = new Object[2];
-		aobj[0] = mFriendlyName;
-		aobj[1] = mDeviceId;
-		return String.format("\"%s\" (%s)", aobj);
+		return String.format("\"%s\" (%s)", mFriendlyName, mDeviceId);
 	}
 
 	@Override
 	public void writeToParcel(Parcel parcel, int flags) {
-		FlingDeviceCreator.buildParcel(this, parcel);
+		buildParcel(parcel);
 	}
+
+	private void buildParcel(Parcel parcel) {
+		int position = ParcelWriteUtil.position(parcel);
+		ParcelWriteUtil.write(parcel, 1, getVersionCode());
+		ParcelWriteUtil.write(parcel, 2, getDeviceId(), false);
+		ParcelWriteUtil.write(parcel, 3, mHostAddress, false);
+		ParcelWriteUtil.write(parcel, 4, getFriendlyName(), false);
+		ParcelWriteUtil.write(parcel, 5, getModelName(), false);
+		ParcelWriteUtil.write(parcel, 6, getDeviceVersion(), false);
+		ParcelWriteUtil.write(parcel, 7, getServicePort());
+		ParcelWriteUtil.write(parcel, 8, getIcons(), false);
+		ParcelWriteUtil.writeEnd(parcel, position);
+	}
+
 }

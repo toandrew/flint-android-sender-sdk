@@ -7,11 +7,11 @@ import java.net.URLEncoder;
 import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.client.internal.FlingClientImpl;
 import tv.matchstick.client.internal.ValueChecker;
-import tv.matchstick.fling.internal.Api;
-import tv.matchstick.fling.internal.MatchStickApi.MatchStickApiImpl;
 import tv.matchstick.fling.FlingManager.ApiOptions;
 import tv.matchstick.fling.FlingManager.ConnectionCallbacks;
 import tv.matchstick.fling.FlingManager.OnConnectionFailedListener;
+import tv.matchstick.fling.internal.Api;
+import tv.matchstick.fling.internal.MatchStickApi.MatchStickApiImpl;
 import android.content.Context;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -20,16 +20,30 @@ import android.text.TextUtils;
 /**
  * Which will be used by fling application to do all fling actions.
  *
- * To use the service, construct a FlingManager.Builder and pass API to addApi(Api). Once you have your FlingManager, call connect() and wait for the onConnected(Bundle) method to be called.
+ * To use the service, construct a FlingManager.Builder and pass API to
+ * addApi(Api). Once you have your FlingManager, call connect() and wait for the
+ * onConnected(Bundle) method to be called.
  * <p>
- * Device discovery on Android is performed using the Android MediaRouter APIs. The MediaRouter APIs are implemented in the Android v7 Support Library. These APIs provide a simple mechanism for discovering media destinations, such as Chromecasts, bluetooth speakers, Android-powered smart TVs, and other media playback devices; and for routing media content to and controlling playback on those endpoints. These endpoints are referred to as “media routes.”
+ * Device discovery on Android is performed using the Android MediaRouter APIs.
+ * The MediaRouter APIs are implemented in the Android v7 Support Library. These
+ * APIs provide a simple mechanism for discovering media destinations, such as
+ * Matchstick, Chromecasts, bluetooth speakers, Android-powered smart TVs, and
+ * other media playback devices; and for routing media content to and
+ * controlling playback on those endpoints. These endpoints are referred to as
+ * “media routes.”
  * <p>
- * The first step to using these APIs is to acquire the MediaRouter singleton. It is important for the application to hold on to the reference to this singleton for as long as the application will be using the MediaRouter APIs; otherwise it may get garbage collected at an inopportune time.
- * <br>
- * Next, an appropriate route selector must be constructed. The purpose of the route selector is to filter the routes down to only those that the application is interested in such as Fling devices. It is also possible to filter the routes further by supported receiver application, in the (typical) case where the sender application expects to use a specific one.
- * <br>
- * Third, a MediaRouter callback is constructed. This callback has methods that will be called by the MediaRouter whenever a route becomes available or unavailable or a route is selected by the user.
- * <br>
+ * The first step to using these APIs is to acquire the MediaRouter singleton.
+ * It is important for the application to hold on to the reference to this
+ * singleton for as long as the application will be using the MediaRouter APIs;
+ * otherwise it may get garbage collected at an inopportune time. <br>
+ * Next, an appropriate route selector must be constructed. The purpose of the
+ * route selector is to filter the routes down to only those that the
+ * application is interested in such as Fling devices. It is also possible to
+ * filter the routes further by supported receiver application, in the (typical)
+ * case where the sender application expects to use a specific one. <br>
+ * Third, a MediaRouter callback is constructed. This callback has methods that
+ * will be called by the MediaRouter whenever a route becomes available or
+ * unavailable or a route is selected by the user. <br>
  */
 public class Fling {
 	/**
@@ -45,7 +59,10 @@ public class Fling {
 	/**
 	 * extra app flags.
 	 *
-	 * A boolean extra for the connection hint bundle passed to onConnected(Bundle) that indicates that the connection was re-established, but the receiver application that was in use at the time of the connection loss is no longer running on the receiver. 
+	 * A boolean extra for the connection hint bundle passed to
+	 * onConnected(Bundle) that indicates that the connection was
+	 * re-established, but the receiver application that was in use at the time
+	 * of the connection loss is no longer running on the receiver.
 	 */
 	public static final String EXTRA_APP_NO_LONGER_RUNNING = "tv.matchstick.fling.EXTRA_APP_NO_LONGER_RUNNING";
 
@@ -58,8 +75,9 @@ public class Fling {
 		}
 
 		/**
-		 * This function will create a concrete Fling client which will interact with Fling Service.
-		 * Those action are , for example, connect(),disconnect(), etc.
+		 * This function will create a concrete Fling client which will interact
+		 * with Fling Service. Those action are , for example,
+		 * connect(),disconnect(), etc.
 		 */
 		@Override
 		public FlingClientImpl build(Context context, Looper looper,
@@ -72,21 +90,21 @@ public class Fling {
 					"Must provide valid FlingOptions!");
 
 			FlingOptions flingOptions = (FlingOptions) options;
-			return new FlingClientImpl(context, looper, flingOptions.flingDevice,
-					flingOptions.loggingFlag, flingOptions.flingListener,
-					callbacks, failedListener);
+			return new FlingClientImpl(context, looper,
+					flingOptions.flingDevice, flingOptions.loggingFlag,
+					flingOptions.flingListener, callbacks, failedListener);
 		}
 	};
 
 	/**
-	 * Token to pass to addApi(Api) to enable the Fling features. 
+	 * Token to pass to addApi(Api) to enable the Fling features.
 	 */
 	public static final Api API = new Api(mConnectionBuilder);
 
 	/**
 	 * FlingApi instance.
 	 *
-	 * The instance is used to interact with a fling device. 
+	 * The instance is used to interact with a fling device.
 	 */
 	public static final FlingApi FlingApi = new FlingApi.FlingApiImpl();
 
@@ -99,7 +117,7 @@ public class Fling {
 		 * Create one application ID with app's url
 		 * 
 		 * @param appUrl
-		 *            app url
+		 *            app url, whose schema will be like 'http://'.
 		 * @return
 		 */
 		public abstract String makeApplicationId(String appUrl);
@@ -116,238 +134,285 @@ public class Fling {
 		/**
 		 * Request current receiver application's status
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
-		 * @throws IOException If there is no active service connection.
-		 * @throws IllegalStateException If an I/O error occurs while performing the request. 
+		 * @param manager
+		 *            fling manager with which to perform this request.
+		 * @throws IOException
+		 *             If there is no active service connection.
+		 * @throws IllegalStateException
+		 *             If an I/O error occurs while performing the request.
 		 */
-		public abstract void requestStatus(FlingManager client)
+		public abstract void requestStatus(FlingManager manager)
 				throws IOException, IllegalStateException;
 
 		/**
 		 * Send one message to the current connected receiver application.
 		 * 
-		 * @param client
-		 *            Api apiclient with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param namespace
-		 *            the dest namespace. Namespace must begin with the prefix " urn:x-cast:".
+		 *            the dest namespace. Namespace must begin with the prefix
+		 *            " urn:x-cast:".
 		 * @param message
 		 *            message which will be sent
-		 * @return pending result which can be used to see whether the message has been enqueued to be sent to a Fling device. 
+		 * @return pending result which can be used to see whether the message
+		 *         has been enqueued to be sent to a Fling device.
 		 */
-		public abstract PendingResult<Status> sendMessage(
-				FlingManager client, String namespace, String message);
+		public abstract PendingResult<Status> sendMessage(FlingManager manager,
+				String namespace, String message);
 
 		/**
 		 * Launch a receiver application
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
-		 * @param applicationId The ID of the receiver application to launch.
-		 * @return pending result which can be used to retrieve connection information. 
-		 */
-		public abstract PendingResult<ApplicationConnectionResult> launchApplication(
-				FlingManager client, String applicationId);
-
-		/**
-		 * Launch a receiver application
-		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param applicationId
-		 *            application Id The ID of the receiver application to launch.
-		 * @param relaunchIfRunning
-		 *            If true, relaunch the application if it is already running.
-		 * @return launch's pending result which can be used to retrieve connection information. 
+		 *            The ID of the receiver application to launch.
+		 * @return pending result which can be used to retrieve connection
+		 *         information.
 		 */
 		public abstract PendingResult<ApplicationConnectionResult> launchApplication(
-				FlingManager client, String applicationId,
+				FlingManager manager, String applicationId);
+
+		/**
+		 * Launch a receiver application
+		 * 
+		 * @param manager
+		 *            fling manager with which to perform this request.
+		 * @param applicationId
+		 *            application Id The ID of the receiver application to
+		 *            launch.
+		 * @param relaunchIfRunning
+		 *            If true, relaunch the application if it is already
+		 *            running.
+		 * @return launch's pending result which can be used to retrieve
+		 *         connection information.
+		 */
+		public abstract PendingResult<ApplicationConnectionResult> launchApplication(
+				FlingManager manager, String applicationId,
 				boolean relaunchIfRunning);
 
 		/**
 		 * Join to the current running receiver application.
 		 *
-		 * The previous PendingResult will be canceled with the Fling.ApplicationConnectionResult's status code being CANCELED.
+		 * The previous PendingResult will be canceled with the
+		 * Fling.ApplicationConnectionResult's status code being CANCELED.
 		 *
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param applicationId
 		 *            application Id of the receiver application to join.
-		 * @param sessionId 
-		 *            The expected session ID of the receiver application, or null to connect without checking for a matching session ID
-		 * @return join's pending result which can be used to retrieve connection information. 
+		 * @param sessionId
+		 *            The expected session ID of the receiver application, or
+		 *            null to connect without checking for a matching session ID
+		 * @return join's pending result which can be used to retrieve
+		 *         connection information.
 		 */
 		public abstract PendingResult<ApplicationConnectionResult> joinApplication(
-				FlingManager client, String applicationId, String sessionId);
+				FlingManager manager, String applicationId, String sessionId);
 
 		/**
 		 * Join to the current running receiver application.
 		 *
-		 * The previous PendingResult will be canceled with the Fling.ApplicationConnectionResult's status code being CANCELED.
+		 * The previous PendingResult will be canceled with the
+		 * Fling.ApplicationConnectionResult's status code being CANCELED.
 		 *
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param applicationId
 		 *            application Id of the receiver application to join.
-		 * @return join's pending result which can be used to retrieve connection information. 
+		 * @return join's pending result which can be used to retrieve
+		 *         connection information.
 		 */
 		public abstract PendingResult<ApplicationConnectionResult> joinApplication(
-				FlingManager client, String applicationId);
+				FlingManager manager, String applicationId);
 
 		/**
 		 * Join to the current running receiver application.
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
-		 * @return join's pending result which can be used to retrieve connection information. 
+		 * @param manager
+		 *            fling manager with which to perform this request.
+		 * @return join's pending result which can be used to retrieve
+		 *         connection information.
 		 */
 		public abstract PendingResult<ApplicationConnectionResult> joinApplication(
-				FlingManager client);
+				FlingManager manager);
 
 		/**
 		 * Disconnect from receiver application
 		 *
-		 *  If there is no currently active application session, this method does nothing. If this method is called while stopApplication(GoogleApiClient) is pending, then this method does nothing. The Status's status code will be INVALID_REQUEST.
-		 *  
-		 * @param client
-		 *            Api client with which to perform this request.
-		 * @return leave's pending result which can be used to retrieve if the command was successful.
+		 * If there is no currently active application session, this method does
+		 * nothing. If this method is called while stopApplication(FlingManager)
+		 * is pending, then this method does nothing. The Status's status code
+		 * will be INVALID_REQUEST.
+		 * 
+		 * @param manager
+		 *            fling manager with which to perform this request.
+		 * @return leave's pending result which can be used to retrieve if the
+		 *         command was successful.
 		 */
 		public abstract PendingResult<Status> leaveApplication(
-				FlingManager client);
+				FlingManager manager);
 
 		/**
 		 * Stops any running receiver application(s)
 		 *
-		 * If this method is called while leaveApplication(FlingManager) is pending, then this method does nothing. The Status's status code will be INVALID_REQUEST.
+		 * If this method is called while leaveApplication(FlingManager) is
+		 * pending, then this method does nothing. The Status's status code will
+		 * be INVALID_REQUEST.
 		 *
-		 * @param client
-		 *            Api client with which to perform this request.
-		 * @return stop's pending result which can be used to retrieve if the command was successful. 
+		 * @param manager
+		 *            fling manager with which to perform this request.
+		 * @return stop's pending result which can be used to retrieve if the
+		 *         command was successful.
 		 */
 		public abstract PendingResult<Status> stopApplication(
-				FlingManager client);
+				FlingManager manager);
 
 		/**
-		 * Stop aplicationStops the currently running receiver application, optionally doing so only if its session ID matches the supplied one.
+		 * Stop aplicationStops the currently running receiver application,
+		 * optionally doing so only if its session ID matches the supplied one.
 		 *
-		 * If this method is called while leaveApplication(FlingManager) is pending, then this method does nothing. The Status's status code will be INVALID_REQUEST.
+		 * If this method is called while leaveApplication(FlingManager) is
+		 * pending, then this method does nothing. The Status's status code will
+		 * be INVALID_REQUEST.
 		 *
 		 *
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param sessionId
-		 *            session Id of the application to stop. sessionId cannot be null or an empty string.
-		 * @return stop's pending result which can be used to retrieve if the command was successful. 
+		 *            session Id of the application to stop. sessionId cannot be
+		 *            null or an empty string.
+		 * @return stop's pending result which can be used to retrieve if the
+		 *         command was successful.
 		 */
 		public abstract PendingResult<Status> stopApplication(
-				FlingManager client, String sessionId);
+				FlingManager manager, String sessionId);
 
 		/**
 		 * Set device's volume
 		 *
-		 * If volume is outside of the range [0.0, 1.0], then the value will be clipped.
+		 * If volume is outside of the range [0.0, 1.0], then the value will be
+		 * clipped.
 		 *
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param volume
 		 *            volume level, in the range [0.0, 1.0].
-		 * @throws IOException If there is no active service connection.
-		 * @throws IllegalArgumentException If the volume is infinity or NaN.
-		 * @throws IllegalStateException If an I/O error occurs while performing the request. 
+		 * @throws IOException
+		 *             If there is no active service connection.
+		 * @throws IllegalArgumentException
+		 *             If the volume is infinity or NaN.
+		 * @throws IllegalStateException
+		 *             If an I/O error occurs while performing the request.
 		 */
-		public abstract void setVolume(FlingManager client, double volume)
+		public abstract void setVolume(FlingManager manager, double volume)
 				throws IOException, IllegalArgumentException,
 				IllegalStateException;
 
 		/**
 		 * Get current device's volume, the range is [0.0, 1.0].
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @return
-		 * @throws IllegalStateException If there is no active service connection. 
+		 * @throws IllegalStateException
+		 *             If there is no active service connection.
 		 */
-		public abstract double getVolume(FlingManager client)
+		public abstract double getVolume(FlingManager manager)
 				throws IllegalStateException;
 
 		/**
 		 * Set device mute state, mute or unmute.
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param mute
 		 *            mute status Whether to mute or unmute the audio.
-		 * @throws IOException If there is no active service connection.
-		 * @throws IllegalStateException If an I/O error occurs while performing the request. 
+		 * @throws IOException
+		 *             If there is no active service connection.
+		 * @throws IllegalStateException
+		 *             If an I/O error occurs while performing the request.
 		 */
-		public abstract void setMute(FlingManager client, boolean mute)
+		public abstract void setMute(FlingManager manager, boolean mute)
 				throws IOException, IllegalStateException;
 
 		/**
 		 * Check device's mute status
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @return mute status
-		 * @throws IllegalStateException If there is no active service connection. 
+		 * @throws IllegalStateException
+		 *             If there is no active service connection.
 		 */
-		public abstract boolean isMute(FlingManager client)
+		public abstract boolean isMute(FlingManager manager)
 				throws IllegalStateException;
 
 		/**
 		 * Get current launched receiver application's meta data
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @return application meta data
-		 * @throws IllegalStateException If there is no active service connection. 
+		 * @throws IllegalStateException
+		 *             If there is no active service connection.
 		 */
 		public abstract ApplicationMetadata getApplicationMetadata(
-				FlingManager client) throws IllegalStateException;
+				FlingManager manager) throws IllegalStateException;
 
 		/**
 		 * Get current launched receiver application's status
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @return Application's status
-		 * @throws IllegalStateException If there is no active service connection. 
+		 * @throws IllegalStateException
+		 *             If there is no active service connection.
 		 */
-		public abstract String getApplicationStatus(FlingManager client)
+		public abstract String getApplicationStatus(FlingManager manager)
 				throws IllegalStateException;
 
 		/**
-		 * Set callback function when received messages on the specific namespace
+		 * Set callback function when received messages on the specific
+		 * namespace
 		 *
-		 *  The new listener will replace an existing listener for a given namespace. Messages received by the controller for the given namespace will be forwarded to this listener. The caller must have already called connect() and received onConnected(Bundle) callback.
+		 * The new listener will replace an existing listener for a given
+		 * namespace. Messages received by the controller for the given
+		 * namespace will be forwarded to this listener. The caller must have
+		 * already called connect() and received onConnected(Bundle) callback.
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param namespace
-		 *            used namespace of the Fling channel. Namespaces must begin with the prefix "urn:x-cast:".
+		 *            used namespace of the Fling channel. Namespaces must begin
+		 *            with the prefix "urn:x-cast:".
 		 * @param callback
 		 *            callback function
-		 * @throws IOException If an I/O error occurs while performing the request.
-		 * @throws IllegalStateException Thrown when the controller is not connected to a FlingDevice.
+		 * @throws IOException
+		 *             If an I/O error occurs while performing the request.
+		 * @throws IllegalStateException
+		 *             Thrown when the controller is not connected to a
+		 *             FlingDevice.
 		 */
-		public abstract void setMessageReceivedCallbacks(
-				FlingManager client, String namespace,
-				MessageReceivedCallback callback) throws IOException,
-				IllegalStateException;
+		public abstract void setMessageReceivedCallbacks(FlingManager manager,
+				String namespace, MessageReceivedCallback callback)
+				throws IOException, IllegalStateException;
 
 		/**
-		 * Remove message received callback function from this controller for a given namespace.
+		 * Remove message received callback function from this controller for a
+		 * given namespace.
 		 * 
-		 * @param client
-		 *            Api client with which to perform this request.
+		 * @param manager
+		 *            fling manager with which to perform this request.
 		 * @param namespace
 		 *            used namespace
-		 * @throws IOException If an I/O error occurs while performing the request.
-		 * @throws IllegalArgumentException If namespace is null or empty. 
+		 * @throws IOException
+		 *             If an I/O error occurs while performing the request.
+		 * @throws IllegalArgumentException
+		 *             If namespace is null or empty.
 		 */
 		public abstract void removeMessageReceivedCallbacks(
-				FlingManager client, String namespace) throws IOException,
+				FlingManager manager, String namespace) throws IOException,
 				IllegalArgumentException;
 
 		/**
@@ -382,23 +447,23 @@ public class Fling {
 				return id;
 			}
 
-			public void requestStatus(FlingManager client)
-					throws IOException, IllegalStateException {
+			public void requestStatus(FlingManager manager) throws IOException,
+					IllegalStateException {
 				try {
-					client.getConnectionApi(Fling.mConnectionBuilder)
+					manager.getConnectionApi(Fling.mConnectionBuilder)
 							.requestStatus();
 				} catch (RemoteException localRemoteException) {
 					throw new IOException("service error");
 				}
 			}
 
-			public PendingResult<Status> sendMessage(FlingManager client,
+			public PendingResult<Status> sendMessage(FlingManager manager,
 					final String namespace, final String message) {
-				return client.executeTask(new StatusResultHandler() {
-					protected void execute(FlingClientImpl dq)
+				return manager.executeTask(new StatusResultHandler() {
+					protected void execute(FlingClientImpl client)
 							throws RemoteException {
 						try {
-							dq.sendMessage(namespace, message, this);
+							client.sendMessage(namespace, message, this);
 						} catch (IllegalArgumentException localIllegalArgumentException) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						} catch (IllegalStateException localIllegalStateException) {
@@ -409,14 +474,14 @@ public class Fling {
 			}
 
 			public PendingResult<ApplicationConnectionResult> launchApplication(
-					FlingManager client, final String applicationId) {
-				return client
+					FlingManager manager, final String applicationId) {
+				return manager
 						.executeTask(new ApplicationConnectionResultHandler() {
-							protected void execute(FlingClientImpl dq)
+							protected void execute(FlingClientImpl client)
 									throws RemoteException {
 								try {
-									dq.launchApplication(applicationId, false,
-											this);
+									client.launchApplication(applicationId,
+											false, this);
 								} catch (IllegalStateException localIllegalStateException) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
@@ -425,14 +490,14 @@ public class Fling {
 			}
 
 			public PendingResult<ApplicationConnectionResult> launchApplication(
-					FlingManager client, final String applicationId,
+					FlingManager manager, final String applicationId,
 					final boolean relaunchIfRunning) {
-				return client
+				return manager
 						.executeTask(new ApplicationConnectionResultHandler() {
-							protected void execute(FlingClientImpl dq)
+							protected void execute(FlingClientImpl client)
 									throws RemoteException {
 								try {
-									dq.launchApplication(applicationId,
+									client.launchApplication(applicationId,
 											relaunchIfRunning, this);
 								} catch (IllegalStateException localIllegalStateException) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -442,14 +507,14 @@ public class Fling {
 			}
 
 			public PendingResult<ApplicationConnectionResult> joinApplication(
-					FlingManager client, final String applicationId,
+					FlingManager manager, final String applicationId,
 					final String sessionId) {
-				return client
+				return manager
 						.executeTask(new ApplicationConnectionResultHandler() {
-							protected void execute(FlingClientImpl dq)
+							protected void execute(FlingClientImpl client)
 									throws RemoteException {
 								try {
-									dq.joinApplication(applicationId,
+									client.joinApplication(applicationId,
 											sessionId, this);
 								} catch (IllegalStateException localIllegalStateException) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -459,13 +524,13 @@ public class Fling {
 			}
 
 			public PendingResult<ApplicationConnectionResult> joinApplication(
-					FlingManager client, final String applicationId) {
-				return client
+					FlingManager manager, final String applicationId) {
+				return manager
 						.executeTask(new ApplicationConnectionResultHandler() {
-							protected void execute(FlingClientImpl dq)
+							protected void execute(FlingClientImpl client)
 									throws RemoteException {
 								try {
-									dq.joinApplication(applicationId, null,
+									client.joinApplication(applicationId, null,
 											this);
 								} catch (IllegalStateException localIllegalStateException) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -475,13 +540,13 @@ public class Fling {
 			}
 
 			public PendingResult<ApplicationConnectionResult> joinApplication(
-					FlingManager client) {
-				return client
+					FlingManager manager) {
+				return manager
 						.executeTask(new ApplicationConnectionResultHandler() {
-							protected void execute(FlingClientImpl dq)
+							protected void execute(FlingClientImpl client)
 									throws RemoteException {
 								try {
-									dq.joinApplication(null, null, this);
+									client.joinApplication(null, null, this);
 								} catch (IllegalStateException localIllegalStateException) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
@@ -489,13 +554,12 @@ public class Fling {
 						});
 			}
 
-			public PendingResult<Status> leaveApplication(
-					FlingManager client) {
-				return client.executeTask(new StatusResultHandler() {
-					protected void execute(FlingClientImpl dq)
+			public PendingResult<Status> leaveApplication(FlingManager manager) {
+				return manager.executeTask(new StatusResultHandler() {
+					protected void execute(FlingClientImpl client)
 							throws RemoteException {
 						try {
-							dq.leaveApplication(this);
+							client.leaveApplication(this);
 						} catch (IllegalStateException localIllegalStateException) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
@@ -503,12 +567,12 @@ public class Fling {
 				});
 			}
 
-			public PendingResult<Status> stopApplication(FlingManager client) {
-				return client.executeTask(new StatusResultHandler() {
-					protected void execute(FlingClientImpl dq)
+			public PendingResult<Status> stopApplication(FlingManager manager) {
+				return manager.executeTask(new StatusResultHandler() {
+					protected void execute(FlingClientImpl client)
 							throws RemoteException {
 						try {
-							dq.stopApplication("", this);
+							client.stopApplication("", this);
 						} catch (IllegalStateException localIllegalStateException) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
@@ -516,10 +580,10 @@ public class Fling {
 				});
 			}
 
-			public PendingResult<Status> stopApplication(
-					FlingManager client, final String sessionId) {
-				return client.executeTask(new StatusResultHandler() {
-					protected void execute(FlingClientImpl dq)
+			public PendingResult<Status> stopApplication(FlingManager manager,
+					final String sessionId) {
+				return manager.executeTask(new StatusResultHandler() {
+					protected void execute(FlingClientImpl client)
 							throws RemoteException {
 						if (TextUtils.isEmpty(sessionId)) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST,
@@ -527,7 +591,7 @@ public class Fling {
 							return;
 						}
 						try {
-							dq.stopApplication(sessionId, this);
+							client.stopApplication(sessionId, this);
 						} catch (IllegalStateException localIllegalStateException) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
@@ -535,67 +599,67 @@ public class Fling {
 				});
 			}
 
-			public void setVolume(FlingManager client, double volume)
+			public void setVolume(FlingManager manager, double volume)
 					throws IOException, IllegalArgumentException,
 					IllegalStateException {
 				try {
-					client.getConnectionApi(Fling.mConnectionBuilder).setVolume(
-							volume);
+					manager.getConnectionApi(Fling.mConnectionBuilder)
+							.setVolume(volume);
 				} catch (RemoteException localRemoteException) {
 					throw new IOException("service error");
 				}
 			}
 
-			public double getVolume(FlingManager client)
+			public double getVolume(FlingManager manager)
 					throws IllegalStateException {
-				return client.getConnectionApi(Fling.mConnectionBuilder)
+				return manager.getConnectionApi(Fling.mConnectionBuilder)
 						.getVolume();
 			}
 
-			public void setMute(FlingManager client, boolean mute)
+			public void setMute(FlingManager manager, boolean mute)
 					throws IOException, IllegalStateException {
 				try {
-					client.getConnectionApi(Fling.mConnectionBuilder).setMute(
+					manager.getConnectionApi(Fling.mConnectionBuilder).setMute(
 							mute);
 				} catch (RemoteException localRemoteException) {
 					throw new IOException("service error");
 				}
 			}
 
-			public boolean isMute(FlingManager client)
+			public boolean isMute(FlingManager manager)
 					throws IllegalStateException {
-				return client.getConnectionApi(Fling.mConnectionBuilder)
+				return manager.getConnectionApi(Fling.mConnectionBuilder)
 						.isMute();
 			}
 
 			public ApplicationMetadata getApplicationMetadata(
-					FlingManager client) throws IllegalStateException {
-				return client.getConnectionApi(Fling.mConnectionBuilder)
+					FlingManager manager) throws IllegalStateException {
+				return manager.getConnectionApi(Fling.mConnectionBuilder)
 						.getApplicationMetadata();
 			}
 
-			public String getApplicationStatus(FlingManager client)
+			public String getApplicationStatus(FlingManager manager)
 					throws IllegalStateException {
-				return client.getConnectionApi(Fling.mConnectionBuilder)
+				return manager.getConnectionApi(Fling.mConnectionBuilder)
 						.getApplicationStatus();
 			}
 
-			public void setMessageReceivedCallbacks(FlingManager client,
+			public void setMessageReceivedCallbacks(FlingManager manager,
 					String namespace, Fling.MessageReceivedCallback callbacks)
 					throws IOException, IllegalStateException {
 				try {
-					client.getConnectionApi(Fling.mConnectionBuilder)
+					manager.getConnectionApi(Fling.mConnectionBuilder)
 							.setMessageReceivedCallbacks(namespace, callbacks);
 				} catch (RemoteException localRemoteException) {
 					throw new IOException("service error");
 				}
 			}
 
-			public void removeMessageReceivedCallbacks(FlingManager client,
+			public void removeMessageReceivedCallbacks(FlingManager manager,
 					String namespace) throws IOException,
 					IllegalArgumentException {
 				try {
-					client.getConnectionApi(Fling.mConnectionBuilder)
+					manager.getConnectionApi(Fling.mConnectionBuilder)
 							.removeMessageReceivedCallbacks(namespace);
 				} catch (RemoteException localRemoteException) {
 					throw new IOException("service error");
@@ -697,14 +761,14 @@ public class Fling {
 	/**
 	 * Fling options
 	 * 
-	 * Contained all fling options, for example, application status listener, log
-	 * flags.
+	 * Contained all fling options, for example, application status listener,
+	 * log flags.
 	 * <p>
-	 * The Fling.FlingOptions.Builder is used to create an instance of Fling.FlingOptions. 
+	 * The Fling.FlingOptions.Builder is used to create an instance of
+	 * Fling.FlingOptions.
 	 *
 	 */
-	public static final class FlingOptions implements
-			FlingManager.ApiOptions {
+	public static final class FlingOptions implements FlingManager.ApiOptions {
 		/**
 		 * Fling device
 		 */
@@ -732,10 +796,12 @@ public class Fling {
 		}
 
 		/**
-		 * Create fling option builder 
+		 * Create fling option builder
 		 * 
-		 * @param flingDevice device returned from the MediaRouteProvider
-		 * @param flingListener listener for Fling events
+		 * @param flingDevice
+		 *            device returned from the MediaRouteProvider
+		 * @param flingListener
+		 *            listener for Fling events
 		 * @return one builder object
 		 */
 		public static Builder builder(FlingDevice flingDevice,
@@ -744,7 +810,8 @@ public class Fling {
 		}
 
 		/**
-		 * A builder to create an instance of Fling.FlingOptions to set API configuration parameters for Fling. 
+		 * A builder to create an instance of Fling.FlingOptions to set API
+		 * configuration parameters for Fling.
 		 */
 		public static final class Builder {
 			/**
@@ -790,7 +857,8 @@ public class Fling {
 			}
 
 			/**
-			 * Create one fling option object which will be used in connect to Fling device.
+			 * Create one fling option object which will be used in connect to
+			 * Fling device.
 			 */
 			public FlingOptions build() {
 				return new FlingOptions(this);
@@ -802,8 +870,10 @@ public class Fling {
 	 * Interface to display current application connection status.
 	 *
 	 * <br>
-	 * When a Fling application connected to a remote receiver, this object will be returned.
-	 * And it contains this fling application's meta data and current status.
+	 * When a Fling application connected to a remote receiver, this object will
+	 * be returned. And it contains this fling application's meta data and
+	 * current status.
+	 * 
 	 * @see tv.matchstick.fling.ApplicationMetadata
 	 */
 	public interface ApplicationConnectionResult extends Result {
@@ -864,9 +934,11 @@ public class Fling {
 		}
 
 		/**
-		 * Called when connection to the receiver is disconnected.such as when another client has launched a new application. 
+		 * Called when connection to the receiver is disconnected.such as when
+		 * another client has launched a new application.
 		 * 
-		 * @param statusCode status code
+		 * @param statusCode
+		 *            status code
 		 */
 		public void onApplicationDisconnected(int statusCode) {
 		}

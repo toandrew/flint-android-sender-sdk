@@ -1,16 +1,14 @@
 package tv.matchstick.fling;
 
 import tv.matchstick.client.internal.MyStringBuilder;
-import tv.matchstick.fling.ConnectionResult;
-import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.IntentSender;
 
 /**
  * Fling connection result.
  *
- * Contains all possible error codes for when an error happens while connecting to a device.
- * These error codes are used by {@link FlingManager.OnConnectionFailedListener}.  
+ * Contains all possible error codes for when an error happens while connecting
+ * to a device. These error codes are used by
+ * {@link FlingManager.OnConnectionFailedListener}.
  */
 public final class ConnectionResult {
 
@@ -113,8 +111,11 @@ public final class ConnectionResult {
 	/**
 	 * Create instance with the specific status and intent
 	 *
-	 * @param statusCode The status code.
-	 * @param pendingIntent A pending intent that will resolve the issue when started, or null. 
+	 * @param statusCode
+	 *            The status code.
+	 * @param pendingIntent
+	 *            A pending intent that will resolve the issue when started, or
+	 *            null.
 	 */
 	public ConnectionResult(int statusCode, PendingIntent pendingIntent) {
 		this.mStatusCode = statusCode;
@@ -131,27 +132,23 @@ public final class ConnectionResult {
 	 * @throws IntentSender.SendIntentException
 	 */
 	/*
-	public void startResolutionForResult(Activity activity, int requestCode)
-			throws IntentSender.SendIntentException {
-		if (!(hasResolution()))
-			return;
-		activity.startIntentSenderForResult(
-				this.mPendingIntent.getIntentSender(), requestCode, null, 0, 0,
-				0);
-	}
-	*/
-	
+	 * public void startResolutionForResult(Activity activity, int requestCode)
+	 * throws IntentSender.SendIntentException { if (!(hasResolution())) return;
+	 * activity.startIntentSenderForResult(
+	 * this.mPendingIntent.getIntentSender(), requestCode, null, 0, 0, 0); }
+	 */
+
 	/**
-	 * Returns true if calling startResolutionForResult(Activity, int) will start any intents requiring user interaction.
+	 * Returns true if calling startResolutionForResult(Activity, int) will
+	 * start any intents requiring user interaction.
 	 * 
 	 * @return
 	 */
 	/*
-	public boolean hasResolution() {
-		return ((this.mStatusCode != 0) && (this.mPendingIntent != null));
-	}
-	*/
-	
+	 * public boolean hasResolution() { return ((this.mStatusCode != 0) &&
+	 * (this.mPendingIntent != null)); }
+	 */
+
 	/**
 	 * Whether the connection was successful.
 	 * 
@@ -176,15 +173,13 @@ public final class ConnectionResult {
 	 * @return
 	 */
 	/*
-	public PendingIntent getResolution() {
-		return this.mPendingIntent;
-	}
-	*/
+	 * public PendingIntent getResolution() { return this.mPendingIntent; }
+	 */
 
 	/**
 	 * Get readable status message with current status code
 	 * 
-	 * @return readable status messages 
+	 * @return readable status messages
 	 */
 	private String getStatusMessage() {
 		switch (this.mStatusCode) {
