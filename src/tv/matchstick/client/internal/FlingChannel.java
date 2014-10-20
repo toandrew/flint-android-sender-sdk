@@ -32,11 +32,11 @@ public abstract class FlingChannel {
     }
 
     protected final void sendTextMessage(String message, long requestId,
-            String paramString2) throws IOException {
+            String targetId) throws IOException {
         mLogUtil.logv("Sending text message: %s to: %s", new Object[] {
-                message, paramString2 });
+                message, targetId });
         mMessageSender
-                .sendTextMessage(mNamespace, message, requestId, paramString2);
+                .sendTextMessage(mNamespace, message, requestId, targetId);
     }
 
     protected final void sendBinaryMessage(byte message[], String transId) {

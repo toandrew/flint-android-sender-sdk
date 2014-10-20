@@ -67,9 +67,11 @@ public final class ApplicationMetadata implements SafeParcelable {
 					ParcelReadUtil.skip(source, type);
 				}
 			}
-			if (source.dataPosition() != size)
+
+			if (source.dataPosition() != size) {
 				throw new SafeParcel("Overread allowed size end=" + size,
 						source);
+			}
 
 			return new ApplicationMetadata(versionCode, applicationId, name,
 					images, namespaces, senderAppIdentifier, senderAppLaunchUrl);
@@ -259,18 +261,18 @@ public final class ApplicationMetadata implements SafeParcelable {
 	 * Build application meta parcel data
 	 * 
 	 * @param applicationmetadata
-	 * @param parcel
-	 * @param flag
+	 * @param out
+	 * @param flags
 	 */
-	private void buildParcel(Parcel parcel, int flag) {
-		int i = ParcelWriteUtil.position(parcel);
-		ParcelWriteUtil.write(parcel, 1, getVersionCode());
-		ParcelWriteUtil.write(parcel, 2, getApplicationId(), false);
-		ParcelWriteUtil.write(parcel, 3, getName(), false);
-		ParcelWriteUtil.write(parcel, 4, getImages(), false);
-		ParcelWriteUtil.writeStringList(parcel, 5, getNamespaces(), false);
-		ParcelWriteUtil.write(parcel, 6, getSenderAppIdentifier(), false);
-		ParcelWriteUtil.write(parcel, 7, getSenderAppLaunchUrl(), flag, false);
-		ParcelWriteUtil.writeEnd(parcel, i);
+	private void buildParcel(Parcel out, int flags) {
+		int i = ParcelWriteUtil.position(out);
+		ParcelWriteUtil.write(out, 1, getVersionCode());
+		ParcelWriteUtil.write(out, 2, getApplicationId(), false);
+		ParcelWriteUtil.write(out, 3, getName(), false);
+		ParcelWriteUtil.write(out, 4, getImages(), false);
+		ParcelWriteUtil.writeStringList(out, 5, getNamespaces(), false);
+		ParcelWriteUtil.write(out, 6, getSenderAppIdentifier(), false);
+		ParcelWriteUtil.write(out, 7, getSenderAppLaunchUrl(), flags, false);
+		ParcelWriteUtil.writeEnd(out, i);
 	}
 }

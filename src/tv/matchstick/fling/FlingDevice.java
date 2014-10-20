@@ -93,6 +93,7 @@ public class FlingDevice implements SafeParcelable {
 		@Override
 		public FlingDevice[] newArray(int size) {
 			// TODO Auto-generated method stub
+
 			return new FlingDevice[size];
 		}
 
@@ -555,17 +556,17 @@ public class FlingDevice implements SafeParcelable {
 		buildParcel(parcel);
 	}
 
-	private void buildParcel(Parcel parcel) {
-		int position = ParcelWriteUtil.position(parcel);
-		ParcelWriteUtil.write(parcel, 1, getVersionCode());
-		ParcelWriteUtil.write(parcel, 2, getDeviceId(), false);
-		ParcelWriteUtil.write(parcel, 3, mHostAddress, false);
-		ParcelWriteUtil.write(parcel, 4, getFriendlyName(), false);
-		ParcelWriteUtil.write(parcel, 5, getModelName(), false);
-		ParcelWriteUtil.write(parcel, 6, getDeviceVersion(), false);
-		ParcelWriteUtil.write(parcel, 7, getServicePort());
-		ParcelWriteUtil.write(parcel, 8, getIcons(), false);
-		ParcelWriteUtil.writeEnd(parcel, position);
+	private void buildParcel(Parcel out) {
+		int position = ParcelWriteUtil.position(out);
+		ParcelWriteUtil.write(out, 1, getVersionCode());
+		ParcelWriteUtil.write(out, 2, getDeviceId(), false);
+		ParcelWriteUtil.write(out, 3, mHostAddress, false);
+		ParcelWriteUtil.write(out, 4, getFriendlyName(), false);
+		ParcelWriteUtil.write(out, 5, getModelName(), false);
+		ParcelWriteUtil.write(out, 6, getDeviceVersion(), false);
+		ParcelWriteUtil.write(out, 7, getServicePort());
+		ParcelWriteUtil.write(out, 8, getIcons(), false);
+		ParcelWriteUtil.writeEnd(out, position);
 	}
 
 }

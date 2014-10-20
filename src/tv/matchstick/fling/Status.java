@@ -37,43 +37,44 @@ public class Status implements Result, SafeParcelable {
 		public Status createFromParcel(Parcel source) {
 			// TODO Auto-generated method stub
 
-			int i = ParcelReadUtil.readStart(source);
-			int j = 0;
-			int k = 0;
-			String str = null;
-			PendingIntent localPendingIntent = null;
-			while (source.dataPosition() < i) {
-				int l = ParcelReadUtil.readSingleInt(source);
-				switch (ParcelReadUtil.halfOf(l)) {
+			int size = ParcelReadUtil.readStart(source);
+			int version = 0;
+			int status = 0;
+			String statusMessage = null;
+			PendingIntent intent = null;
+			while (source.dataPosition() < size) {
+				int type = ParcelReadUtil.readSingleInt(source);
+				switch (ParcelReadUtil.halfOf(type)) {
 				case 1:
-					k = ParcelReadUtil.readInt(source, l);
+					status = ParcelReadUtil.readInt(source, type);
 					break;
 				case 1000:
-					j = ParcelReadUtil.readInt(source, l);
+					version = ParcelReadUtil.readInt(source, type);
 					break;
 				case 2:
-					str = ParcelReadUtil.readString(source, l);
+					statusMessage = ParcelReadUtil.readString(source, type);
 					break;
 				case 3:
-					localPendingIntent = (PendingIntent) ParcelReadUtil
-							.readParcelable(source, l, PendingIntent.CREATOR);
+					intent = (PendingIntent) ParcelReadUtil.readParcelable(
+							source, type, PendingIntent.CREATOR);
 					break;
 				default:
-					ParcelReadUtil.skip(source, l);
+					ParcelReadUtil.skip(source, type);
 				}
 			}
 
-			if (source.dataPosition() != i) {
+			if (source.dataPosition() != size) {
 				throw new ParcelReadUtil.SafeParcel(
-						"Overread allowed size end=" + i, source);
+						"Overread allowed size end=" + size, source);
 			}
 
-			return new Status(j, k, str, localPendingIntent);
+			return new Status(version, status, statusMessage, intent);
 		}
 
 		@Override
 		public Status[] newArray(int size) {
 			// TODO Auto-generated method stub
+
 			return new Status[size];
 		}
 
@@ -256,16 +257,15 @@ public class Status implements Result, SafeParcelable {
 	/**
 	 * Build parcel status data
 	 * 
-	 * @param paramParcel
-	 * @param paramInt
+	 * @param out
+	 * @param flags
 	 */
-	private void buildParcel(Parcel paramParcel, int paramInt) {
-		int i = ParcelWriteUtil.position(paramParcel);
-		ParcelWriteUtil.write(paramParcel, 1, getStatusCode());
-		ParcelWriteUtil.write(paramParcel, 1000, getVersionCode());
-		ParcelWriteUtil.write(paramParcel, 2, getStatusMessage(), false);
-		ParcelWriteUtil.write(paramParcel, 3, getPendingIntent(), paramInt,
-				false);
-		ParcelWriteUtil.writeEnd(paramParcel, i);
+	private void buildParcel(Parcel out, int flags) {
+		int i = ParcelWriteUtil.position(out);
+		ParcelWriteUtil.write(out, 1, getStatusCode());
+		ParcelWriteUtil.write(out, 1000, getVersionCode());
+		ParcelWriteUtil.write(out, 2, getStatusMessage(), false);
+		ParcelWriteUtil.write(out, 3, getPendingIntent(), flags, false);
+		ParcelWriteUtil.writeEnd(out, i);
 	}
 }

@@ -1,10 +1,9 @@
 package tv.matchstick.fling;
 
-
 /**
  * Fling Result interface.
  *
- * Represents the final result of invoking an API method in Fling Service. 
+ * Represents the final result of invoking an API method in Fling Service.
  */
 public interface Result {
 	/**
