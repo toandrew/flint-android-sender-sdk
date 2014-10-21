@@ -16,7 +16,6 @@ import java.util.ArrayList;
 
 import tv.matchstick.server.common.checker.MainThreadChecker;
 import tv.matchstick.server.fling.media.RouteController;
-import tv.matchstick.server.fling.media.RouteCtrlRequestCallback;
 
 public abstract class MediaRouteProviderSrv extends IntentService
 {
