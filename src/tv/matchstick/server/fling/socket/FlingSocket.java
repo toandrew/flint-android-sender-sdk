@@ -1,6 +1,7 @@
 
 package tv.matchstick.server.fling.socket;
 
+import android.content.Context;
 import android.os.SystemClock;
 
 import java.io.IOException;
@@ -33,14 +34,14 @@ public final class FlingSocket {
     private long m;
     private boolean n;
 
-    public FlingSocket(FlingSocketListener listener) {
+    public FlingSocket(Context context, FlingSocketListener listener) {
         if (listener == null) {
             throw new IllegalArgumentException("listener cannot be null");
         } else {
             mSocketListener = listener;
             mSocketStatus = 0;
             mFlingSocketMultiplexer = FlingSocketMultiplexer
-                    .getInstance();
+                    .getInstance(context);
         }
     }
 

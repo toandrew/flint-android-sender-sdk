@@ -39,7 +39,7 @@ final class FlingDeviceManager implements FlingSocketListener {
         mNoApp = true;
         mNoNamespace = false;
         e = true;
-        mFlingSocket = new FlingSocket(this);
+        mFlingSocket = new FlingSocket(DeviceFilter.getContext_a(deviceFilter), this);
         mFlingDevice = flingDevice;
         Object aobj[] = new Object[2];
         aobj[0] = DeviceFilter.b(deviceFilter);
