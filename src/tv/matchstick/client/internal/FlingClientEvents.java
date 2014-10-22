@@ -18,8 +18,8 @@ package tv.matchstick.client.internal;
 
 import java.util.ArrayList;
 
-import tv.matchstick.client.common.FlingPlayServicesClient;
-import tv.matchstick.client.common.FlingPlayServicesClient.OnConnectionFailedListener;
+import tv.matchstick.client.common.IFlingClient;
+import tv.matchstick.client.common.IFlingClient.OnConnectionFailedListener;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.FlingManager.ConnectionCallbacks;
@@ -170,7 +170,7 @@ public class FlingClientEvents {
 	}
 
 	public void registerConnectionFailedListener(
-			FlingPlayServicesClient.OnConnectionFailedListener listener) {
+			IFlingClient.OnConnectionFailedListener listener) {
 		ValueChecker.checkNullPointer(listener);
 		synchronized (mFailedListeners) {
 			if (mFailedListeners.contains(listener)) {
@@ -188,7 +188,7 @@ public class FlingClientEvents {
 	}
 
 	public boolean isConnectionFailedListenerRegistered(
-			FlingPlayServicesClient.OnConnectionFailedListener listener) {
+			IFlingClient.OnConnectionFailedListener listener) {
 		ValueChecker.checkNullPointer(listener);
 		synchronized (mFailedListeners) {
 			return mFailedListeners.contains(listener);
@@ -196,7 +196,7 @@ public class FlingClientEvents {
 	}
 
 	public void unregisterConnectionFailedListener(
-			FlingPlayServicesClient.OnConnectionFailedListener listener) {
+			IFlingClient.OnConnectionFailedListener listener) {
 		ValueChecker.checkNullPointer(listener);
 		synchronized (mFailedListeners) {
 			if (mFailedListeners != null) {

@@ -18,7 +18,7 @@ package tv.matchstick.client.internal;
 
 import java.util.ArrayList;
 
-import tv.matchstick.client.common.FlingPlayServicesClient;
+import tv.matchstick.client.common.IFlingClient;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.internal.Api;
@@ -43,7 +43,7 @@ import android.util.Log;
  * @param <T>
  */
 public abstract class FlingClient<T extends IInterface> implements
-		FlingPlayServicesClient, Api.ConnectionApi,
+		IFlingClient, Api.ConnectionApi,
 		FlingClientEvents.ClientEventCallback {
 
 	static final int CONNECTION_STATUS_DISCONNECTED = 1;
@@ -105,8 +105,8 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * @param strArray
 	 */
 	protected FlingClient(Context context,
-			FlingPlayServicesClient.ConnectionCallbacks callbacks,
-			FlingPlayServicesClient.OnConnectionFailedListener failedListener,
+			IFlingClient.ConnectionCallbacks callbacks,
+			IFlingClient.OnConnectionFailedListener failedListener,
 			String[] strArray) {
 
 		this(context, context.getMainLooper(), new ClientConnectionCallbacks(
@@ -319,7 +319,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * register connection callback.
 	 */
 	public void registerConnectionCallbacks(
-			FlingPlayServicesClient.ConnectionCallbacks callbacks) {
+			IFlingClient.ConnectionCallbacks callbacks) {
 		this.mClientEvent
 				.registerConnectionCallbacks(new ClientConnectionCallbacks(
 						callbacks));
@@ -329,7 +329,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * is connection callback register.
 	 */
 	public boolean isConnectionCallbacksRegistered(
-			FlingPlayServicesClient.ConnectionCallbacks callbacks) {
+			IFlingClient.ConnectionCallbacks callbacks) {
 		return this.mClientEvent
 				.isConnectionCallbacksRegistered(new ClientConnectionCallbacks(
 						callbacks));
@@ -339,7 +339,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * unregister callback function.
 	 */
 	public void unregisterConnectionCallbacks(
-			FlingPlayServicesClient.ConnectionCallbacks callbacks) {
+			IFlingClient.ConnectionCallbacks callbacks) {
 		this.mClientEvent
 				.unregisterConnectionCallbacks(new ClientConnectionCallbacks(
 						callbacks));
@@ -349,7 +349,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * register connection failed listener.
 	 */
 	public void registerConnectionFailedListener(
-			FlingPlayServicesClient.OnConnectionFailedListener listener) {
+			IFlingClient.OnConnectionFailedListener listener) {
 		this.mClientEvent.registerConnectionFailedListener(listener);
 	}
 
@@ -357,7 +357,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * check whether connection failed listener is registered.
 	 */
 	public boolean isConnectionFailedListenerRegistered(
-			FlingPlayServicesClient.OnConnectionFailedListener listener) {
+			IFlingClient.OnConnectionFailedListener listener) {
 		return this.mClientEvent.isConnectionFailedListenerRegistered(listener);
 	}
 
@@ -365,7 +365,7 @@ public abstract class FlingClient<T extends IInterface> implements
 	 * unregister connection failed listener.
 	 */
 	public void unregisterConnectionFailedListener(
-			FlingPlayServicesClient.OnConnectionFailedListener listener) {
+			IFlingClient.OnConnectionFailedListener listener) {
 		this.mClientEvent.unregisterConnectionFailedListener(listener);
 	}
 
@@ -408,10 +408,10 @@ public abstract class FlingClient<T extends IInterface> implements
 
 	public static final class ClientOnConnectionFailedListener implements
 			FlingManager.OnConnectionFailedListener {
-		private final FlingPlayServicesClient.OnConnectionFailedListener failedListener;
+		private final IFlingClient.OnConnectionFailedListener failedListener;
 
 		public ClientOnConnectionFailedListener(
-				FlingPlayServicesClient.OnConnectionFailedListener listener) {
+				IFlingClient.OnConnectionFailedListener listener) {
 			this.failedListener = listener;
 		}
 
@@ -430,10 +430,10 @@ public abstract class FlingClient<T extends IInterface> implements
 
 	public static final class ClientConnectionCallbacks implements
 			FlingManager.ConnectionCallbacks {
-		private final FlingPlayServicesClient.ConnectionCallbacks callback;
+		private final IFlingClient.ConnectionCallbacks callback;
 
 		public ClientConnectionCallbacks(
-				FlingPlayServicesClient.ConnectionCallbacks callback) {
+				IFlingClient.ConnectionCallbacks callback) {
 			this.callback = callback;
 		}
 

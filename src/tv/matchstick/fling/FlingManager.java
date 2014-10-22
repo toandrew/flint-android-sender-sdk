@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import tv.matchstick.client.common.FlingPlayServicesClient;
+import tv.matchstick.client.common.IFlingClient;
 import tv.matchstick.client.common.api.FlingManagerImpl;
 import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.client.internal.ValueChecker;
@@ -409,7 +409,7 @@ public interface FlingManager {
 	 * connect the client to the service.
 	 */
 	public interface OnConnectionFailedListener extends
-			FlingPlayServicesClient.OnConnectionFailedListener {
+			IFlingClient.OnConnectionFailedListener {
 	}
 
 	/**
