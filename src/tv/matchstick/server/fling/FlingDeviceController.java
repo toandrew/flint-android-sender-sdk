@@ -26,7 +26,6 @@ import tv.matchstick.server.common.exception.FlingMessageLargeException;
 import tv.matchstick.server.fling.bridge.FlingConnectedClient;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.fling.channels.ConnectionControlChannel;
-import tv.matchstick.server.fling.channels.DeviceAuthChannel;
 import tv.matchstick.server.fling.channels.HeartbeatChannel;
 import tv.matchstick.server.fling.channels.ReceiverControlChannel;
 import tv.matchstick.server.fling.socket.FlingSocket;
@@ -193,7 +192,6 @@ public final class FlingDeviceController implements FlingSocketListener {
     };
 
     private final ConnectionControlChannel mConnectionControlChannel;
-    private DeviceAuthChannel mDeviceAuthChannel;
     private HeartbeatChannel mHeartbeatChannel;
     private final Set mNamespaces = new HashSet();
     private final Map<String, FlingChannel> mFlingChannelMap = new HashMap<String, FlingChannel>();
@@ -550,15 +548,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 
     static Handler getHandler(FlingDeviceController axs1) {
         return axs1.mHandler;
-    }
-
-    static DeviceAuthChannel getDeviceAuthChannel(FlingDeviceController axs1) {
-        return axs1.mDeviceAuthChannel;
-    }
-
-    static DeviceAuthChannel resetDeviceAuthChannel(FlingDeviceController axs1) {
-        axs1.mDeviceAuthChannel = null;
-        return null;
     }
 
     static void finishConnecting(FlingDeviceController flingDeviceController) {
@@ -1080,36 +1069,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 
     public final void onSocketConnectedInternal() {
         log.d("onSocketConnectedInternal");
-
-        mDeviceAuthChannel = new DeviceAuthChannel("receiver-0",
-                mFlingSocket.getPeerCertificate()) {
-
-            @Override
-            protected void verifyDevAuthResult(int result) {
-                // TODO Auto-generated method stub
-                b(mDeviceAuthChannel);
-                mDeviceAuthChannel = null;
-                if (result == 0) {
-                    log.d("authentication succeeded", new Object[0]);
-                    finishConnecting(FlingDeviceController.this);
-                } else {
-                    handleConnectionFailure_s(FlingDeviceController.this);
-                }
-            }
-
-        };
-
-        a(mDeviceAuthChannel);
-        try {
-            mDeviceAuthChannel.doDeviceAuth();
-            return;
-            // } catch (IOException ioexception)
-        } catch (Exception ioexception) {
-            log.w(ioexception, "Not able to authenticated Fling Device");
-        }
-        b(mDeviceAuthChannel);
-        mDeviceAuthChannel = null;
-        handleConnectionFailure(false);
+        finishConnecting(FlingDeviceController.this);
     }
 
     public final String getTransId() {
