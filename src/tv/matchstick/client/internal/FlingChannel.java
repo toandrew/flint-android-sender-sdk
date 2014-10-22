@@ -35,7 +35,7 @@ public abstract class FlingChannel {
 		mNamespace = namespace;
 
 		log = new LogUtil(tag);
-		log.U(String.format("instance-%d", idGen.incrementAndGet()));
+		log.setPrefixMsg(String.format("instance-%d", idGen.incrementAndGet()));
 	}
 
 	/**
@@ -75,7 +75,7 @@ public abstract class FlingChannel {
 	 */
 	protected final void sendTextMessage(String message, long requestId,
 			String targetId) throws IOException {
-		log.logv("Sending text message: %s to: %s", new Object[] { message,
+		log.v("Sending text message: %s to: %s", new Object[] { message,
 				targetId });
 
 		mMessageSender
@@ -89,7 +89,7 @@ public abstract class FlingChannel {
 	 * @param transId
 	 */
 	protected final void sendBinaryMessage(byte message[], String transId) {
-		log.logv("Sending binary message to: %s", new Object[] { transId });
+		log.v("Sending binary message to: %s", new Object[] { transId });
 
 		mMessageSender.sendBinaryMessage(mNamespace, message, 0L, transId);
 	}

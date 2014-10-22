@@ -265,7 +265,7 @@ public class MediaControlChannel extends FlingChannel {
     }
 
     public final void onMessageReceived(String message) {
-        log.logd("message received: %s", new Object[] { message });
+        log.d("message received: %s", new Object[] { message });
         try {
             JSONObject jsonMessage = new JSONObject(message);
             String type = jsonMessage.getString("type");
@@ -281,7 +281,7 @@ public class MediaControlChannel extends FlingChannel {
                     mRequestTrackerRequestStatus.trackRequest(requestId, 0);
                 }
             } else if (type.equals("INVALID_PLAYER_STATE")) {
-                this.log.logw(
+                this.log.w(
                         "received unexpected error: Invalid Player State.",
                         new Object[0]);
                 JSONObject customData = jsonMessage.optJSONObject("customData");
@@ -305,7 +305,7 @@ public class MediaControlChannel extends FlingChannel {
                 this.mRequestTrackerLoad.trackRequest(requestId, 2,
                         (JSONObject) customData);
             } else if (type.equals("INVALID_REQUEST")) {
-                this.log.logw(
+                this.log.w(
                         "received unexpected error: Invalid Request.",
                         new Object[0]);
                 JSONObject customData = jsonMessage.optJSONObject("customData");
@@ -322,7 +322,7 @@ public class MediaControlChannel extends FlingChannel {
                         customData);
             }
         } catch (JSONException e) {
-            this.log.logw("Message is malformed (%s); ignoring: %s",
+            this.log.w("Message is malformed (%s); ignoring: %s",
                     new Object[] { e.getMessage(), message });
         }
     }

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 
 package tv.matchstick.client.internal;
 
@@ -5,72 +20,78 @@ import android.util.Log;
 
 public class LogUtil {
 
-    private static boolean ye = false;
-    private final String mTag;
-    private boolean yf;
-    private boolean yg;
-    private String yh;
+	private static boolean DEBUG = false;
 
-    public LogUtil(String tag, boolean paramBoolean) {
-        this.mTag = tag;
-        this.yf = paramBoolean;
-        this.yg = false;
-    }
+	private final String TAG;
+	private boolean mDebugEnabled;
+	private boolean isVerbose;
+	private String prefixMsg;
 
-    public LogUtil(String tag) {
-        this(tag, di());
-    }
+	public LogUtil(String tag, boolean enable) {
+		this.TAG = tag;
+		this.mDebugEnabled = enable;
+		this.isVerbose = false;
+	}
 
-    public void U(String paramString) {
-        this.yh = String.format("[%s] ", new Object[] {
-            paramString
-        });
-    }
+	public LogUtil(String tag) {
+		this(tag, isDefaultDebugable());
+	}
 
-    public boolean dg() {
-        return this.yf;
-    }
+	public void setPrefixMsg(String msg) {
+		this.prefixMsg = String.format("[%s] ", new Object[] { msg });
+	}
 
-    public boolean dh() {
-        return this.yg;
-    }
+	public boolean isDebugEnabled() {
+		return this.mDebugEnabled;
+	}
 
-    public void logv(String paramString, Object[] paramArrayOfObject) {
-        if (!(dh()))
-            return;
-        Log.v(this.mTag, e(paramString, paramArrayOfObject));
-    }
+	public boolean printVerbose() {
+		return this.isVerbose;
+	}
 
-    public void logd(String paramString, Object[] paramArrayOfObject) {
-        if ((!(dg())) && (!(ye)))
-            return;
-        Log.d(this.mTag, e(paramString, paramArrayOfObject));
-    }
+	public void v(String message, Object[] args) {
+		if (!printVerbose()) {
+			return;
+		}
 
-    public void logd_a(Throwable paramThrowable, String paramString,
-            Object[] paramArrayOfObject) {
-        if ((!(dg())) && (!(ye)))
-            return;
-        Log.d(this.mTag, e(paramString, paramArrayOfObject), paramThrowable);
-    }
+		Log.v(TAG, e(message, args));
+	}
 
-    public void logi(String paramString, Object[] paramArrayOfObject) {
-        Log.i(this.mTag, e(paramString, paramArrayOfObject));
-    }
+	public void d(String message, Object[] args) {
+		if (!isDebugEnabled() && !DEBUG) {
+			return;
+		}
 
-    public void logw(String paramString, Object[] paramArrayOfObject) {
-        Log.w(this.mTag, e(paramString, paramArrayOfObject));
-    }
+		Log.d(TAG, e(message, args));
+	}
 
-    private String e(String paramString, Object[] paramArrayOfObject) {
-        String str = String.format(paramString, paramArrayOfObject);
-        if (this.yh != null)
-            str = this.yh + str;
-        return str;
-    }
+	public void dd(Throwable t, String message, Object[] args) {
+		if (!isDebugEnabled() && !DEBUG) {
+			return;
+		}
 
-    public static boolean di() {
-        return ye;
-    }
+		Log.d(TAG, e(message, args), t);
+	}
+
+	public void i(String message, Object[] args) {
+		Log.i(TAG, e(message, args));
+	}
+
+	public void w(String message, Object[] args) {
+		Log.w(TAG, e(message, args));
+	}
+
+	private String e(String message, Object[] args) {
+		String msg = String.format(message, args);
+		if (this.prefixMsg != null) {
+			msg = this.prefixMsg + msg;
+		}
+
+		return msg;
+	}
+
+	public static boolean isDefaultDebugable() {
+		return DEBUG;
+	}
 
 }

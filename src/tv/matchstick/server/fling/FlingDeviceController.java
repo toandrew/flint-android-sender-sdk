@@ -149,7 +149,7 @@ public final class FlingDeviceController implements FlingSocketListener {
         @Override
         protected void onStatusReceived(ApplicationInfo appInfo, double level,
                 boolean muted) {
-            log.logd("onStatusReceived", new Object[0]);
+            log.d("onStatusReceived", new Object[0]);
             mVolumeLevel = level;
             processReceiverStatus(FlingDeviceController.this, appInfo, level,
                     muted);
@@ -175,11 +175,11 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         protected void onStatusRequestFailed(int statusCode) {
-            log.logd("onStatusRequestFailed: statusCode=%d", new Object[] { statusCode });
+            log.d("onStatusRequestFailed: statusCode=%d", new Object[] { statusCode });
 
             if (mApplicationId != null) {
                 if (mReconnectStrategy.b()) {
-                    log.logd("calling Listener.onConnectedWithoutApp()", new Object[0]);
+                    log.d("calling Listener.onConnectedWithoutApp()", new Object[0]);
                     mFlingSrvController.onConnectedWithoutApp();
                 } else {
                     mFlingSrvController
@@ -1090,7 +1090,7 @@ public final class FlingDeviceController implements FlingSocketListener {
                 b(mDeviceAuthChannel);
                 mDeviceAuthChannel = null;
                 if (result == 0) {
-                    log.logd("authentication succeeded", new Object[0]);
+                    log.d("authentication succeeded", new Object[0]);
                     finishConnecting(FlingDeviceController.this);
                 } else {
                     handleConnectionFailure_s(FlingDeviceController.this);

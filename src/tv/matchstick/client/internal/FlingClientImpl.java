@@ -130,7 +130,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		this.mIFlingDeviceControllerListener = new IFlingDeviceControllerListener.Stub() {
 			@Override
 			public void onDisconnected(int statusCode) {
-				log.logd("IFlingDeviceControllerListener.onDisconnected: %d",
+				log.d("IFlingDeviceControllerListener.onDisconnected: %d",
 						new Object[] { Integer.valueOf(statusCode) });
 				mIsConnectedDevice = false;
 				mApplicationMetadata = null;
@@ -225,7 +225,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			@Override
 			public void onMessageReceived(final String namespace,
 					final String message) {
-				log.logd("Receive (type=text, ns=%s) %s", new Object[] {
+				log.d("Receive (type=text, ns=%s) %s", new Object[] {
 						namespace, message });
 				mHandler.post(new Runnable() {
 					public void run() {
@@ -238,7 +238,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 							localMessageReceivedCallback.onMessageReceived(
 									mFlingDevice, namespace, message);
 						} else {
-							log.logd(
+							log.d(
 									"Discarded message for unknown namespace '%s'",
 									new Object[] { namespace });
 						}
@@ -251,7 +251,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			 */
 			@Override
 			public void onReceiveBinary(String namespace, byte[] message) {
-				log.logd(
+				log.d(
 						"IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
 						new Object[] { namespace,
 								Integer.valueOf(message.length) });
@@ -322,7 +322,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 				getService().disconnect();
 			}
 		} catch (RemoteException e) {
-			log.logd("Error while disconnecting the controller interface: %s",
+			log.d("Error while disconnecting the controller interface: %s",
 					new Object[] { e.getMessage() });
 		} finally {
 			super.disconnect();
@@ -579,7 +579,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		try {
 			getService().removeMessageReceivedCallbacks(channelNameSpace);
 		} catch (IllegalStateException e) {
-			log.logd_a(e, "Error unregistering namespace (%s): %s",
+			log.dd(e, "Error unregistering namespace (%s): %s",
 					new Object[] { channelNameSpace, e.getMessage() });
 		}
 	}
@@ -636,7 +636,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			hasChange = true;
 		}
 
-		log.logd(
+		log.d(
 				"hasChange=%b, mFirstStatusUpdate=%b",
 				new Object[] { Boolean.valueOf(hasChange),
 						Boolean.valueOf(mFirstStatusUpdate) });
@@ -731,7 +731,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	@Override
 	protected void getServiceFromBroker(IFlingServiceBroker serviceBroker,
 			IFlingCallbackImpl flingCallback) throws RemoteException {
-		log.logd(
+		log.d(
 				"getServiceFromBroker(): mLastApplicationId=%s, mLastSessionId=%s",
 				new Object[] { mApplicationId, mSessionId });
 		Bundle bundle = new Bundle();

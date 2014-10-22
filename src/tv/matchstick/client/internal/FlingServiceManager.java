@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.client.internal;
 
 import java.util.HashMap;
@@ -65,8 +81,8 @@ public class FlingServiceManager implements Handler.Callback {
 							holder.getComponentName(), holder.getBinder());
 					break;
 				case 2:
-					Intent intent = new Intent(serviceName)
-							.setPackage(mContext.getPackageName());
+					Intent intent = new Intent(serviceName).setPackage(mContext
+							.getPackageName());
 					boolean isBounded = mContext.bindService(intent,
 							holder.getInnerServiceConnection(),
 							Context.BIND_ADJUST_WITH_ACTIVITY
@@ -107,10 +123,8 @@ public class FlingServiceManager implements Handler.Callback {
 			ServiceStatusHolder holder = (ServiceStatusHolder) msg.obj;
 			synchronized (mServiceStatusHolderMap) {
 				if (holder.isConnectionsSetEmpty()) {
-					mContext.unbindService(holder
-							.getInnerServiceConnection());
-					mServiceStatusHolderMap.remove(holder
-							.getServiceName());
+					mContext.unbindService(holder.getInnerServiceConnection());
+					mServiceStatusHolderMap.remove(holder.getServiceName());
 				}
 			}
 			return true;
@@ -138,7 +152,8 @@ public class FlingServiceManager implements Handler.Callback {
 			this.connectionsSet.add(connection);
 		}
 
-		public void removeFromConnectionsSet(FlingClientServiceConnection connection) {
+		public void removeFromConnectionsSet(
+				FlingClientServiceConnection connection) {
 			this.connectionsSet.remove(connection);
 		}
 
@@ -162,7 +177,8 @@ public class FlingServiceManager implements Handler.Callback {
 			return this.mState;
 		}
 
-		public boolean isConnectionsSetContains(FlingClientServiceConnection parameh) {
+		public boolean isConnectionsSetContains(
+				FlingClientServiceConnection parameh) {
 			return this.connectionsSet.contains(parameh);
 		}
 

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.client.internal;
 
 import java.util.Iterator;
@@ -8,23 +24,23 @@ import org.json.JSONObject;
 
 public class JsonComparer {
 
-	public static boolean compare(Object obj1, Object obj2) {
-		if ((obj1 instanceof JSONObject) && (obj2 instanceof JSONObject)) {
-			JSONObject json1 = (JSONObject) obj1;
-			JSONObject json2 = (JSONObject) obj2;
-			if (json1.length() != json2.length()) {
+	public static boolean compare(Object one, Object other) {
+		if ((one instanceof JSONObject) && (other instanceof JSONObject)) {
+			JSONObject jsonOne = (JSONObject) one;
+			JSONObject jsonOther = (JSONObject) other;
+			if (jsonOne.length() != jsonOther.length()) {
 				return false;
 			}
-			Iterator json1Keys = json1.keys();
-			while (json1Keys.hasNext()) {
-				String key = (String) json1Keys.next();
-				if (!(json2.has(key))) {
+			Iterator jsonOneKeys = jsonOne.keys();
+			while (jsonOneKeys.hasNext()) {
+				String key = (String) jsonOneKeys.next();
+				if (!(jsonOther.has(key))) {
 					return false;
 				}
 				try {
-					Object tmp1 = json1.get(key);
-					Object tmp2 = json2.get(key);
-					if (!compare(tmp1, tmp2)) {
+					Object value = jsonOne.get(key);
+					Object other_value = jsonOther.get(key);
+					if (!compare(value, other_value)) {
 						return false;
 					}
 				} catch (JSONException e) {
@@ -33,17 +49,17 @@ public class JsonComparer {
 			}
 			return true;
 		}
-		if ((obj1 instanceof JSONArray) && (obj2 instanceof JSONArray)) {
-			JSONArray jArr1 = (JSONArray) obj1;
-			JSONArray jArr2 = (JSONArray) obj2;
-			if (jArr1.length() != jArr2.length()) {
+		if ((one instanceof JSONArray) && (other instanceof JSONArray)) {
+			JSONArray jArrOne = (JSONArray) one;
+			JSONArray jArrOther = (JSONArray) other;
+			if (jArrOne.length() != jArrOther.length()) {
 				return false;
 			}
-			for (int i = 0; i < jArr1.length(); ++i) {
+			for (int i = 0; i < jArrOne.length(); ++i) {
 				try {
-					Object tmp1 = jArr1.get(i);
-					Object tmp2 = jArr2.get(i);
-					if (!compare(tmp1, tmp2)) {
+					Object value = jArrOne.get(i);
+					Object value_other = jArrOther.get(i);
+					if (!compare(value, value_other)) {
 						return false;
 					}
 				} catch (JSONException e) {
@@ -52,6 +68,6 @@ public class JsonComparer {
 			}
 			return true;
 		}
-		return obj1.equals(obj2);
+		return one.equals(other);
 	}
 }

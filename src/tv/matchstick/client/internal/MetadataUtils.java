@@ -56,7 +56,7 @@ public class MetadataUtils {
 
     public static String getDateByCalendar(Calendar calendar) {
         if (calendar == null) {
-            mLogUtil.logd("Calendar object cannot be null", new Object[0]);
+            mLogUtil.d("Calendar object cannot be null", new Object[0]);
             return null;
         }
         String format = DEFAULT_FORMAT;
@@ -75,12 +75,12 @@ public class MetadataUtils {
 
     public static Calendar getCalendarByDate(String dateString) {
         if (TextUtils.isEmpty(dateString)) {
-            mLogUtil.logd("Input string is empty or null", new Object[0]);
+            mLogUtil.d("Input string is empty or null", new Object[0]);
             return null;
         }
         String date = extractDate(dateString);
         if (TextUtils.isEmpty(date)) {
-            mLogUtil.logd("Invalid date format", new Object[0]);
+            mLogUtil.d("Invalid date format", new Object[0]);
             return null;
         }
         String time = extractTime(dateString);
@@ -97,7 +97,7 @@ public class MetadataUtils {
         try {
             localDate = new SimpleDateFormat(str3).parse(date);
         } catch (ParseException localParseException) {
-            mLogUtil.logd("Error parsing string: %s",
+            mLogUtil.d("Error parsing string: %s",
                     new Object[] { localParseException.getMessage() });
             return null;
         }
@@ -107,13 +107,13 @@ public class MetadataUtils {
 
     private static String extractDate(String date) {
         if (TextUtils.isEmpty(date)) {
-            mLogUtil.logd("Input string is empty or null", new Object[0]);
+            mLogUtil.d("Input string is empty or null", new Object[0]);
             return null;
         }
         try {
             return date.substring(0, "yyyyMMdd".length());
         } catch (IndexOutOfBoundsException localIndexOutOfBoundsException) {
-            mLogUtil.logi(
+            mLogUtil.i(
                     "Error extracting the date: %s",
                     new Object[] { localIndexOutOfBoundsException.getMessage() });
         }
@@ -122,19 +122,19 @@ public class MetadataUtils {
 
     private static String extractTime(String date) {
         if (TextUtils.isEmpty(date)) {
-            mLogUtil.logd("string is empty or null", new Object[0]);
+            mLogUtil.d("string is empty or null", new Object[0]);
             return null;
         }
         int i = date.indexOf(84);
         if (i++ != "yyyyMMdd".length()) {
-            mLogUtil.logd("T delimeter is not found", new Object[0]);
+            mLogUtil.d("T delimeter is not found", new Object[0]);
             return null;
         }
         String str;
         try {
             str = date.substring(i);
         } catch (IndexOutOfBoundsException localIndexOutOfBoundsException) {
-            mLogUtil.logd(
+            mLogUtil.d(
                     "Error extracting the time substring: %s",
                     new Object[] { localIndexOutOfBoundsException.getMessage() });
             return null;
