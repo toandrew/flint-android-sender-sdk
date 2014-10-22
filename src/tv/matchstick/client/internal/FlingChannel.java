@@ -116,7 +116,7 @@ public abstract class FlingChannel {
 	 * @param requestId
 	 * @param statusCode
 	 */
-	public void trackUnSuccess(long requestId, int statusCode) {
+	public void trackFailedRequests(long requestId, int statusCode) {
 	}
 
 	/**

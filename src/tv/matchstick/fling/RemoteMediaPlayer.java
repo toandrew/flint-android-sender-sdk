@@ -829,7 +829,7 @@ public class RemoteMediaPlayer implements Fling.MessageReceivedCallback {
 					return;
 				}
 
-				mMediaControlChannel.trackUnSuccess(this.reqId,
+				mMediaControlChannel.trackFailedRequests(this.reqId,
 						status.getStatusCode());
 			}
 		}

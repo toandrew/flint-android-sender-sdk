@@ -38,7 +38,7 @@ public class LogUtil {
 	}
 
 	public void setPrefixMsg(String msg) {
-		this.prefixMsg = String.format("[%s] ", new Object[] { msg });
+		this.prefixMsg = String.format("[%s] ", msg);
 	}
 
 	public boolean isDebugEnabled() {
@@ -54,7 +54,7 @@ public class LogUtil {
 			return;
 		}
 
-		Log.v(TAG, e(message, args));
+		Log.v(TAG, format(message, args));
 	}
 
 	public void d(String message, Object[] args) {
@@ -62,7 +62,7 @@ public class LogUtil {
 			return;
 		}
 
-		Log.d(TAG, e(message, args));
+		Log.d(TAG, format(message, args));
 	}
 
 	public void dd(Throwable t, String message, Object[] args) {
@@ -70,18 +70,18 @@ public class LogUtil {
 			return;
 		}
 
-		Log.d(TAG, e(message, args), t);
+		Log.d(TAG, format(message, args), t);
 	}
 
 	public void i(String message, Object[] args) {
-		Log.i(TAG, e(message, args));
+		Log.i(TAG, format(message, args));
 	}
 
 	public void w(String message, Object[] args) {
-		Log.w(TAG, e(message, args));
+		Log.w(TAG, format(message, args));
 	}
 
-	private String e(String message, Object[] args) {
+	private String format(String message, Object[] args) {
 		String msg = String.format(message, args);
 		if (this.prefixMsg != null) {
 			msg = this.prefixMsg + msg;
