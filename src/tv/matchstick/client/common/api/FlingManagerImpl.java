@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.client.common.api;
 
 import java.util.HashMap;
@@ -37,32 +53,43 @@ public final class FlingManagerImpl implements FlingManager {
 	private final FlingClientEvents mFlingClientEvents;
 
 	final Queue<FlingApiClientTask<?>> mPendingTaskQueue = new LinkedList<FlingApiClientTask<?>>();
+
 	final Handler mHander;
+
 	final Set<FlingApiClientTask<?>> mReleaseableTasks = new HashSet<FlingApiClientTask<?>>();
 
 	private final Lock mLock = new ReentrantLock();
+
 	private final Condition mCondition = mLock.newCondition();
+
 	private final Bundle mBundle = new Bundle();
+
 	private final Map<Api.ConnectionBuilder<?>, Api.ConnectionApi> mConnectionMap = new HashMap<Api.ConnectionBuilder<?>, Api.ConnectionApi>();
 
 	private int mCurrentPrority;
+
 	private int mConnectState = 4; // 1: connecting, 2: connected, 3:
+
 	private int mRetryConnectCounter = 0;
+
 	private int mConnectionMapSize;
-	private boolean zD = false;
+
+	private boolean mPending = false;
+
 	private boolean mCanReceiveEvent;
+
 	private long mMessageDelay = 5000L;
+
 	private ConnectionResult mConnectionFailedResult;
 
 	/**
 	 * Called when release resource.
 	 */
 	private final ReleaseCallback mReleaseCallback = new ReleaseCallback() {
-		public void onRelease(
-				FlingManagerImpl.FlingApiClientTask paramc) {
+		public void onRelease(FlingManagerImpl.FlingApiClientTask task) {
 			mLock.lock();
 			try {
-				mReleaseableTasks.remove(paramc);
+				mReleaseableTasks.remove(task);
 			} finally {
 				mLock.unlock();
 			}
@@ -116,10 +143,7 @@ public final class FlingManagerImpl implements FlingManager {
 		}
 	};
 
-	/*
-	 * b$3.smali : OK
-	 */
-	private final FlingClientEvents.ClientEventCallback mFmsClientEventCallback = new FlingClientEvents.ClientEventCallback() {
+	private final FlingClientEvents.ClientEventCallback mClientEventCallback = new FlingClientEvents.ClientEventCallback() {
 		public boolean canReceiveEvent() {
 			return mCanReceiveEvent;
 		}
@@ -148,7 +172,7 @@ public final class FlingManagerImpl implements FlingManager {
 			Set<ConnectionCallbacks> connCallbacksSet,
 			Set<OnConnectionFailedListener> connFailedListenerSet) {
 		mFlingClientEvents = new FlingClientEvents(context, looper,
-				mFmsClientEventCallback);
+				mClientEventCallback);
 		mHander = new FlingApiClientHandler(looper);
 
 		Iterator<ConnectionCallbacks> itCallbacks = connCallbacksSet.iterator();
@@ -167,17 +191,15 @@ public final class FlingManagerImpl implements FlingManager {
 		Iterator<Api> apis = apiOptionsMap.keySet().iterator();
 		while (apis.hasNext()) {
 			Api api = apis.next();
-			final Api.ConnectionBuilder<?> builder = api
-					.getConnectionBuilder();
+			final Api.ConnectionBuilder<?> builder = api.getConnectionBuilder();
 			ApiOptions apiOption = apiOptionsMap.get(api);
-			mConnectionMap.put(builder, builder.build(
-					context, looper, account, apiOption,
-					mConnectionCallbacks,
+			mConnectionMap.put(builder, builder.build(context, looper, account,
+					apiOption, mConnectionCallbacks,
 					/**
-					 * Connection failed listener 
+					 * Connection failed listener
 					 */
 					new OnConnectionFailedListener() {
-						
+
 						/**
 						 * Connection failed event happens
 						 */
@@ -202,14 +224,13 @@ public final class FlingManagerImpl implements FlingManager {
 	// private methods
 	/*************************************************/
 
-	// uncheck smali
 	private void notifyConnectionResult() {
 		mLock.lock();
 		try {
 			mConnectionMapSize -= 1;
 			if (mConnectionMapSize == 0) {
 				if (mConnectionFailedResult != null) {
-					zD = false;
+					mPending = false;
 					onDisconnected(3);
 					if (canRetryConnect()) {
 						mRetryConnectCounter -= 1;
@@ -228,14 +249,13 @@ public final class FlingManagerImpl implements FlingManager {
 					cancelReconnect();
 					mCondition.signalAll();
 					flushQueue();
-					if (zD) {
-						zD = false;
+					if (mPending) {
+						mPending = false;
 						onDisconnected(-1);
 					} else {
 						Bundle localBundle = (mBundle.isEmpty()) ? null
 								: mBundle;
-						mFlingClientEvents
-								.notifyOnConnected(localBundle);
+						mFlingClientEvents.notifyOnConnected(localBundle);
 					}
 				}
 			}
@@ -276,8 +296,7 @@ public final class FlingManagerImpl implements FlingManager {
 		try {
 			while (!(mPendingTaskQueue.isEmpty())) {
 				try {
-					execute((FlingApiClientTask) mPendingTaskQueue
-							.remove());
+					execute((FlingApiClientTask) mPendingTaskQueue.remove());
 				} catch (DeadObjectException localDeadObjectException) {
 					Log.w("FlingManagerImpl",
 							"Service died while flushing queue",
@@ -298,7 +317,7 @@ public final class FlingManagerImpl implements FlingManager {
 		mLock.lock();
 		try {
 			if (mConnectState != 3) {
-				if (cause == -1) { //cancel action
+				if (cause == -1) { // cancel action
 					if (isConnecting()) {
 						Iterator tasks = mPendingTaskQueue.iterator();
 						while (tasks.hasNext()) {
@@ -313,7 +332,7 @@ public final class FlingManagerImpl implements FlingManager {
 					}
 					if ((mConnectionFailedResult == null)
 							&& (!(mPendingTaskQueue.isEmpty()))) {
-						zD = true;
+						mPending = true;
 						return;
 					}
 				}
@@ -321,15 +340,14 @@ public final class FlingManagerImpl implements FlingManager {
 				boolean isConnected = isConnected();
 				mConnectState = 3;
 				if (isConnecting) {
-					if (cause == -1) { //canceled
+					if (cause == -1) { // canceled
 						mConnectionFailedResult = null;
 					}
 					this.mCondition.signalAll();
 				}
 				Iterator tasks = mReleaseableTasks.iterator();
 				while (tasks.hasNext()) {
-					FlingApiClientTask c = (FlingApiClientTask) tasks
-							.next();
+					FlingApiClientTask c = (FlingApiClientTask) tasks.next();
 					c.release();
 				}
 				mReleaseableTasks.clear();
@@ -346,8 +364,7 @@ public final class FlingManagerImpl implements FlingManager {
 				mConnectState = 4;
 				if (isConnected) {
 					if (cause != -1) {
-						mFlingClientEvents
-								.notifyOnConnectionSuspended(cause);
+						mFlingClientEvents.notifyOnConnectionSuspended(cause);
 					}
 					mCanReceiveEvent = false;
 				}
@@ -384,24 +401,6 @@ public final class FlingManagerImpl implements FlingManager {
 		}
 	}
 
-	// unused
-	/*
-	public <A extends Api.ConnectionApi, T extends MatchStickApiImpl<? extends Result, A>> T a(
-			T task) {
-		mLock.lock();
-		try {
-			if (isConnected()) {
-				executeTask(task);
-			} else {
-				mPendingTaskQueue.add(task);
-			}
-			return task;
-		} finally {
-			mLock.unlock();
-		}
-	}
-	*/
-
 	/**
 	 * Do Fling actions with Fling service.
 	 */
@@ -436,7 +435,7 @@ public final class FlingManagerImpl implements FlingManager {
 	public void connect() {
 		mLock.lock();
 		try {
-			zD = false;
+			mPending = false;
 			if ((isConnected()) || (isConnecting())) {
 				return;
 			}
@@ -445,11 +444,11 @@ public final class FlingManagerImpl implements FlingManager {
 			mConnectState = 1; // connecting...
 			mBundle.clear();
 			mConnectionMapSize = mConnectionMap.size();
-			Iterator<Api.ConnectionApi> connections = mConnectionMap
-					.values().iterator();
+			Iterator<Api.ConnectionApi> connections = mConnectionMap.values()
+					.iterator();
 			while (connections.hasNext()) {
 				Api.ConnectionApi c = connections.next();
-				c.connect(); //call connect() in FlingApi
+				c.connect(); // call connect() in FlingApi
 			}
 		} finally {
 			mLock.unlock();
@@ -466,11 +465,11 @@ public final class FlingManagerImpl implements FlingManager {
 		mLock.lock();
 		try {
 			connect();
-			long l = unit.toNanos(timeout);
+			long nanos = unit.toNanos(timeout);
 			while (isConnecting()) {
 				try {
-					l = mCondition.awaitNanos(l);
-					if (l <= 0L) {
+					nanos = mCondition.awaitNanos(nanos);
+					if (nanos <= 0L) {
 						ConnectionResult timeoutResult = new ConnectionResult(
 								ConnectionResult.TIMEOUT, null);
 						mLock.unlock();
@@ -490,8 +489,8 @@ public final class FlingManagerImpl implements FlingManager {
 			if (this.mConnectionFailedResult != null) {
 				return mConnectionFailedResult;
 			}
-			ConnectionResult conceledResult = new ConnectionResult(ConnectionResult.CANCELED,
-					null);
+			ConnectionResult conceledResult = new ConnectionResult(
+					ConnectionResult.CANCELED, null);
 			return conceledResult;
 		} finally {
 			mLock.unlock();
@@ -506,7 +505,7 @@ public final class FlingManagerImpl implements FlingManager {
 		 * cancel reconnect action
 		 */
 		cancelReconnect();
-		
+
 		/**
 		 * call disconnect callback
 		 */
@@ -521,7 +520,7 @@ public final class FlingManagerImpl implements FlingManager {
 		 * disconnect first
 		 */
 		disconnect();
-		
+
 		/**
 		 * connect
 		 */
@@ -551,7 +550,7 @@ public final class FlingManagerImpl implements FlingManager {
 			mLock.unlock();
 		}
 	}
-	
+
 	@Override
 	public void registerConnectionCallbacks(ConnectionCallbacks listener) {
 		mFlingClientEvents.registerConnectionCallbacks(listener);
@@ -559,8 +558,7 @@ public final class FlingManagerImpl implements FlingManager {
 
 	@Override
 	public boolean isConnectionCallbacksRegistered(ConnectionCallbacks listener) {
-		return mFlingClientEvents
-				.isConnectionCallbacksRegistered(listener);
+		return mFlingClientEvents.isConnectionCallbacksRegistered(listener);
 	}
 
 	@Override
@@ -600,8 +598,8 @@ public final class FlingManagerImpl implements FlingManager {
 	 * Handler
 	 */
 	class FlingApiClientHandler extends Handler {
-		FlingApiClientHandler(Looper paramLooper) {
-			super(paramLooper);
+		FlingApiClientHandler(Looper looper) {
+			super(looper);
 		}
 
 		public void handleMessage(Message msg) {

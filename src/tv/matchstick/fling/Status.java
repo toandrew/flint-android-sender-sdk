@@ -16,7 +16,7 @@
 
 package tv.matchstick.fling;
 
-import tv.matchstick.client.common.api.CommonStatusCodes;
+import tv.matchstick.client.common.api.StatusCodes;
 import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
 import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
@@ -240,7 +240,7 @@ public class Status implements Result, SafeParcelable {
 		if (this.mStatusMessage != null) {
 			return this.mStatusMessage;
 		}
-		return CommonStatusCodes.getStatusMessage(this.mStatusCode);
+		return StatusCodes.getStatusMessage(this.mStatusCode);
 	}
 
 	@Override
