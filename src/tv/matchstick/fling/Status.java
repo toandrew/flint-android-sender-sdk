@@ -17,8 +17,8 @@
 package tv.matchstick.fling;
 
 import tv.matchstick.client.common.api.CommonStatusCodes;
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
-import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.client.internal.MyStringBuilder;
 import android.app.PendingIntent;
@@ -53,34 +53,34 @@ public class Status implements Result, SafeParcelable {
 		public Status createFromParcel(Parcel source) {
 			// TODO Auto-generated method stub
 
-			int size = ParcelReadUtil.readStart(source);
+			int size = ParcelRead.readStart(source);
 			int version = 0;
 			int status = 0;
 			String statusMessage = null;
 			PendingIntent intent = null;
 			while (source.dataPosition() < size) {
-				int type = ParcelReadUtil.readSingleInt(source);
-				switch (ParcelReadUtil.halfOf(type)) {
+				int type = ParcelRead.readInt(source);
+				switch (ParcelRead.halfOf(type)) {
 				case 1:
-					status = ParcelReadUtil.readInt(source, type);
+					status = ParcelRead.readInt(source, type);
 					break;
 				case 1000:
-					version = ParcelReadUtil.readInt(source, type);
+					version = ParcelRead.readInt(source, type);
 					break;
 				case 2:
-					statusMessage = ParcelReadUtil.readString(source, type);
+					statusMessage = ParcelRead.readString(source, type);
 					break;
 				case 3:
-					intent = (PendingIntent) ParcelReadUtil.readParcelable(
+					intent = (PendingIntent) ParcelRead.readParcelable(
 							source, type, PendingIntent.CREATOR);
 					break;
 				default:
-					ParcelReadUtil.skip(source, type);
+					ParcelRead.skip(source, type);
 				}
 			}
 
 			if (source.dataPosition() != size) {
-				throw new ParcelReadUtil.SafeParcel(
+				throw new ParcelRead.ReadParcelException(
 						"Overread allowed size end=" + size, source);
 			}
 
@@ -277,11 +277,11 @@ public class Status implements Result, SafeParcelable {
 	 * @param flags
 	 */
 	private void buildParcel(Parcel out, int flags) {
-		int i = ParcelWriteUtil.position(out);
-		ParcelWriteUtil.write(out, 1, getStatusCode());
-		ParcelWriteUtil.write(out, 1000, getVersionCode());
-		ParcelWriteUtil.write(out, 2, getStatusMessage(), false);
-		ParcelWriteUtil.write(out, 3, getPendingIntent(), flags, false);
-		ParcelWriteUtil.writeEnd(out, i);
+		int i = ParcelWrite.position(out);
+		ParcelWrite.write(out, 1, getStatusCode());
+		ParcelWrite.write(out, 1000, getVersionCode());
+		ParcelWrite.write(out, 2, getStatusMessage(), false);
+		ParcelWrite.write(out, 3, getPendingIntent(), flags, false);
+		ParcelWrite.writeEnd(out, i);
 	}
 }

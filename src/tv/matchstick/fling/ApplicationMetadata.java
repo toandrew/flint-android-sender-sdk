@@ -19,10 +19,10 @@ package tv.matchstick.fling;
 import java.util.ArrayList;
 import java.util.List;
 
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
-import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil.SafeParcel;
+import tv.matchstick.client.common.internal.safeparcel.ParcelRead.ReadParcelException;
 import tv.matchstick.fling.images.WebImage;
 import android.net.Uri;
 import android.os.Parcel;
@@ -44,7 +44,7 @@ public final class ApplicationMetadata implements SafeParcelable {
 		public ApplicationMetadata createFromParcel(Parcel source) {
 			// TODO Auto-generated method stub
 
-			int size = ParcelReadUtil.readStart(source);
+			int size = ParcelRead.readStart(source);
 			int versionCode = 0;
 			String applicationId = null;
 			String name = null;
@@ -53,39 +53,39 @@ public final class ApplicationMetadata implements SafeParcelable {
 			String senderAppIdentifier = null;
 			Uri senderAppLaunchUrl = null;
 			while (source.dataPosition() < size) {
-				int type = ParcelReadUtil.readSingleInt(source);
-				switch (ParcelReadUtil.halfOf(type)) {
+				int type = ParcelRead.readInt(source);
+				switch (ParcelRead.halfOf(type)) {
 				case 1:
-					versionCode = ParcelReadUtil.readInt(source, type);
+					versionCode = ParcelRead.readInt(source, type);
 					break;
 				case 2:
-					applicationId = ParcelReadUtil.readString(source, type);
+					applicationId = ParcelRead.readString(source, type);
 					break;
 				case 3:
-					name = ParcelReadUtil.readString(source, type);
+					name = ParcelRead.readString(source, type);
 					break;
 				case 4:
-					images = ParcelReadUtil.readCreatorList(source, type,
+					images = ParcelRead.readCreatorList(source, type,
 							WebImage.CREATOR);
 					break;
 				case 5:
-					namespaces = ParcelReadUtil.readStringList(source, type);
+					namespaces = ParcelRead.readStringList(source, type);
 					break;
 				case 6:
-					senderAppIdentifier = ParcelReadUtil.readString(source,
+					senderAppIdentifier = ParcelRead.readString(source,
 							type);
 					break;
 				case 7:
-					senderAppLaunchUrl = (Uri) ParcelReadUtil.readParcelable(
+					senderAppLaunchUrl = (Uri) ParcelRead.readParcelable(
 							source, type, Uri.CREATOR);
 					break;
 				default:
-					ParcelReadUtil.skip(source, type);
+					ParcelRead.skip(source, type);
 				}
 			}
 
 			if (source.dataPosition() != size) {
-				throw new SafeParcel("Overread allowed size end=" + size,
+				throw new ReadParcelException("Overread allowed size end=" + size,
 						source);
 			}
 
@@ -281,14 +281,14 @@ public final class ApplicationMetadata implements SafeParcelable {
 	 * @param flags
 	 */
 	private void buildParcel(Parcel out, int flags) {
-		int i = ParcelWriteUtil.position(out);
-		ParcelWriteUtil.write(out, 1, getVersionCode());
-		ParcelWriteUtil.write(out, 2, getApplicationId(), false);
-		ParcelWriteUtil.write(out, 3, getName(), false);
-		ParcelWriteUtil.write(out, 4, getImages(), false);
-		ParcelWriteUtil.writeStringList(out, 5, getNamespaces(), false);
-		ParcelWriteUtil.write(out, 6, getSenderAppIdentifier(), false);
-		ParcelWriteUtil.write(out, 7, getSenderAppLaunchUrl(), flags, false);
-		ParcelWriteUtil.writeEnd(out, i);
+		int i = ParcelWrite.position(out);
+		ParcelWrite.write(out, 1, getVersionCode());
+		ParcelWrite.write(out, 2, getApplicationId(), false);
+		ParcelWrite.write(out, 3, getName(), false);
+		ParcelWrite.write(out, 4, getImages(), false);
+		ParcelWrite.writeStringList(out, 5, getNamespaces(), false);
+		ParcelWrite.write(out, 6, getSenderAppIdentifier(), false);
+		ParcelWrite.write(out, 7, getSenderAppLaunchUrl(), flags, false);
+		ParcelWrite.writeEnd(out, i);
 	}
 }

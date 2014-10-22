@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
-import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
@@ -46,7 +46,7 @@ public class FlingDevice implements SafeParcelable {
 
 			int servicePor = 0;
 			ArrayList<WebImage> icons = null;
-			int length = ParcelReadUtil.readStart(source);
+			int length = ParcelRead.readStart(source);
 			String deviceVersion = null;
 			String modelName = null;
 			String friendlyName = null;
@@ -58,39 +58,39 @@ public class FlingDevice implements SafeParcelable {
 				int position = source.readInt();
 				switch (0xffff & position) {
 				default:
-					ParcelReadUtil.skip(source, position);
+					ParcelRead.skip(source, position);
 					break;
 
 				case 1:
-					versionCode = ParcelReadUtil.readInt(source, position);
+					versionCode = ParcelRead.readInt(source, position);
 					break;
 
 				case 2:
-					deviceId = ParcelReadUtil.readString(source, position);
+					deviceId = ParcelRead.readString(source, position);
 					break;
 
 				case 3:
-					hostAddress = ParcelReadUtil.readString(source, position);
+					hostAddress = ParcelRead.readString(source, position);
 					break;
 
 				case 4:
-					friendlyName = ParcelReadUtil.readString(source, position);
+					friendlyName = ParcelRead.readString(source, position);
 					break;
 
 				case 5:
-					modelName = ParcelReadUtil.readString(source, position);
+					modelName = ParcelRead.readString(source, position);
 					break;
 
 				case 6:
-					deviceVersion = ParcelReadUtil.readString(source, position);
+					deviceVersion = ParcelRead.readString(source, position);
 					break;
 
 				case 7:
-					servicePor = ParcelReadUtil.readInt(source, position);
+					servicePor = ParcelRead.readInt(source, position);
 					break;
 
 				case 8:
-					icons = ParcelReadUtil.readCreatorList(source, position,
+					icons = ParcelRead.readCreatorList(source, position,
 							WebImage.CREATOR);
 					break;
 				}
@@ -573,16 +573,16 @@ public class FlingDevice implements SafeParcelable {
 	}
 
 	private void buildParcel(Parcel out) {
-		int position = ParcelWriteUtil.position(out);
-		ParcelWriteUtil.write(out, 1, getVersionCode());
-		ParcelWriteUtil.write(out, 2, getDeviceId(), false);
-		ParcelWriteUtil.write(out, 3, mHostAddress, false);
-		ParcelWriteUtil.write(out, 4, getFriendlyName(), false);
-		ParcelWriteUtil.write(out, 5, getModelName(), false);
-		ParcelWriteUtil.write(out, 6, getDeviceVersion(), false);
-		ParcelWriteUtil.write(out, 7, getServicePort());
-		ParcelWriteUtil.write(out, 8, getIcons(), false);
-		ParcelWriteUtil.writeEnd(out, position);
+		int position = ParcelWrite.position(out);
+		ParcelWrite.write(out, 1, getVersionCode());
+		ParcelWrite.write(out, 2, getDeviceId(), false);
+		ParcelWrite.write(out, 3, mHostAddress, false);
+		ParcelWrite.write(out, 4, getFriendlyName(), false);
+		ParcelWrite.write(out, 5, getModelName(), false);
+		ParcelWrite.write(out, 6, getDeviceVersion(), false);
+		ParcelWrite.write(out, 7, getServicePort());
+		ParcelWrite.write(out, 8, getIcons(), false);
+		ParcelWrite.writeEnd(out, position);
 	}
 
 }

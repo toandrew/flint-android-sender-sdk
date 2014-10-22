@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
-import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -75,38 +75,38 @@ public class AccountInfo {
 			public AccountInfoData createFromParcel(Parcel source) {
 				// TODO Auto-generated method stub
 
-				int size = ParcelReadUtil.readStart(source);
+				int size = ParcelRead.readStart(source);
 				int version = 0;
 				String name = null;
 				ArrayList<String> scopeUriList = null;
 				int gravity = 0;
 				String packageName = null;
 				while (source.dataPosition() < size) {
-					int type = ParcelReadUtil.readSingleInt(source);
-					switch (ParcelReadUtil.halfOf(type)) {
+					int type = ParcelRead.readInt(source);
+					switch (ParcelRead.halfOf(type)) {
 					case 1:
-						name = ParcelReadUtil.readString(source, type);
+						name = ParcelRead.readString(source, type);
 						break;
 					case 1000:
-						version = ParcelReadUtil.readInt(source, type);
+						version = ParcelRead.readInt(source, type);
 						break;
 					case 2:
-						scopeUriList = ParcelReadUtil.readStringList(source,
+						scopeUriList = ParcelRead.readStringList(source,
 								type);
 						break;
 					case 3:
-						gravity = ParcelReadUtil.readInt(source, type);
+						gravity = ParcelRead.readInt(source, type);
 						break;
 					case 4:
-						packageName = ParcelReadUtil.readString(source, type);
+						packageName = ParcelRead.readString(source, type);
 						break;
 					default:
-						ParcelReadUtil.skip(source, type);
+						ParcelRead.skip(source, type);
 					}
 				}
 
 				if (source.dataPosition() != size) {
-					throw new ParcelReadUtil.SafeParcel(
+					throw new ParcelRead.ReadParcelException(
 							"Overread allowed size end=" + size, source);
 				}
 
@@ -185,13 +185,13 @@ public class AccountInfo {
 		}
 
 		private void buildParcel(Parcel out, int flags) {
-			int i = ParcelWriteUtil.position(out);
-			ParcelWriteUtil.write(out, 1, getAccountName(), false);
-			ParcelWriteUtil.write(out, 1000, getVersionCode());
-			ParcelWriteUtil.writeStringList(out, 2, copyScopeUriList(), false);
-			ParcelWriteUtil.write(out, 3, getGravityForPopups());
-			ParcelWriteUtil.write(out, 4, getPackageName(), false);
-			ParcelWriteUtil.writeEnd(out, i);
+			int i = ParcelWrite.position(out);
+			ParcelWrite.write(out, 1, getAccountName(), false);
+			ParcelWrite.write(out, 1000, getVersionCode());
+			ParcelWrite.writeStringList(out, 2, copyScopeUriList(), false);
+			ParcelWrite.write(out, 3, getGravityForPopups());
+			ParcelWrite.write(out, 4, getPackageName(), false);
+			ParcelWrite.writeEnd(out, i);
 		}
 	}
 

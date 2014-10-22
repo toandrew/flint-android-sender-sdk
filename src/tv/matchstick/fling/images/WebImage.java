@@ -19,8 +19,8 @@ package tv.matchstick.fling.images;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.client.common.internal.safeparcel.ParcelReadUtil;
-import tv.matchstick.client.common.internal.safeparcel.ParcelWriteUtil;
+import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
+import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.client.internal.MyStringBuilder;
 import android.net.Uri;
@@ -38,34 +38,34 @@ public class WebImage implements SafeParcelable {
 		public WebImage createFromParcel(Parcel source) {
 			// TODO Auto-generated method stub
 
-			int size = ParcelReadUtil.readStart(source);
+			int size = ParcelRead.readStart(source);
 			int version = 0;
 			Uri url = null;
 			int width = 0;
 			int height = 0;
 			while (source.dataPosition() < size) {
-				int type = ParcelReadUtil.readSingleInt(source);
-				switch (ParcelReadUtil.halfOf(type)) {
+				int type = ParcelRead.readInt(source);
+				switch (ParcelRead.halfOf(type)) {
 				case 1:
-					version = ParcelReadUtil.readInt(source, type);
+					version = ParcelRead.readInt(source, type);
 					break;
 				case 2:
-					url = (Uri) ParcelReadUtil.readParcelable(source, type,
+					url = (Uri) ParcelRead.readParcelable(source, type,
 							Uri.CREATOR);
 					break;
 				case 3:
-					width = ParcelReadUtil.readInt(source, type);
+					width = ParcelRead.readInt(source, type);
 					break;
 				case 4:
-					height = ParcelReadUtil.readInt(source, type);
+					height = ParcelRead.readInt(source, type);
 					break;
 				default:
-					ParcelReadUtil.skip(source, type);
+					ParcelRead.skip(source, type);
 				}
 			}
 
 			if (source.dataPosition() != size) {
-				throw new ParcelReadUtil.SafeParcel(
+				throw new ParcelRead.ReadParcelException(
 						"Overread allowed size end=" + size, source);
 			}
 
@@ -195,11 +195,11 @@ public class WebImage implements SafeParcelable {
 	}
 
 	private void buildParcel(Parcel out, int flags) {
-		int i = ParcelWriteUtil.position(out);
-		ParcelWriteUtil.write(out, 1, getVersionCode());
-		ParcelWriteUtil.write(out, 2, getUrl(), flags, false);
-		ParcelWriteUtil.write(out, 3, getWidth());
-		ParcelWriteUtil.write(out, 4, getHeight());
-		ParcelWriteUtil.writeEnd(out, i);
+		int i = ParcelWrite.position(out);
+		ParcelWrite.write(out, 1, getVersionCode());
+		ParcelWrite.write(out, 2, getUrl(), flags, false);
+		ParcelWrite.write(out, 3, getWidth());
+		ParcelWrite.write(out, 4, getHeight());
+		ParcelWrite.writeEnd(out, i);
 	}
 }
