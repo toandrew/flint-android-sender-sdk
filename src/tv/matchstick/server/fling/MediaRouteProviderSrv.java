@@ -442,8 +442,7 @@ public abstract class MediaRouteProviderSrv extends IntentService
                 MediaRouteProvider mediaRouteProvider = getInstance();
                 if (mediaRouteProvider != null)
                 {
-                    String packageName = mediaRouteProvider.mProviderMetadata.mComponentName
-                            .getPackageName();
+                    String packageName = mediaRouteProvider.mProviderComponentName.getPackageName();
                     if (!packageName.equals(getPackageName()))
                         throw new IllegalStateException(
                         		"onCreateMediaRouteProvider() returned a provider whose package name does not match the package name of the service.  A media route provider service can only export its own media route providers.  Provider package name: "

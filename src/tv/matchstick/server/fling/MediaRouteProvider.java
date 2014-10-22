@@ -1,4 +1,3 @@
-
 package tv.matchstick.server.fling;
 
 import tv.matchstick.server.fling.media.RouteController;
@@ -15,26 +14,25 @@ public abstract class MediaRouteProvider {
     private static final int MSG_DELIVER_DISCOVERY_REQUEST_CHANGED = 2;
 
     public final Context mContext;
-    final ProviderMetadata mProviderMetadata;
+    final ComponentName mProviderComponentName;
 
     public final Handler mHandler = new Handler() {
         public final void handleMessage(Message message) {
             switch (message.what) {
-                case MSG_DELIVER_DESCRIPTOR_CHANGED:
-                    mPendingDescriptorChange = false;
-                    if (mDescriptorChangedListener != null)
-                    {
-                        mDescriptorChangedListener
-                                .onDescriptorChanged(mMediaRouteProviderDescriptor);
-                        return;
-                    }
-                    break;
-                case MSG_DELIVER_DISCOVERY_REQUEST_CHANGED: // device discovery
-                                                            // request
-                    mPendingDiscoveryRequestChange = false;
-                    onDiscoveryRequestChanged(mDiscoveryRequest); // call
-                                                                      // FlingMediaRouteProvider_awb.a
-                    break;
+            case MSG_DELIVER_DESCRIPTOR_CHANGED:
+                mPendingDescriptorChange = false;
+                if (mDescriptorChangedListener != null) {
+                    mDescriptorChangedListener
+                            .onDescriptorChanged(mMediaRouteProviderDescriptor);
+                    return;
+                }
+                break;
+            case MSG_DELIVER_DISCOVERY_REQUEST_CHANGED: // device discovery
+                                                        // request
+                mPendingDiscoveryRequestChange = false;
+                onDiscoveryRequestChanged(mDiscoveryRequest); // call
+                                                              // FlingMediaRouteProvider_awb.a
+                break;
             }
         }
     };
@@ -45,26 +43,18 @@ public abstract class MediaRouteProvider {
     public MediaRouteProviderDescriptor mMediaRouteProviderDescriptor;
     public boolean mPendingDescriptorChange;
 
-    public MediaRouteProvider(Context paramContext)
-    {
-        this(paramContext, (byte) 0);
-    }
-
-    private MediaRouteProvider(Context paramContext, byte paramByte)
-    {
-        if (paramContext == null)
+    public MediaRouteProvider(Context context) {
+        if (context == null)
             throw new IllegalArgumentException("context must not be null");
-        this.mContext = paramContext;
-        this.mProviderMetadata = new ProviderMetadata(new ComponentName(paramContext,
-                getClass()));
+        this.mContext = context;
+
+        this.mProviderComponentName = new ComponentName(context, getClass());
     }
 
-    public RouteController getRouteController(String routeId)
-    {
+    public RouteController getRouteController(String routeId) {
         return null;
     }
 
-    public void onDiscoveryRequestChanged(DiscoveryRequest request)
-    {
+    public void onDiscoveryRequestChanged(DiscoveryRequest request) {
     }
 }
