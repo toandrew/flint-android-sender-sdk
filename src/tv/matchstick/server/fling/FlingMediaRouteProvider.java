@@ -151,8 +151,8 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         return mInstance;
     }
 
-    public static void setDeviceControllerListener(FlingMediaRouteProvider provider,
-            FlingRouteController controller) {
+    public static void setDeviceControllerListener(
+            FlingMediaRouteProvider provider, FlingRouteController controller) {
         FlingDevice flingdevice = controller.getFlingDevice();
         String id = flingdevice.getDeviceId();
         FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) provider.mFlingDeviceControllerMap
@@ -282,15 +282,13 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     }
 
     private void publishRoutes() {
-        ArrayList routeList = new ArrayList();
+        ArrayList<MediaRouteDescriptor> routeList = new ArrayList<MediaRouteDescriptor>();
         for (Iterator iterator = mDiscoveryCriteriaMap.values().iterator(); iterator
                 .hasNext(); routeList
                 .add(buildRouteDescriptorForDevice((DiscoveryCriteriaHelper) iterator
                         .next())))
             ;
-        MediaRouteProviderDescriptor providerDescriptor = (new MediaRouteProviderDescriptorHelper())
-                .addMediaRouteDescriptors(routeList)
-                .createMediaRouteProviderDescriptor();
+        MediaRouteProviderDescriptor providerDescriptor = buildMediaRouteProviderDescriptor(routeList);
         MainThreadChecker.isOnAppMainThread();
         if (super.mMediaRouteProviderDescriptor != providerDescriptor) {
             super.mMediaRouteProviderDescriptor = providerDescriptor;
@@ -301,6 +299,39 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         }
 
         mLogs.d("published %d routes", routeList.size());
+    }
+
+    private MediaRouteProviderDescriptor buildMediaRouteProviderDescriptor(
+            ArrayList<MediaRouteDescriptor> routeList) {
+        ArrayList<MediaRouteDescriptor> list = new ArrayList<MediaRouteDescriptor>();
+        Bundle bundle = new Bundle();
+
+        Iterator iterator;
+        if (routeList == null)
+            throw new IllegalArgumentException("routes must not be null");
+
+        iterator = routeList.iterator();
+        while (iterator.hasNext()) {
+            MediaRouteDescriptor descriptor = (MediaRouteDescriptor) iterator
+                    .next();
+            if (descriptor == null)
+                throw new IllegalArgumentException("route must not be null");
+            if (list.contains(descriptor)) {
+                throw new IllegalArgumentException(
+                        "route descriptor already added");
+            }
+
+            list.add(descriptor);
+        }
+        if (list != null) {
+            int size = list.size();
+            ArrayList arraylist = new ArrayList(size);
+            for (int i = 0; i < size; i++)
+                arraylist.add(((MediaRouteDescriptor) list.get(i)).bundleData);
+
+            bundle.putParcelableArrayList("routes", arraylist);
+        }
+        return new MediaRouteProviderDescriptor(bundle, list);
     }
 
     public static void b(FlingMediaRouteProvider awb1, FlingRouteController awn1) {

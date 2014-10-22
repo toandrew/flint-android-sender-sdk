@@ -1,24 +1,26 @@
-
 package tv.matchstick.server.fling;
 
 import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public final class MediaRouteProviderDescriptor {
     final Bundle mRoutes;
     private List mMediaRouteDescriptorList;
-
-    private MediaRouteProviderDescriptor(Bundle paramBundle, List paramList) {
-        this.mRoutes = paramBundle;
-        this.mMediaRouteDescriptorList = paramList;
+    
+    public MediaRouteProviderDescriptor() {
+        mRoutes = null;
+        mMediaRouteDescriptorList = null;
     }
 
-    public MediaRouteProviderDescriptor(Bundle paramBundle, ArrayList paramList, byte b) {
-        this(paramBundle, paramList);
+    public MediaRouteProviderDescriptor(Bundle paramBundle, List paramList) {
+        this.mRoutes = paramBundle;
+        this.mMediaRouteDescriptorList = paramList;
     }
 
     private List getMediaRouteDescriptorList() {
@@ -27,19 +29,15 @@ public final class MediaRouteProviderDescriptor {
     }
 
     private void check_b() {
-        if (mMediaRouteDescriptorList == null)
-        {
+        if (mMediaRouteDescriptorList == null) {
             ArrayList arraylist = mRoutes.getParcelableArrayList("routes");
-            if (arraylist == null || arraylist.isEmpty())
-            {
+            if (arraylist == null || arraylist.isEmpty()) {
                 mMediaRouteDescriptorList = Collections.emptyList();
-            } else
-            {
+            } else {
                 int i = arraylist.size();
                 mMediaRouteDescriptorList = new ArrayList(i);
                 int j = 0;
-                while (j < i)
-                {
+                while (j < i) {
                     List list = mMediaRouteDescriptorList;
                     Bundle bundle = (Bundle) arraylist.get(j);
                     MediaRouteDescriptor ns1;
@@ -54,12 +52,10 @@ public final class MediaRouteProviderDescriptor {
         }
     }
 
-    private boolean isValid()
-    {
+    private boolean isValid() {
         check_b();
         int i = this.mMediaRouteDescriptorList.size();
-        for (int j = 0; j < i; j++)
-        {
+        for (int j = 0; j < i; j++) {
             MediaRouteDescriptor localns = (MediaRouteDescriptor) this.mMediaRouteDescriptorList
                     .get(j);
             if ((localns == null) || (!localns.isNoteEmpty()))
@@ -68,8 +64,7 @@ public final class MediaRouteProviderDescriptor {
         return true;
     }
 
-    public final String toString()
-    {
+    public final String toString() {
         StringBuilder localStringBuilder = new StringBuilder();
         localStringBuilder.append("MediaRouteProviderDescriptor{ ");
         localStringBuilder.append("routes=").append(
