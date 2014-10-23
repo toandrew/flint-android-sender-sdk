@@ -1,4 +1,3 @@
-
 package tv.matchstick.server.fling.socket;
 
 import android.content.Context;
@@ -73,8 +72,7 @@ public final class FlingSocket {
         }
     }
 
-    private synchronized void connect_b(Inet4Address hostAddr, int port)
-    {
+    private synchronized void connect_b(Inet4Address hostAddr, int port) {
         try {
             mFlingSocketMultiplexer.init();
             mLogs.d("Connecting to %s:%d", hostAddr, port);
@@ -92,8 +90,7 @@ public final class FlingSocket {
         }
     }
 
-    private void handleRead() throws IOException
-    {
+    private void handleRead() throws IOException {
         boolean flag = false;
         Long long1;
 
@@ -104,7 +101,8 @@ public final class FlingSocket {
                 mReadSocketBuf.d = mReadSocketBuf.b;
                 String str = null;
                 byte abyte[] = new byte[mReadSocketBuf.c];
-                System.arraycopy(mReadSocketBuf.a, 0, abyte, 0, mReadSocketBuf.c);
+                System.arraycopy(mReadSocketBuf.a, 0, abyte, 0,
+                        mReadSocketBuf.c);
                 str = new String(abyte, "utf-8");
                 android.util.Log.d("FlingSocket", "read string : " + str);
                 String[] subStr = str.split(":");
@@ -114,11 +112,9 @@ public final class FlingSocket {
                 }
 
                 // :goto_1
-                if (long1 == null)
-                {
+                if (long1 == null) {
                     flag = true;
-                } else
-                {
+                } else {
                     if (long1.longValue() > (long) MAX_MESSAGE_SIZE) {
                         throw new IOException("invalid message size received");
                     }
@@ -128,8 +124,7 @@ public final class FlingSocket {
                         byte abyte0[] = new byte[(int) long1.longValue()];
                         // C_atx atx5 = d;
                         int i1 = abyte0.length;
-                        if (mReadSocketBuf.d() >= i1)
-                        {
+                        if (mReadSocketBuf.d() >= i1) {
                             int j1;
                             int k1;
                             int l1;
@@ -140,22 +135,25 @@ public final class FlingSocket {
                             else
                                 j1 = mReadSocketBuf.a.length - mReadSocketBuf.b;
                             k1 = Math.min(i1, j1);
-                            System.arraycopy(mReadSocketBuf.a, mReadSocketBuf.b, abyte0, 0, k1);
+                            System.arraycopy(mReadSocketBuf.a,
+                                    mReadSocketBuf.b, abyte0, 0, k1);
                             mReadSocketBuf.a(k1);
                             l1 = i1 - k1;
-                            if (l1 > 0)
-                            {
+                            if (l1 > 0) {
                                 int i2 = k1 + 0;
-                                System.arraycopy(mReadSocketBuf.a, mReadSocketBuf.b, abyte0, i2, l1);
+                                System.arraycopy(mReadSocketBuf.a,
+                                        mReadSocketBuf.b, abyte0, i2, l1);
                                 mReadSocketBuf.a(l1);
                             }
                         }
                         // cond_6
                         String message = new String(abyte0, "utf-8");
-                        android.util.Log.d("FlingSocket", "received message : " + message);
+                        android.util.Log.d("FlingSocket", "received message : "
+                                + message);
                         FlingMessage msg = new FlingMessage();
                         msg.parseJson(message);
-                        mSocketListener.onMessageReceived(ByteBuffer.wrap(message.getBytes("UTF-8")));
+                        mSocketListener.onMessageReceived(ByteBuffer
+                                .wrap(message.getBytes("UTF-8")));
 
                         continue;
                     } else {
@@ -165,10 +163,8 @@ public final class FlingSocket {
             }
 
             if (flag) {
-                if (mReadSocketBuf.d != -1)
-                {
-                    if (mReadSocketBuf.b != mReadSocketBuf.d)
-                    {
+                if (mReadSocketBuf.d != -1) {
+                    if (mReadSocketBuf.b != mReadSocketBuf.d) {
                         mReadSocketBuf.b = mReadSocketBuf.d;
                         mReadSocketBuf.e = false;
                     }
@@ -188,8 +184,7 @@ public final class FlingSocket {
         }
     }
 
-    final synchronized SocketChannel startConnecd() throws IOException
-    {
+    final synchronized SocketChannel startConnecd() throws IOException {
         mLogs.d("startConnect");
         // try {
         mBeginConnectTime = SystemClock.elapsedRealtime();
@@ -198,8 +193,7 @@ public final class FlingSocket {
         mReadSocketBuf = new SocketBuf();
         mWriteSocketBuf = new SocketBuf();
 
-        if (mSocketChannel.connect(mInetSocketAddress))
-        {
+        if (mSocketChannel.connect(mInetSocketAddress)) {
             mSocketStatus = 2;
             mSocketListener.onConnected();
             return mSocketChannel;
@@ -211,15 +205,15 @@ public final class FlingSocket {
         return mSocketChannel;
     }
 
-    public final void connect(Inet4Address hostAddress, int port)
-    {
+    public final void connect(Inet4Address hostAddress, int port) {
         connect_b(hostAddress, port);
     }
 
-    public final synchronized void send(ByteBuffer bytebuffer) throws IOException
-    {
+    public final synchronized void send(ByteBuffer bytebuffer)
+            throws IOException {
         if (mSocketStatus != 2)
-            throw new IllegalStateException("not connected; state=" + this.mSocketStatus);
+            throw new IllegalStateException("not connected; state="
+                    + this.mSocketStatus);
 
         if (bytebuffer == null)
             throw new IllegalArgumentException("message cannot be null");
@@ -240,15 +234,11 @@ public final class FlingSocket {
         int pos = bytebuffer.position();
         int remain = bytebuffer.remaining();
         int writeCount = 0;
-        if (mWriteSocketBuf.c() >= remain)
-        {
+        if (mWriteSocketBuf.c() >= remain) {
             if (!mWriteSocketBuf.e) {
-                if (mWriteSocketBuf.c < mWriteSocketBuf.b)
-                {
+                if (mWriteSocketBuf.c < mWriteSocketBuf.b) {
                     writeCount = mWriteSocketBuf.b - mWriteSocketBuf.c;
-                }
-                else
-                {
+                } else {
                     writeCount = mWriteSocketBuf.a.length - mWriteSocketBuf.c;
                 }
             } else {
@@ -260,20 +250,21 @@ public final class FlingSocket {
         }
 
         int actualWriteCount = Math.min(remain, writeCount);
-        System.arraycopy(sendBuf, pos, mWriteSocketBuf.a, mWriteSocketBuf.c, actualWriteCount);
+        System.arraycopy(sendBuf, pos, mWriteSocketBuf.a, mWriteSocketBuf.c,
+                actualWriteCount);
         mWriteSocketBuf.b(actualWriteCount);
         int currentPos = pos + actualWriteCount;
         int remainedCount = remain - actualWriteCount;
-        if (remainedCount > 0)
-        {
-            System.arraycopy(sendBuf, currentPos, mWriteSocketBuf.a, mWriteSocketBuf.c, remainedCount);
+        if (remainedCount > 0) {
+            System.arraycopy(sendBuf, currentPos, mWriteSocketBuf.a,
+                    mWriteSocketBuf.c, remainedCount);
             mWriteSocketBuf.b(remainedCount);
         }
         this.mFlingSocketMultiplexer.wakeup();
     }
 
-    final synchronized boolean checkInterestOps(SelectionKey selectionkey, long elapsedRealtime_l1)
-    {
+    final synchronized boolean checkInterestOps(SelectionKey selectionkey,
+            long elapsedRealtime_l1) {
         boolean ok = false;
         if (n) {
             mLogs.w("Socket is no longer connected", new Object[0]);
@@ -282,73 +273,68 @@ public final class FlingSocket {
         }
         int mode = 0;
         switch (mSocketStatus) {
-            case 1: // conncting?
-                if (elapsedRealtime_l1 - this.mBeginConnectTime >= this.mTimeoutTime)
-                {
-                    doTeardown(3);
-                } else {
-                    if (!mSocketChannel.isConnected()) {
-                        mode = SelectionKey.OP_CONNECT;// 8;
-                    }
-                    selectionkey.interestOps(mode);
-                    ok = true;
-                }
-                break;
-            case 2: // connected
-                boolean flag1 = mReadSocketBuf.e();
-                mode = 0;
-                if (!flag1) {
-                    mode = SelectionKey.OP_READ; // 1;
-                }
-                if (!mWriteSocketBuf.e) {
-                    mode |= SelectionKey.OP_WRITE; // 4;
+        case 1: // conncting?
+            if (elapsedRealtime_l1 - this.mBeginConnectTime >= this.mTimeoutTime) {
+                doTeardown(3);
+            } else {
+                if (!mSocketChannel.isConnected()) {
+                    mode = SelectionKey.OP_CONNECT;// 8;
                 }
                 selectionkey.interestOps(mode);
                 ok = true;
-                break;
-            case 3:// disconnecting?
-                if (elapsedRealtime_l1 - mDisconnectTime < m) {
+            }
+            break;
+        case 2: // connected
+            boolean flag1 = mReadSocketBuf.e();
+            mode = 0;
+            if (!flag1) {
+                mode = SelectionKey.OP_READ; // 1;
+            }
+            if (!mWriteSocketBuf.e) {
+                mode |= SelectionKey.OP_WRITE; // 4;
+            }
+            selectionkey.interestOps(mode);
+            ok = true;
+            break;
+        case 3:// disconnecting?
+            if (elapsedRealtime_l1 - mDisconnectTime < m) {
 
-                    if (mWriteSocketBuf.e) {
-                        doTeardown(0);
-                        ok = false;
-                        break;
-                    }
-
-                    mode = SelectionKey.OP_WRITE;// 4;
-
-                    selectionkey.interestOps(mode);
-                    ok = true;
-                } else {
+                if (mWriteSocketBuf.e) {
                     doTeardown(0);
                     ok = false;
+                    break;
                 }
 
-                break;
+                mode = SelectionKey.OP_WRITE;// 4;
+
+                selectionkey.interestOps(mode);
+                ok = true;
+            } else {
+                doTeardown(0);
+                ok = false;
+            }
+
+            break;
         }
 
         return ok;
     }
 
-    public final synchronized void disconnect()
-    {
+    public final synchronized void disconnect() {
         mSocketStatus = 3;
         mDisconnectTime = SystemClock.elapsedRealtime();
         mFlingSocketMultiplexer.wakeup();
     }
 
-    public final synchronized boolean isConnected()
-    {
+    public final synchronized boolean isConnected() {
         return (mSocketStatus == 2);
     }
 
-    public final synchronized boolean isConnecting()
-    {
+    public final synchronized boolean isConnecting() {
         return (mSocketStatus == 1);
     }
 
-    public final synchronized boolean isDisconnecting()
-    {
+    public final synchronized boolean isDisconnecting() {
         boolean flag = false;
         if (mSocketStatus == 3) {
             flag = true;
@@ -357,18 +343,15 @@ public final class FlingSocket {
         return flag;
     }
 
-    public final synchronized int getState()
-    {
+    public final synchronized int getState() {
         return mSocketStatus;
     }
 
-    public final synchronized byte[] getPeerCertificate()
-    {
+    public final synchronized byte[] getPeerCertificate() {
         return null;
     }
 
-    final synchronized boolean onConnectable()
-    {
+    final synchronized boolean onConnectable() {
         boolean flag = true;
 
         mLogs.d("onConnectable", new Object[0]);
@@ -390,8 +373,7 @@ public final class FlingSocket {
         return flag;
     }
 
-    final synchronized void onConnectError()
-    {
+    final synchronized void onConnectError() {
         mLogs.d("onConnectError");
         try {
             doTeardown(2);
@@ -400,8 +382,7 @@ public final class FlingSocket {
         }
     }
 
-    final synchronized boolean onRead()
-    {
+    final synchronized boolean onRead() {
         boolean flag = true;
         try {
             if (!mReadSocketBuf.e()) {
@@ -414,7 +395,8 @@ public final class FlingSocket {
 
             handleRead();
         } catch (ClosedChannelException e) {
-            mLogs.w(e, "ClosedChannelException when state was %d", mSocketStatus);
+            mLogs.w(e, "ClosedChannelException when state was %d",
+                    mSocketStatus);
             doTeardown(1);
             flag = false;
         } catch (SSLException ee) {
@@ -429,8 +411,7 @@ public final class FlingSocket {
         return flag;
     }
 
-    final synchronized boolean onWrite()
-    {
+    final synchronized boolean onWrite() {
         boolean flag = false;
         try {
             if (!mWriteSocketBuf.e) {
@@ -441,7 +422,7 @@ public final class FlingSocket {
                 }
                 mWriteSocketBuf.a(i1);
             }
-            
+
             // cond_0
             if (!mWriteSocketBuf.e || mSocketStatus != 3) {
                 return true;
@@ -449,7 +430,8 @@ public final class FlingSocket {
 
             doTeardown(0);
         } catch (ClosedChannelException e) {
-            mLogs.w(e, "ClosedChannelException when state was %d", mSocketStatus);
+            mLogs.w(e, "ClosedChannelException when state was %d",
+                    mSocketStatus);
             doTeardown(1);
         } catch (SSLException ex) {
             mLogs.w(ex, "SSLException encountered. Tearing down the socket.");
@@ -464,8 +446,111 @@ public final class FlingSocket {
         return flag;
     }
 
-    final synchronized SocketChannel getSocketChannel()
-    {
+    final synchronized SocketChannel getSocketChannel() {
         return mSocketChannel;
     }
+
+    final class SocketBuf {
+        byte a[];
+        int b;
+        int c;
+        int d;
+        boolean e;
+        ByteBuffer f[];
+        ByteBuffer g[];
+
+        public SocketBuf() {
+            a = new byte[0x20000];
+            f = new ByteBuffer[1];
+            g = new ByteBuffer[2];
+            d = -1;
+            e = true;
+        }
+
+        final void a(byte byte0) {
+            a[c] = byte0;
+            b(1);
+        }
+
+        final void a(int i) {
+            label0: {
+                b = i + b;
+                if (b >= a.length)
+                    b = b - a.length;
+                if (b == c) {
+                    if (d != -1)
+                        break label0;
+                    c = 0;
+                    b = 0;
+                    d = -1;
+                    e = true;
+                }
+                return;
+            }
+            e = true;
+        }
+
+        public final ByteBuffer[] a() {
+            if (b <= c) {
+                ByteBuffer abytebuffer1[] = f;
+                abytebuffer1[0] = ByteBuffer.wrap(a, b, c - b);
+                return abytebuffer1;
+            } else {
+                ByteBuffer abytebuffer[] = g;
+                abytebuffer[0] = ByteBuffer.wrap(a, b, a.length - b);
+                abytebuffer[1] = ByteBuffer.wrap(a, 0, c);
+                return abytebuffer;
+            }
+        }
+
+        final void b(int i) {
+            c = i + c;
+            if (c >= a.length)
+                c = c - a.length;
+            e = false;
+            d = -1;
+        }
+
+        public final ByteBuffer[] b() {
+            if (c < b) {
+                ByteBuffer abytebuffer1[] = f;
+                abytebuffer1[0] = ByteBuffer.wrap(a, c, b - c);
+                return abytebuffer1;
+            } else {
+                ByteBuffer abytebuffer[] = g;
+                abytebuffer[0] = ByteBuffer.wrap(a, c, a.length - c);
+                abytebuffer[1] = ByteBuffer.wrap(a, 0, b);
+                return abytebuffer;
+            }
+        }
+
+        public final int c() {
+            if (e)
+                return a.length;
+            if (c < b)
+                return b - c;
+            else
+                return (a.length - c) + b;
+        }
+
+        public final int d() {
+            if (e)
+                return 0;
+            if (b < c)
+                return c - b;
+            else
+                return (a.length - b) + c;
+        }
+
+        public final boolean e() {
+            return !e && b == c;
+        }
+
+        final byte f() {
+            byte byte0 = a[b];
+            a(1);
+            return byte0;
+        }
+    }
+
 }

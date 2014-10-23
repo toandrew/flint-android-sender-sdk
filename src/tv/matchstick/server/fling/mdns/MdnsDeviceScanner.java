@@ -1,13 +1,9 @@
-
 package tv.matchstick.server.fling.mdns;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Handler;
 import android.os.SystemClock;
 
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.NetworkInterface;
@@ -16,8 +12,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.images.WebImage;
@@ -70,7 +64,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                         }
 
                     });
-                    mLogs.d("expired record for %s",device);
+                    mLogs.d("expired record for %s", device);
 
                     localIterator.remove();
                 }
@@ -81,7 +75,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
         return;
     }
 
-    static void onScanResults(MdnsDeviceScanner deviceScanner, FlingDeviceInfo info) {
+    void onResults(
+            FlingDeviceInfo info) {
         if (mLogs.isDebugEnabled()) {
             mLogs.d("FQDN: %s", info.FQDN_a);
             List localList4 = info.mIpV4AddrList;
@@ -103,17 +98,17 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 }
             }
             mLogs.d("service name: %s", info.mName);
-            
+
             mLogs.d("service host: %s", info.mHost);
-            
+
             mLogs.d("service proto: %d", info.mProto);
-            
+
             mLogs.d("service port: %d", info.mPort);
-            
+
             mLogs.d("service priority: %d", info.mPriority);
-            
+
             mLogs.d("service weight: %d", info.mWeight);
-            
+
             List localList6 = info.mTextStringList;
             if (localList6 != null) {
                 Iterator localIterator2 = localList6.iterator();
@@ -157,13 +152,13 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             if (deviceId == null)
                 return;
             if (str1 == null)
-                str1 = deviceScanner.mName;
+                str1 = mName;
             final FlingDevice device;
             ScannerPrivData localavi;
-            synchronized (deviceScanner.e) {
+            synchronized (e) {
                 List localList2 = info.mIpV4AddrList;
                 if ((localList2 == null) || (localList2.isEmpty())) {
-                    deviceScanner.e.remove(deviceId);
+                    e.remove(deviceId);
                     return;
                 }
                 Inet4Address localInet4Address1 = (Inet4Address) localList2
@@ -175,38 +170,38 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                     if (i >= 0)
                         str2 = str2.substring(i + 1);
                     iconList.add(new WebImage(Uri.parse(String.format(
-                            "http://%s:8008%s", new Object[] {
-                                    str2,
-                                    localObject1
-                            }))));
+                            "http://%s:8008%s", new Object[] { str2,
+                                    localObject1 }))));
                 }
-                
+
                 deviceId = deviceId + localInet4Address1.getHostAddress();
-                
-                FlingDeviceHelper localatr = FlingDevice.createHelper((String) deviceId,
-                        localInet4Address1);
+
+                FlingDeviceHelper localatr = FlingDevice.createHelper(
+                        (String) deviceId, localInet4Address1);
                 String str3 = info.e;
                 FlingDevice.setFriendlyName(localatr.mFlingDevice, str3);
                 FlingDevice.setModelName(localatr.mFlingDevice, str1);
-                FlingDevice.setDeviceVersion(localatr.mFlingDevice, (String) localObject2);
+                FlingDevice.setDeviceVersion(localatr.mFlingDevice,
+                        (String) localObject2);
                 int port = info.mPort;
                 FlingDevice.setServicePort(localatr.mFlingDevice, port);
                 FlingDevice.setIconList(localatr.mFlingDevice, iconList);
                 device = localatr.mFlingDevice;
-                localavi = (ScannerPrivData) deviceScanner.e.get(deviceId);
+                localavi = (ScannerPrivData) e.get(deviceId);
                 if (localavi != null) {
                     if (device.equals(localavi.mFlingDevice)) {
                         if (!localavi.d) {
-                            localavi.mElapsedRealtime = SystemClock.elapsedRealtime();
+                            localavi.mElapsedRealtime = SystemClock
+                                    .elapsedRealtime();
                         }
                         return;
                     } else {
-                        deviceScanner.e.remove(deviceId);
+                        e.remove(deviceId);
                     }
                 }
 
-                deviceScanner.e.put(deviceId, new ScannerPrivData(deviceScanner, device,
-                        info.mTTL));
+                e.put(deviceId, new ScannerPrivData(
+                         device, info.mTTL));
             }
             // CastDevice localCastDevice2 = localavi.mCastDevice_a; // localavi
             // will null???? need check this!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -215,17 +210,18 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 device2 = localavi.mFlingDevice;
             }
             if (device2 != null)
-                deviceScanner.notifyDeviceOffline(device2);
+                notifyDeviceOffline(device2);
             if (device == null)
                 return;
-            
+
             DeviceScanner.mLogs.d("notifyDeviceOnline: %s", device);
 
-            final List listenerList = deviceScanner.getDeviceScannerListenerList();
+            final List listenerList = 
+                    getDeviceScannerListenerList();
             if (listenerList == null)
                 return;
 
-            deviceScanner.mHandler.post(new Runnable() {
+            mHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -242,7 +238,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     public final void setDeviceOffline(String paramString) {
         FlingDevice device = null;
         synchronized (this.e) {
-            ScannerPrivData localavi = (ScannerPrivData) this.e.get(paramString);
+            ScannerPrivData localavi = (ScannerPrivData) this.e
+                    .get(paramString);
             if (localavi != null) {
                 localavi.mElapsedRealtime = SystemClock.elapsedRealtime();
                 localavi.d = true;
@@ -264,14 +261,15 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             NetworkInterface localNetworkInterface = (NetworkInterface) localIterator
                     .next();
 
-            MdnsClient flingMdnsClient = new MdnsClient("_MatchStick._tcp.local.",localNetworkInterface) {
+            MdnsClient flingMdnsClient = new MdnsClient(
+                    "_MatchStick._tcp.local.", localNetworkInterface) {
 
                 @Override
                 protected void onScanResults(FlingDeviceInfo info) {
                     // TODO Auto-generated method stub
-                    MdnsDeviceScanner.onScanResults(MdnsDeviceScanner.this, info);
+                    onResults(info);
                 }
-                
+
             };
 
             try {
@@ -279,9 +277,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 mFlingMdnsClientList.add(flingMdnsClient);
             } catch (Exception localIOException) { // todo
                 mLogs.w("Couldn't start MDNS client for %s",
-                        new Object[] {
-                            localNetworkInterface
-                        });
+                        new Object[] { localNetworkInterface });
             }
         }
         // this.g = new Thread(new C_avg(this));
@@ -350,6 +346,20 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 }
             }
             return;
+        }
+    }
+
+    final class ScannerPrivData {
+        FlingDevice mFlingDevice;
+        long mElapsedRealtime;
+        long mTTl;
+        boolean d;
+
+        ScannerPrivData(FlingDevice device, long ttl) {
+            super();
+            mFlingDevice = device;
+            mTTl = ttl;
+            mElapsedRealtime = SystemClock.elapsedRealtime();
         }
     }
 }

@@ -306,6 +306,7 @@ public final class FlingDeviceController implements FlingSocketListener {
         flingDeviceController.log
                 .d("processReceiverStatus: applicationInfo=%s, volume=%f, muteState=%b",
                         applicationInfo, volume, muteState);
+        android.util.Log.d("XXXXXXXXXX", "2222222222222222222");
         String statusText;
         if (applicationInfo != null)
             statusText = applicationInfo.getStatusText();

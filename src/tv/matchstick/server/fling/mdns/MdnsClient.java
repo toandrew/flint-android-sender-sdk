@@ -2,6 +2,8 @@ package tv.matchstick.server.fling.mdns;
 
 import android.text.TextUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -12,6 +14,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -222,7 +227,7 @@ abstract class MdnsClient {
             }
     }
 
-    static void handleSend(MdnsClient mdnsClient) {
+    void handleSend(MdnsClient mdnsClient) {
         int j = 1;
         int k = 1000;
         MdnsClientOutputStreamHelper localavk;
@@ -538,4 +543,48 @@ abstract class MdnsClient {
             return str;
         }
     }
+
+    final class MdnsClientOutputStreamHelper {
+        private ByteArrayOutputStream a = new ByteArrayOutputStream(16384);
+        private DataOutputStream b = new DataOutputStream(this.a);
+
+        public final DatagramPacket createDatagramPacket() {
+            try {
+                this.b.flush();
+                byte[] arrayOfByte = this.a.toByteArray();
+                return new DatagramPacket(arrayOfByte, arrayOfByte.length,
+                        CharsetAndInetAddrInfo.mInetAddress, 5353);
+            } catch (IOException e) {
+                // break label7;
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        public final void a(int paramInt) {
+            try {
+                this.b.writeByte(paramInt & 0xFF);
+                return;
+            } catch (IOException localIOException) {
+            }
+        }
+
+        public final void a(byte[] paramArrayOfByte) {
+            try {
+                this.b.write(paramArrayOfByte, 0, paramArrayOfByte.length);
+                return;
+            } catch (IOException localIOException) {
+            }
+        }
+
+        public final void b(int paramInt) {
+            try {
+                this.b.writeShort(0xFFFFF & paramInt);
+                return;
+            } catch (IOException localIOException) {
+            }
+        }
+    }
+
 }
