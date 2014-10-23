@@ -12,11 +12,6 @@ import java.util.List;
 public final class MediaRouteProviderDescriptor {
     final Bundle mRoutes;
     private List mMediaRouteDescriptorList;
-    
-    public MediaRouteProviderDescriptor() {
-        mRoutes = null;
-        mMediaRouteDescriptorList = null;
-    }
 
     public MediaRouteProviderDescriptor(Bundle paramBundle, List paramList) {
         this.mRoutes = paramBundle;
