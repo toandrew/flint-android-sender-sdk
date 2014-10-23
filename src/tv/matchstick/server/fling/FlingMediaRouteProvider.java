@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import java.util.Set;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.MainThreadChecker;
+import tv.matchstick.server.common.checker.ObjEqualChecker;
 import tv.matchstick.server.fling.mdns.DeviceScanner;
 import tv.matchstick.server.fling.mdns.IDeviceScanListener;
 import tv.matchstick.server.fling.mdns.MdnsDeviceScanner;
@@ -127,7 +129,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 getLogs_a().d("DeviceFilter#onDeviceAccepted: %s",
                         new Object[] { flingdevice });
 
-                addFlingDevice(FlingMediaRouteProvider.this, flingdevice, set);
+                addFlingDevice(flingdevice, set);
                 publishRoutes();
             }
         };
@@ -151,18 +153,17 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         return mInstance;
     }
 
-    public static void setDeviceControllerListener(
-            FlingMediaRouteProvider provider, FlingRouteController controller) {
+    public void setDeviceControllerListener(FlingRouteController controller) {
         FlingDevice flingdevice = controller.getFlingDevice();
         String id = flingdevice.getDeviceId();
-        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) provider.mFlingDeviceControllerMap
+        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) mFlingDeviceControllerMap
                 .get(id);
         if (awu1 == null) {
-            awu1 = new FlingDeviceControllerHelper(provider);
+            awu1 = new FlingDeviceControllerHelper();
             mLogs.d("set FlingDeviceController Listener %s", flingdevice);
-            provider.mFlingDeviceControllerMap.put(id, awu1);
+            mFlingDeviceControllerMap.put(id, awu1);
         }
-        awu1.e.add(controller);
+        awu1.mFlingRouteControllerList.add(controller);
     }
 
     public static String getFriendlyName(FlingDevice flingdevice) {
@@ -181,7 +182,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         int volume;
         String status;
         if (controllerHelper != null) {
-            boolean flag1 = controllerHelper.c;
+            boolean flag1 = controllerHelper.isConnecting;
             FlingDeviceController controller = controllerHelper.getController();
             if (controller != null && controller.isConnected()) {
                 int k1 = (int) Math.round(20D * controller.getVolume());
@@ -243,17 +244,8 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 privateData.mControlIntentFilterList);
     }
 
-    static void publishRoutes(FlingMediaRouteProvider awb1) {
-        awb1.publishRoutes();
-    }
-
-    static void a(FlingMediaRouteProvider awb1, FlingDevice flingdevice) {
-        awb1.b(flingdevice);
-    }
-
-    static void addFlingDevice(FlingMediaRouteProvider routeProvider,
-            FlingDevice flingdevice, Set set) {
-        DiscoveryCriteriaHelper criteriaHelper = (DiscoveryCriteriaHelper) routeProvider.mDiscoveryCriteriaMap
+    void addFlingDevice(FlingDevice flingdevice, Set set) {
+        DiscoveryCriteriaHelper criteriaHelper = (DiscoveryCriteriaHelper) mDiscoveryCriteriaMap
                 .get(flingdevice.getDeviceId());
         if (criteriaHelper != null) {
             mLogs.d("merging in criteria for existing device %s",
@@ -268,17 +260,13 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                     criteriaHelper.mDiscoveryCriteriaSet.add(criteria);
             } while (true);
         } else {
-            routeProvider.mDiscoveryCriteriaMap.put(flingdevice.getDeviceId(),
+            mDiscoveryCriteriaMap.put(flingdevice.getDeviceId(),
                     new DiscoveryCriteriaHelper(flingdevice, set));
         }
     }
 
     private static boolean isEquals(String s1, String s2) {
         return s1.equals(s2) || s1.startsWith(s2 + "/");
-    }
-
-    static DeviceScanner getMdnsDeviceScanner(FlingMediaRouteProvider awb1) {
-        return awb1.mMdnsDeviceScanner;
     }
 
     private void publishRoutes() {
@@ -334,33 +322,29 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         return new MediaRouteProviderDescriptor(bundle, list);
     }
 
-    public static void b(FlingMediaRouteProvider awb1, FlingRouteController awn1) {
+    public void b(FlingRouteController awn1) {
         FlingDevice flingdevice = awn1.getFlingDevice();
         String id = flingdevice.getDeviceId();
-        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) awb1.mFlingDeviceControllerMap
+        FlingDeviceControllerHelper awu1 = (FlingDeviceControllerHelper) mFlingDeviceControllerMap
                 .get(id);
         if (awu1 != null) {
-            awu1.e.remove(awn1);
+            awu1.mFlingRouteControllerList.remove(awn1);
             if (awu1.isEmpty()) {
                 mLogs.d("disposing FlingDeviceController for %s", flingdevice);
                 // awu1.mFlingDeviceController.releaseReference();
-                if (awu1.d)
-                    awb1.mMdnsDeviceScanner.setDeviceOffline(id);
-                if (!awu1.b || awu1.d) {
-                    awb1.b(flingdevice);
-                    awb1.publishRoutes();
+                if (awu1.isOffline)
+                    mMdnsDeviceScanner.setDeviceOffline(id);
+                if (!awu1.b || awu1.isOffline) {
+                    b(flingdevice);
+                    publishRoutes();
                 }
-                awb1.mFlingDeviceControllerMap.remove(id);
+                mFlingDeviceControllerMap.remove(id);
             }
         }
     }
 
     private void b(FlingDevice flingdevice) {
         mDiscoveryCriteriaMap.remove(flingdevice.getDeviceId());
-    }
-
-    static Map c(FlingMediaRouteProvider awb1) {
-        return awb1.mFlingDeviceControllerMap;
     }
 
     private void onDiscoveryRequestChanged() {
@@ -435,18 +419,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         }
     }
 
-    static DeviceFilter getFlingDeviceFilter(FlingMediaRouteProvider awb1) {
-        return awb1.mFlingDeviceFilter;
-    }
-
-    static Map e(FlingMediaRouteProvider awb1) {
-        return awb1.mDiscoveryCriteriaMap;
-    }
-
-    static Map<Integer, String> getErrorMap(FlingMediaRouteProvider provider) {
-        return provider.mErrorMap;
-    }
-
     public final RouteController getRouteController(String routeId) {
         DiscoveryCriteriaHelper awv1 = (DiscoveryCriteriaHelper) mDiscoveryCriteriaMap
                 .get(routeId);
@@ -467,4 +439,60 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             onDiscoveryRequestChanged();
         }
     }
+
+    final class DiscoveryCriteriaHelper {
+        final FlingDevice mFlingDevice;
+        final Set<DiscoveryCriteria> mDiscoveryCriteriaSet;
+
+        public DiscoveryCriteriaHelper(FlingDevice flingdevice,
+                Set<DiscoveryCriteria> set) {
+            mFlingDevice = flingdevice;
+            mDiscoveryCriteriaSet = set;
+        }
+
+        @Override
+        public final boolean equals(Object obj) {
+            boolean flag = true;
+            if (obj == null || !(obj instanceof DiscoveryCriteriaHelper))
+                flag = false;
+            else if (obj != this) {
+                DiscoveryCriteriaHelper helper = (DiscoveryCriteriaHelper) obj;
+                if (!ObjEqualChecker
+                        .isEquals(mFlingDevice, helper.mFlingDevice)
+                        || !ObjEqualChecker.isEquals(mDiscoveryCriteriaSet,
+                                helper.mDiscoveryCriteriaSet))
+                    return false;
+            }
+            return flag;
+        }
+
+        @Override
+        public final int hashCode() {
+            Object aobj[] = new Object[2];
+            aobj[0] = mFlingDevice;
+            aobj[1] = mDiscoveryCriteriaSet;
+            return Arrays.hashCode(aobj);
+        }
+    }
+
+    final class FlingDeviceControllerHelper {
+        public boolean b;
+        public boolean isConnecting;
+        public boolean isOffline;
+        public final List<FlingRouteController> mFlingRouteControllerList = new ArrayList<FlingRouteController>();
+
+        public FlingDeviceControllerHelper() {
+            super();
+            b = true;
+        }
+
+        public final boolean isEmpty() {
+            return mFlingRouteControllerList.isEmpty();
+        }
+
+        public FlingDeviceController getController() {
+            return FlingDeviceController.getCurrentController();
+        }
+    }
+
 }

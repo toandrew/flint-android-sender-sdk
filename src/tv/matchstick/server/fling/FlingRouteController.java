@@ -23,18 +23,18 @@ public final class FlingRouteController extends RouteController {
     @Override
     public final void onSelect() {
         FlingMediaRouteProvider.getLogs_a().d("onSelect");
-        FlingMediaRouteProvider
-                .setDeviceControllerListener(mFlingMediaRouteProvider, this);
+        mFlingMediaRouteProvider
+                .setDeviceControllerListener(this);
     }
 
     @Override
     public final void onUnselect() {
         FlingMediaRouteProvider.getLogs_a().d("onUnselect");
-        FlingMediaRouteProvider.b(mFlingMediaRouteProvider, this);
+        mFlingMediaRouteProvider.b(this);
     }
 
     public final void g() {
-        FlingMediaRouteProvider.b(mFlingMediaRouteProvider, this);
+        mFlingMediaRouteProvider.b(this);
     }
     
     public FlingDevice getFlingDevice() {
