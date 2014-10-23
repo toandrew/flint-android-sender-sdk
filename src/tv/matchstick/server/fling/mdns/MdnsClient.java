@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
 import tv.matchstick.server.utils.LOG;
 
 abstract class MdnsClient {
@@ -39,7 +40,30 @@ abstract class MdnsClient {
     private volatile boolean mStopScan;
     private final NetworkInterface mNetworkInterface;
     private final Set i = new LinkedHashSet();
+    private static final Charset mCharset;
+    private static final InetAddress mInetAddress;
 
+    static {
+        Charset charSet = null;
+        try {
+            charSet = Charset.forName("UTF-8");
+        } catch (IllegalCharsetNameException e) {
+            e.printStackTrace();
+        } catch (UnsupportedCharsetException ex) {
+            ex.printStackTrace();
+        }
+
+        mCharset = charSet;
+
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByName("224.0.0.251");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        mInetAddress = address;
+    }
     public MdnsClient(String hostName, NetworkInterface paramNetworkInterface) {
         this.mHostName = hostName;
         this.mNetworkInterface = paramNetworkInterface;
@@ -274,7 +298,7 @@ abstract class MdnsClient {
                 int i2 = arrayOfString.length;
                 for (int i3 = 0; i3 < i2; i3++) {
                     byte[] arrayOfByte1 = arrayOfString[i3]
-                            .getBytes(CharsetAndInetAddrInfo.mCharset);
+                            .getBytes(mCharset);
                     localavk.a(arrayOfByte1.length);
                     localavk.a(arrayOfByte1);
                 }
@@ -538,7 +562,7 @@ abstract class MdnsClient {
             int i = e();
             a(i);
             String str = new String(this.mData, this.b, i,
-                    CharsetAndInetAddrInfo.mCharset);
+                    mCharset);
             this.b = (i + this.b);
             return str;
         }
@@ -553,7 +577,7 @@ abstract class MdnsClient {
                 this.b.flush();
                 byte[] arrayOfByte = this.a.toByteArray();
                 return new DatagramPacket(arrayOfByte, arrayOfByte.length,
-                        CharsetAndInetAddrInfo.mInetAddress, 5353);
+                        mInetAddress, 5353);
             } catch (IOException e) {
                 // break label7;
                 e.printStackTrace();

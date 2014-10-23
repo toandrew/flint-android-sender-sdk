@@ -49,16 +49,16 @@ public final class FlingDeviceController implements FlingSocketListener {
                 return;
             }
             if (mReceiverControlChannel != null) {
-                mReceiverControlChannel.mLaunchRequestTracker.trackRequestTimeout(
-                        time, 15);
+                mReceiverControlChannel.mLaunchRequestTracker
+                        .trackRequestTimeout(time, 15);
                 mReceiverControlChannel.mStopSessionRequestTracker
                         .trackRequestTimeout(time, 15);
-                mReceiverControlChannel.mGetStatusRequestTracker.trackRequestTimeout(
-                        time, 15);
-                mReceiverControlChannel.mSetVolumeRequestTracker.trackRequestTimeout(
-                        time, 0);
-                mReceiverControlChannel.mSetMuteRequestTracker.trackRequestTimeout(
-                        time, 0);
+                mReceiverControlChannel.mGetStatusRequestTracker
+                        .trackRequestTimeout(time, 15);
+                mReceiverControlChannel.mSetVolumeRequestTracker
+                        .trackRequestTimeout(time, 0);
+                mReceiverControlChannel.mSetMuteRequestTracker
+                        .trackRequestTimeout(time, 0);
             }
             mHandler.postDelayed(mHeartbeatRunnable, 1000L);
         }
@@ -174,11 +174,13 @@ public final class FlingDeviceController implements FlingSocketListener {
 
         @Override
         protected void onStatusRequestFailed(int statusCode) {
-            log.d("onStatusRequestFailed: statusCode=%d", new Object[] { statusCode });
+            log.d("onStatusRequestFailed: statusCode=%d",
+                    new Object[] { statusCode });
 
             if (mApplicationId != null) {
                 if (mReconnectStrategy.b()) {
-                    log.d("calling Listener.onConnectedWithoutApp()", new Object[0]);
+                    log.d("calling Listener.onConnectedWithoutApp()",
+                            new Object[0]);
                     mFlingSrvController.onConnectedWithoutApp();
                 } else {
                     mFlingSrvController
@@ -205,7 +207,7 @@ public final class FlingDeviceController implements FlingSocketListener {
     private String mApplicationId;
     private String mSessionId_y;
     private final long z = 10000L;
-    
+
     private static FlingDeviceController mFlingDeviceController;
 
     private FlingDeviceController(Context context, Handler handler,
@@ -1113,6 +1115,61 @@ public final class FlingDeviceController implements FlingSocketListener {
                     mFlingSocket.disconnect();
                 }
             }
+        }
+    }
+
+    final class ReconnectStrategy {
+        private final long a;
+        private final long b;
+        private long c;
+        private long d;
+
+        private ReconnectStrategy() {
+            a = 3000L;
+            b = 15000L;
+        }
+
+        public final void a() {
+            long l = SystemClock.elapsedRealtime();
+            c = l;
+            d = l;
+        }
+
+        public final boolean b() {
+            boolean flag;
+            if (d != 0L)
+                flag = true;
+            else
+                flag = false;
+            d = 0L;
+            c = 0L;
+            return flag;
+        }
+
+        public final boolean wasReconnecting() {
+            return d != 0L;
+        }
+
+        public final long d() {
+            long l = -1L;
+            if (d != 0L) {
+                long l1 = SystemClock.elapsedRealtime();
+                if (c == 0L)
+                    return 0L;
+                if (l1 - d >= b) {
+                    d = 0L;
+                    return l;
+                }
+                l = a - (l1 - c);
+                if (l <= 0L)
+                    return 0L;
+            }
+            return l;
+        }
+
+        public final void e() {
+            if (d != 0L)
+                c = SystemClock.elapsedRealtime();
         }
     }
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.images.WebImage;
+import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
 import tv.matchstick.server.utils.LOG;
 
 public final class MdnsDeviceScanner extends DeviceScanner {
@@ -75,8 +76,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
         return;
     }
 
-    void onResults(
-            FlingDeviceInfo info) {
+    void onResults(FlingDeviceInfo info) {
         if (mLogs.isDebugEnabled()) {
             mLogs.d("FQDN: %s", info.FQDN_a);
             List localList4 = info.mIpV4AddrList;
@@ -200,8 +200,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                     }
                 }
 
-                e.put(deviceId, new ScannerPrivData(
-                         device, info.mTTL));
+                e.put(deviceId, new ScannerPrivData(device, info.mTTL));
             }
             // CastDevice localCastDevice2 = localavi.mCastDevice_a; // localavi
             // will null???? need check this!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -216,8 +215,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
             DeviceScanner.mLogs.d("notifyDeviceOnline: %s", device);
 
-            final List listenerList = 
-                    getDeviceScannerListenerList();
+            final List listenerList = getDeviceScannerListenerList();
             if (listenerList == null)
                 return;
 
