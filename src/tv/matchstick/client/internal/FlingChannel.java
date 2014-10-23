@@ -107,7 +107,7 @@ public abstract class FlingChannel {
 	 * 
 	 * @param abyte0
 	 */
-	public void onMessageReceived(byte abyte0[]) {
+	public void onMessageReceived(byte message[]) {
 	}
 
 	/**
