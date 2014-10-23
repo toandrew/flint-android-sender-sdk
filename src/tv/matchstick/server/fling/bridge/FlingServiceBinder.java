@@ -34,7 +34,7 @@ public final class FlingServiceBinder extends IFlingServiceBroker.Stub {
      * @bundle data
      */
     @Override
-    public final void initFlingService(IFlingCallbacks callbacks, int version,
+    public final void init(IFlingCallbacks callbacks, int version,
             String packageName, IBinder listener, Bundle bundle) {
 
         FlingService.log().d("begin initFlingService!");

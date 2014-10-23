@@ -238,8 +238,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 							localMessageReceivedCallback.onMessageReceived(
 									mFlingDevice, namespace, message);
 						} else {
-							log.d(
-									"Discarded message for unknown namespace '%s'",
+							log.d("Discarded message for unknown namespace '%s'",
 									new Object[] { namespace });
 						}
 					}
@@ -251,8 +250,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			 */
 			@Override
 			public void onReceiveBinary(String namespace, byte[] message) {
-				log.d(
-						"IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
+				log.d("IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
 						new Object[] { namespace,
 								Integer.valueOf(message.length) });
 			}
@@ -261,11 +259,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			public void requestCallback(String namespace, long requestId,
 					int statusCode) {
 				notifyCallback(requestId, statusCode);
-			}
-
-			@Override
-			public void requestCallback(String namespace, long requestId) {
-				notifyCallback(requestId, 0);
 			}
 
 			private void notifyCallback(long requestId, int statusCode) {
@@ -579,8 +572,8 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		try {
 			getService().removeMessageReceivedCallbacks(channelNameSpace);
 		} catch (IllegalStateException e) {
-			log.dd(e, "Error unregistering namespace (%s): %s",
-					new Object[] { channelNameSpace, e.getMessage() });
+			log.dd(e, "Error unregistering namespace (%s): %s", new Object[] {
+					channelNameSpace, e.getMessage() });
 		}
 	}
 
@@ -636,8 +629,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			hasChange = true;
 		}
 
-		log.d(
-				"hasChange=%b, mFirstStatusUpdate=%b",
+		log.d("hasChange=%b, mFirstStatusUpdate=%b",
 				new Object[] { Boolean.valueOf(hasChange),
 						Boolean.valueOf(mFirstStatusUpdate) });
 		if ((mFlingListener != null) && (hasChange || mFirstStatusUpdate)) {
@@ -714,7 +706,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 
 	@Override
 	protected String getInterfaceDescriptor() {
-		return "tv.matchstick.fling.internal.IFlingDeviceController";
+		return "tv.matchstick.client.internal.IFlingDeviceController";
 	}
 
 	@Override
@@ -731,8 +723,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	@Override
 	protected void getServiceFromBroker(IFlingServiceBroker serviceBroker,
 			IFlingCallbackImpl flingCallback) throws RemoteException {
-		log.d(
-				"getServiceFromBroker(): mLastApplicationId=%s, mLastSessionId=%s",
+		log.d("getServiceFromBroker(): mLastApplicationId=%s, mLastSessionId=%s",
 				new Object[] { mApplicationId, mSessionId });
 		Bundle bundle = new Bundle();
 		mFlingDevice.putInBundle(bundle);
@@ -747,7 +738,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		/**
 		 * Init fling service.
 		 */
-		serviceBroker.initFlingService(flingCallback, 4323000, getContext()
+		serviceBroker.init(flingCallback, 4323000, getContext()
 				.getPackageName(), mIFlingDeviceControllerListener.asBinder(),
 				bundle); // TODO
 	}
