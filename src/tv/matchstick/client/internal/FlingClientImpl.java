@@ -131,7 +131,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			@Override
 			public void onDisconnected(int statusCode) {
 				log.d("IFlingDeviceControllerListener.onDisconnected: %d",
-						new Object[] { Integer.valueOf(statusCode) });
+						statusCode);
 				mIsConnectedDevice = false;
 				mApplicationMetadata = null;
 				if (statusCode == 0) {
@@ -225,8 +225,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			@Override
 			public void onMessageReceived(final String namespace,
 					final String message) {
-				log.d("Receive (type=text, ns=%s) %s", new Object[] {
-						namespace, message });
+				log.d("Receive (type=text, ns=%s) %s", namespace, message);
 				mHandler.post(new Runnable() {
 					public void run() {
 						Fling.MessageReceivedCallback localMessageReceivedCallback;
@@ -239,7 +238,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 									mFlingDevice, namespace, message);
 						} else {
 							log.d("Discarded message for unknown namespace '%s'",
-									new Object[] { namespace });
+									namespace);
 						}
 					}
 				});
@@ -251,8 +250,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			@Override
 			public void onReceiveBinary(String namespace, byte[] message) {
 				log.d("IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
-						new Object[] { namespace,
-								Integer.valueOf(message.length) });
+						namespace, message.length);
 			}
 
 			@Override
@@ -316,7 +314,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			}
 		} catch (RemoteException e) {
 			log.d("Error while disconnecting the controller interface: %s",
-					new Object[] { e.getMessage() });
+					e.getMessage());
 		} finally {
 			super.disconnect();
 		}
@@ -572,8 +570,8 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 		try {
 			getService().removeMessageReceivedCallbacks(channelNameSpace);
 		} catch (IllegalStateException e) {
-			log.dd(e, "Error unregistering namespace (%s): %s", new Object[] {
-					channelNameSpace, e.getMessage() });
+			log.dd(e, "Error unregistering namespace (%s): %s",
+					channelNameSpace, e.getMessage());
 		}
 	}
 
@@ -629,9 +627,8 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			hasChange = true;
 		}
 
-		log.d("hasChange=%b, mFirstStatusUpdate=%b",
-				new Object[] { Boolean.valueOf(hasChange),
-						Boolean.valueOf(mFirstStatusUpdate) });
+		log.d("hasChange=%b, mFirstStatusUpdate=%b", hasChange,
+				mFirstStatusUpdate);
 		if ((mFlingListener != null) && (hasChange || mFirstStatusUpdate)) {
 			mFlingListener.onVolumeChanged();
 		}
@@ -724,7 +721,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	protected void getServiceFromBroker(IFlingServiceBroker serviceBroker,
 			IFlingCallbackImpl flingCallback) throws RemoteException {
 		log.d("getServiceFromBroker(): mLastApplicationId=%s, mLastSessionId=%s",
-				new Object[] { mApplicationId, mSessionId });
+				mApplicationId, mSessionId);
 		Bundle bundle = new Bundle();
 		mFlingDevice.putInBundle(bundle);
 		bundle.putLong("tv.matchstick.fling.EXTRA_FLING_FLAGS", mFlingFlags);

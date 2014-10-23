@@ -86,8 +86,7 @@ public final class RequestTracker {
 		RequestTrackerCallback callback = null;
 		synchronized (mLock) {
 			if ((this.mRequestId != -1L) && (this.mRequestId == requestId)) {
-				log.d("request %d completed",
-						new Object[] { Long.valueOf(this.mRequestId) });
+				log.d("request %d completed", this.mRequestId);
 				callback = this.mCallback;
 				doClear();
 				i = true;
@@ -109,8 +108,7 @@ public final class RequestTracker {
 		synchronized (mLock) {
 			if ((this.mRequestId != -1L)
 					&& (timeOut - this.mCurrentTime >= this.mTimeout)) {
-				log.d("request %d timed out",
-						new Object[] { Long.valueOf(this.mRequestId) });
+				log.d("request %d timed out", this.mRequestId);
 				requestId = this.mRequestId;
 				callback = this.mCallback;
 				doClear();

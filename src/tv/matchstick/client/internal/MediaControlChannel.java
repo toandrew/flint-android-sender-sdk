@@ -90,7 +90,7 @@ public class MediaControlChannel extends FlingChannel {
 		long requestId = getRequestId();
 		mRequestTrackerLoad.startTrack(requestId, callback);
 		handlerTrackerTask(true);
-		
+
 		try {
 			json.put("requestId", requestId);
 			json.put("type", "LOAD");
@@ -124,7 +124,7 @@ public class MediaControlChannel extends FlingChannel {
 		long requestId = getRequestId();
 		mRequestTrackerPause.startTrack(requestId, callback);
 		handlerTrackerTask(true);
-		
+
 		try {
 			json.put("requestId", requestId);
 			json.put("type", "PAUSE");
@@ -155,7 +155,7 @@ public class MediaControlChannel extends FlingChannel {
 		long requestId = getRequestId();
 		mRequestTrackerStop.startTrack(requestId, callback);
 		handlerTrackerTask(true);
-		
+
 		try {
 			json.put("requestId", requestId);
 			json.put("type", "STOP");
@@ -187,7 +187,7 @@ public class MediaControlChannel extends FlingChannel {
 		long requestId = getRequestId();
 		mRequestTrackerPlay.startTrack(requestId, callback);
 		handlerTrackerTask(true);
-		
+
 		try {
 			json.put("requestId", requestId);
 			json.put("type", "PLAY");
@@ -222,7 +222,7 @@ public class MediaControlChannel extends FlingChannel {
 		long requestId = getRequestId();
 		mRequestTrackerSeed.startTrack(requestId, callback);
 		handlerTrackerTask(true);
-		
+
 		try {
 			json.put("requestId", requestId);
 			json.put("type", "SEEK");
@@ -268,7 +268,7 @@ public class MediaControlChannel extends FlingChannel {
 		long requestId = getRequestId();
 		mRequestTrackerVolume.startTrack(requestId, callback);
 		handlerTrackerTask(true);
-		
+
 		try {
 			json.put("requestId", requestId);
 			json.put("type", "SET_VOLUME");
@@ -429,7 +429,7 @@ public class MediaControlChannel extends FlingChannel {
 	 */
 	@Override
 	public final void onMessageReceived(String message) {
-		log.d("message received: %s", new Object[] { message });
+		log.d("message received: %s", message);
 
 		try {
 			JSONObject jsonMessage = new JSONObject(message);
@@ -485,8 +485,8 @@ public class MediaControlChannel extends FlingChannel {
 						customData);
 			}
 		} catch (JSONException e) {
-			this.log.w("Message is malformed (%s); ignoring: %s", new Object[] {
-					e.getMessage(), message });
+			this.log.w("Message is malformed (%s); ignoring: %s",
+					e.getMessage(), message);
 		}
 	}
 
@@ -583,9 +583,9 @@ public class MediaControlChannel extends FlingChannel {
 		if (this.mTrackTaskStarting == start) {
 			return;
 		}
-		
+
 		this.mTrackTaskStarting = start;
-		
+
 		if (start) {
 			mHandler.postDelayed(this.mTrackerTask, MillisPerSecond);
 		} else {

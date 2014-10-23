@@ -297,10 +297,9 @@ public final class FlingManagerImpl implements FlingManager {
 			while (!(mPendingTaskQueue.isEmpty())) {
 				try {
 					execute((FlingApiClientTask) mPendingTaskQueue.remove());
-				} catch (DeadObjectException localDeadObjectException) {
+				} catch (DeadObjectException e) {
 					Log.w("FlingManagerImpl",
-							"Service died while flushing queue",
-							localDeadObjectException);
+							"Service died while flushing queue", e);
 				}
 			}
 		} finally {

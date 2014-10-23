@@ -49,7 +49,7 @@ public class LogUtil {
 		return this.isVerbose;
 	}
 
-	public void v(String message, Object[] args) {
+	public void v(String message, Object... args) {
 		if (!printVerbose()) {
 			return;
 		}
@@ -57,7 +57,7 @@ public class LogUtil {
 		Log.v(TAG, format(message, args));
 	}
 
-	public void d(String message, Object[] args) {
+	public void d(String message, Object... args) {
 		if (!isDebugEnabled() && !DEBUG) {
 			return;
 		}
@@ -65,7 +65,7 @@ public class LogUtil {
 		Log.d(TAG, format(message, args));
 	}
 
-	public void dd(Throwable t, String message, Object[] args) {
+	public void dd(Throwable t, String message, Object... args) {
 		if (!isDebugEnabled() && !DEBUG) {
 			return;
 		}
@@ -73,15 +73,15 @@ public class LogUtil {
 		Log.d(TAG, format(message, args), t);
 	}
 
-	public void i(String message, Object[] args) {
+	public void i(String message, Object... args) {
 		Log.i(TAG, format(message, args));
 	}
 
-	public void w(String message, Object[] args) {
+	public void w(String message, Object... args) {
 		Log.w(TAG, format(message, args));
 	}
 
-	private String format(String message, Object[] args) {
+	private String format(String message, Object... args) {
 		String msg = String.format(message, args);
 		if (this.prefixMsg != null) {
 			msg = this.prefixMsg + msg;
