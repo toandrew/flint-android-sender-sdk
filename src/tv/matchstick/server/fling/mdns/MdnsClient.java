@@ -1,8 +1,8 @@
-
 package tv.matchstick.server.fling.mdns;
 
 import android.text.TextUtils;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.DatagramPacket;
@@ -14,9 +14,12 @@ import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import tv.matchstick.server.utils.LOG;
@@ -32,13 +35,12 @@ abstract class MdnsClient {
     private final NetworkInterface mNetworkInterface;
     private final Set i = new LinkedHashSet();
 
-    public MdnsClient(String hostName,
-            NetworkInterface paramNetworkInterface) {
+    public MdnsClient(String hostName, NetworkInterface paramNetworkInterface) {
         this.mHostName = hostName;
         this.mNetworkInterface = paramNetworkInterface;
     }
 
-    static void handleReceive(MdnsClient mdnsClient) throws IOException {
+    void handleReceive(MdnsClient mdnsClient) throws IOException {
         byte[] arrayOfByte1 = new byte[4];
         byte[] arrayOfByte2 = new byte[16];
         DatagramPacket datagramPacket = new DatagramPacket(mdnsClient.mBuf,
@@ -52,8 +54,8 @@ abstract class MdnsClient {
             try {
                 mdnsClient.mMulticastSocket.receive(datagramPacket);
 
-                mLogs.d("received a packet of length %d", Integer.valueOf(datagramPacket
-                        .getLength()));
+                mLogs.d("received a packet of length %d",
+                        Integer.valueOf(datagramPacket.getLength()));
                 localavj = new MdnsClientDpHelper(datagramPacket);
                 localavj.b();
                 localavj.b();
@@ -104,8 +106,8 @@ abstract class MdnsClient {
                         byte[] arrayOfByte7 = Arrays.copyOfRange(
                                 datagramPacket.getData(), i11, i11 + i7);
                         Set localSet = mdnsClient.i;
-                        MdnsClientPrivData localavc = new MdnsClientPrivData(arrayOfByte7,
-                                (int) l4);
+                        MdnsClientPrivData localavc = new MdnsClientPrivData(
+                                arrayOfByte7, (int) l4);
                         localSet.add(new SoftReference(localavc));
                     }
                     FlingDeviceInfo localavl1 = localavm.mFlingDeviceInfo;
@@ -113,94 +115,93 @@ abstract class MdnsClient {
                         localavl1.mTTL = l4;
                     }
                     switch (i2) {
-                        case 1:
-                            localavj.a(arrayOfByte1);
-                            try {
-                                Inet4Address localInet4Address = (Inet4Address) InetAddress
-                                        .getByAddress(arrayOfByte1);
-                                FlingDeviceInfo localavl4 = localavm.mFlingDeviceInfo;
-                                if (localavl4.mIpV4AddrList == null)
-                                    localavl4.mIpV4AddrList = new ArrayList();
-                                localavl4.mIpV4AddrList.add(localInet4Address);
-                            } catch (UnknownHostException localUnknownHostException2) {
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                    case 1:
+                        localavj.a(arrayOfByte1);
+                        try {
+                            Inet4Address localInet4Address = (Inet4Address) InetAddress
+                                    .getByAddress(arrayOfByte1);
+                            FlingDeviceInfo localavl4 = localavm.mFlingDeviceInfo;
+                            if (localavl4.mIpV4AddrList == null)
+                                localavl4.mIpV4AddrList = new ArrayList();
+                            localavl4.mIpV4AddrList.add(localInet4Address);
+                        } catch (UnknownHostException localUnknownHostException2) {
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                            break;
-                        case 12:
-                            localavj.c();
-                            break;
-                        case 16:
-                            if (i7 >= 0)
-                                localavj.c = (i7 + localavj.b);
-                            while (localavj.a() > 0) {
-                                String str2 = localavj.d();
-                                FlingDeviceInfo localavl2 = localavm.mFlingDeviceInfo;
-                                if (localavl2.mTextStringList == null)
-                                    localavl2.mTextStringList = new ArrayList();
-                                localavl2.mTextStringList.add(str2);
-                            }
-                            localavj.c = -1;
-                            break;
-                        case 28:
-                            localavj.a(arrayOfByte2);
-                            try {
-                                Inet6Address localInet6Address = (Inet6Address) InetAddress
-                                        .getByAddress(arrayOfByte2);
-                                FlingDeviceInfo localavl3 = localavm.mFlingDeviceInfo;
-                                if (localavl3.mIpV6AddrList == null)
-                                    localavl3.mIpV6AddrList = new ArrayList();
-                                localavl3.mIpV6AddrList.add(localInet6Address);
-                            } catch (UnknownHostException localUnknownHostException1) {
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-                        case 33:
-                            int i8 = localavj.b();
-                            localavm.mFlingDeviceInfo.mPriority = i8;
-                            int i9 = localavj.b();
-                            localavm.mFlingDeviceInfo.mWeight = i9;
-                            int i10 = localavj.b();
-                            localavm.mFlingDeviceInfo.mPort = i10;
-                            String str3 = TextUtils.join(".", localavj.c());
-                            localavm.mFlingDeviceInfo.mHost = str3;
+                        break;
+                    case 12:
+                        localavj.c();
+                        break;
+                    case 16:
+                        if (i7 >= 0)
+                            localavj.c = (i7 + localavj.b);
+                        while (localavj.a() > 0) {
+                            String str2 = localavj.d();
+                            FlingDeviceInfo localavl2 = localavm.mFlingDeviceInfo;
+                            if (localavl2.mTextStringList == null)
+                                localavl2.mTextStringList = new ArrayList();
+                            localavl2.mTextStringList.add(str2);
+                        }
+                        localavj.c = -1;
+                        break;
+                    case 28:
+                        localavj.a(arrayOfByte2);
+                        try {
+                            Inet6Address localInet6Address = (Inet6Address) InetAddress
+                                    .getByAddress(arrayOfByte2);
+                            FlingDeviceInfo localavl3 = localavm.mFlingDeviceInfo;
+                            if (localavl3.mIpV6AddrList == null)
+                                localavl3.mIpV6AddrList = new ArrayList();
+                            localavl3.mIpV6AddrList.add(localInet6Address);
+                        } catch (UnknownHostException localUnknownHostException1) {
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 33:
+                        int i8 = localavj.b();
+                        localavm.mFlingDeviceInfo.mPriority = i8;
+                        int i9 = localavj.b();
+                        localavm.mFlingDeviceInfo.mWeight = i9;
+                        int i10 = localavj.b();
+                        localavm.mFlingDeviceInfo.mPort = i10;
+                        String str3 = TextUtils.join(".", localavj.c());
+                        localavm.mFlingDeviceInfo.mHost = str3;
 
-                            // todo
-                            if (arrayOfString.length < 4) {
-                                throw new IOException(
-                                        "invalid name in SRV record");
-                            } else if (arrayOfString.length > 4) {
-                                String[] fixArrayOfString = new String[4];
-                                fixArrayOfString[3] = arrayOfString[arrayOfString.length - 1];
-                                fixArrayOfString[2] = arrayOfString[arrayOfString.length - 2];
-                                fixArrayOfString[1] = arrayOfString[arrayOfString.length - 3];
-                                int nameCount = arrayOfString.length - 3;
-                                String[] name = new String[nameCount];
-                                for (int len = 0; len < nameCount; len++) {
-                                    name[len] = arrayOfString[len];
-                                }
-                                fixArrayOfString[0] = TextUtils.join(".", name);
-                                arrayOfString = fixArrayOfString;
+                        // todo
+                        if (arrayOfString.length < 4) {
+                            throw new IOException("invalid name in SRV record");
+                        } else if (arrayOfString.length > 4) {
+                            String[] fixArrayOfString = new String[4];
+                            fixArrayOfString[3] = arrayOfString[arrayOfString.length - 1];
+                            fixArrayOfString[2] = arrayOfString[arrayOfString.length - 2];
+                            fixArrayOfString[1] = arrayOfString[arrayOfString.length - 3];
+                            int nameCount = arrayOfString.length - 3;
+                            String[] name = new String[nameCount];
+                            for (int len = 0; len < nameCount; len++) {
+                                name[len] = arrayOfString[len];
                             }
+                            fixArrayOfString[0] = TextUtils.join(".", name);
+                            arrayOfString = fixArrayOfString;
+                        }
 
-                            String str4 = arrayOfString[0];
-                            localavm.mFlingDeviceInfo.e = str4;
-                            String str5 = arrayOfString[1];
-                            localavm.mFlingDeviceInfo.mName = str5;
-                            String str6 = arrayOfString[2];
-                            if (str6.equals("_tcp")) {
-                                localavm.setProto_a(1);
-                            } else if (str6.equals("_udp")) {
-                                localavm.setProto_a(2);
-                            }
+                        String str4 = arrayOfString[0];
+                        localavm.mFlingDeviceInfo.e = str4;
+                        String str5 = arrayOfString[1];
+                        localavm.mFlingDeviceInfo.mName = str5;
+                        String str6 = arrayOfString[2];
+                        if (str6.equals("_tcp")) {
+                            localavm.setProto_a(1);
+                        } else if (str6.equals("_udp")) {
+                            localavm.setProto_a(2);
+                        }
 
-                            break;
-                        default:
-                            localavj.a(i7);
-                            localavj.b = (i7 + localavj.b);
-                            break;
+                        break;
+                    default:
+                        localavj.a(i7);
+                        localavj.b = (i7 + localavj.b);
+                        break;
                     }
                 } else {
                     mdnsClient.onScanResults(localavm.mFlingDeviceInfo);
@@ -332,13 +333,13 @@ abstract class MdnsClient {
             } else {
                 k *= 2;
             }
-//            int m;
-//            if (k >= 32000) {
-//                m = k;
-//            } else {
-//                m = k * 2;
-//                k = m;
-//            }
+            // int m;
+            // if (k >= 32000) {
+            // m = k;
+            // } else {
+            // m = k * 2;
+            // k = m;
+            // }
         }
     }
 
@@ -353,7 +354,8 @@ abstract class MdnsClient {
             this.mMulticastSocket = new MulticastSocket();
             this.mMulticastSocket.setTimeToLive(1);
             if (this.mNetworkInterface != null)
-                this.mMulticastSocket.setNetworkInterface(this.mNetworkInterface);
+                this.mMulticastSocket
+                        .setNetworkInterface(this.mNetworkInterface);
             this.mReceiveThread = new Thread(new Runnable() {
 
                 @Override
@@ -405,6 +407,135 @@ abstract class MdnsClient {
             this.mMulticastSocket = null;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    final class MdnsClientDpHelper {
+        final byte[] mData;
+        int b;
+        int c;
+        private final int mDataLen;
+        private final Map e;
+
+        public MdnsClientDpHelper(DatagramPacket paramDatagramPacket) {
+            this.mData = paramDatagramPacket.getData();
+            this.mDataLen = paramDatagramPacket.getLength();
+            this.b = 0;
+            this.c = -1;
+            this.e = new HashMap();
+        }
+
+        private int e() {
+            a(1);
+            byte[] arrayOfByte = this.mData;
+            int i = this.b;
+            this.b = (i + 1);
+            return 0xFF & arrayOfByte[i];
+        }
+
+        public final int a() {
+            int i = this.c;
+            if (c < 0) {
+                i = this.mDataLen;
+            }
+            return i - this.b;
+        }
+
+        final void a(int paramInt) {
+            try {
+                if (a() < paramInt)
+                    throw new EOFException();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        public final void a(byte[] paramArrayOfByte) {
+            a(paramArrayOfByte.length);
+            System.arraycopy(this.mData, this.b, paramArrayOfByte, 0,
+                    paramArrayOfByte.length);
+            this.b += paramArrayOfByte.length;
+        }
+
+        public final int b() {
+            a(2);
+            byte[] arrayOfByte1 = this.mData;
+            int i = this.b;
+            this.b = (i + 1);
+            int j = (0xFF & arrayOfByte1[i]) << 8;
+            byte[] arrayOfByte2 = this.mData;
+            int k = this.b;
+            this.b = (k + 1);
+            return j | 0xFF & arrayOfByte2[k];
+        }
+
+        public final String[] c() {
+            HashMap localHashMap = new HashMap();
+            ArrayList localArrayList1 = new ArrayList();
+            int i;
+            int j;
+            while (a() > 0) {
+                a(1);
+                i = this.mData[this.b];
+                if (i == 0) {
+                    this.b = (1 + this.b);
+                    break;
+                } else {
+                    if ((i & 0xC0) == 192) {
+                        j = 1;
+                    } else {
+                        j = 0;
+                    }
+                    int k;
+                    List localList;
+                    Object localObject;
+                    k = this.b;
+                    if (j == 0) {
+                        // break label233;
+                        String str = d();
+                        ArrayList localArrayList2 = new ArrayList();
+                        localArrayList2.add(str);
+                        localObject = localArrayList2;
+                    } else {
+                        int m = (0x3F & e()) << 8 | 0xFF & e();
+                        localList = (List) this.e.get(Integer.valueOf(m));
+                        try {
+                            if (localList == null) {
+                                throw new IOException("invalid label pointer");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        localObject = localList;
+                    }
+
+                    localArrayList1.addAll((Collection) localObject);
+                    Iterator localIterator = localHashMap.keySet().iterator();
+                    while (localIterator.hasNext())
+                        ((List) localHashMap
+                                .get((Integer) localIterator.next()))
+                                .addAll((Collection) localObject);
+
+                    localHashMap.put(Integer.valueOf(k), localObject);
+                    if (j == 0) {
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            this.e.putAll(localHashMap);
+            return (String[]) localArrayList1
+                    .toArray(new String[localArrayList1.size()]);
+        }
+
+        public final String d() {
+            int i = e();
+            a(i);
+            String str = new String(this.mData, this.b, i,
+                    CharsetAndInetAddrInfo.mCharset);
+            this.b = (i + this.b);
+            return str;
         }
     }
 }
