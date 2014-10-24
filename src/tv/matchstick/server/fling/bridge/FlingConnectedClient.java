@@ -8,6 +8,7 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
+import android.os.IBinder;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 
@@ -16,7 +17,7 @@ import android.os.RemoteException;
  * device,etc)
  * 
  */
-public final class FlingConnectedClient implements IFlingSrvController {
+public final class FlingConnectedClient extends IFlingSrvController.Stub {
 	final FlingService mFlingService;
 	private FlingDeviceControllerStubImpl mStubImpl;
 	private final IFlingDeviceControllerListener mFlingDeviceControllerListener;
@@ -234,19 +235,6 @@ public final class FlingConnectedClient implements IFlingSrvController {
 			mFlingDeviceControllerListener
 					.notifyApplicationStatusOrVolumeChanged(status, volume,
 							muteState);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * called for request callback
-	 */
-	@Override
-	public final void onRequestCallback(String namespace, long requestId) {
-		try {
-			mFlingDeviceControllerListener.requestCallback(namespace,
-					requestId, 0);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
