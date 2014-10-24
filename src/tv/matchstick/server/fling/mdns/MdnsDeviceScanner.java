@@ -31,18 +31,18 @@ public final class MdnsDeviceScanner extends DeviceScanner {
         this.mName = "Fling Device";
     }
 
-    static void scanLoop(final MdnsDeviceScanner paramave) {
-        while (!paramave.h) {
+    void scanLoop() {
+        while (!h) {
             try {
                 Thread.sleep(3000L);
             } catch (InterruptedException e) {
-                if (paramave.h) {
+                if (h) {
                     break;
                 }
             }
-            synchronized (paramave.e) {
+            synchronized (e) {
                 long l = SystemClock.elapsedRealtime();
-                Iterator localIterator = paramave.e.entrySet().iterator();
+                Iterator localIterator = e.entrySet().iterator();
                 while (localIterator.hasNext()) {
                     ScannerPrivData localavi = (ScannerPrivData) ((Map.Entry) localIterator
                             .next()).getValue();
@@ -56,12 +56,11 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                         continue;
                     final FlingDevice device = localavi.mFlingDevice;
 
-                    paramave.mHandler.post(new Runnable() {
+                    mHandler.post(new Runnable() {
 
                         @Override
                         public void run() {
-                            // TODO Auto-generated method stub
-                            paramave.notifyDeviceOffline(device);
+                            notifyDeviceOffline(device);
                         }
 
                     });
@@ -264,7 +263,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
                 @Override
                 protected void onScanResults(FlingDeviceInfo info) {
-                    // TODO Auto-generated method stub
                     onResults(info);
                 }
 
@@ -283,8 +281,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
             @Override
             public void run() {
-                // TODO Auto-generated method stub
-                scanLoop(MdnsDeviceScanner.this);
+                scanLoop();
             }
 
         });

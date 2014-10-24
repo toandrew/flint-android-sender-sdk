@@ -1,4 +1,3 @@
-
 package tv.matchstick.server.fling.mdns;
 
 import android.content.BroadcastReceiver;
@@ -29,86 +28,31 @@ public abstract class DeviceScanner {
     static final LOG mLogs = new LOG("DeviceScanner");
     final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Context mContext;
-    private final List mListenerList = new ArrayList();
-    private int e;
+    private final List<IDeviceScanListener> mListenerList = new ArrayList<IDeviceScanListener>();
     private final AtomicBoolean f = new AtomicBoolean();
     private final ConnectivityManager mConnectivityManager;
     private BroadcastReceiver mConnectChangeReceiver;
     private final WifiManager mWifiManager;
     private String mBSSID;
-    private volatile boolean k;
     private boolean mScanning;
     private boolean m;
     private boolean mErrorState;
 
     protected DeviceScanner(Context context) {
-        e = 0;
         mContext = context;
         mConnectivityManager = (ConnectivityManager) context
                 .getSystemService("connectivity");
         mWifiManager = (WifiManager) context.getSystemService("wifi");
     }
 
-    static ConnectivityManager a(DeviceScanner aur1) {
-        return aur1.mConnectivityManager;
-    }
-
-    private void a(int i1) {
-        if (e != i1) {
-            e = i1;
-            final List list = getDeviceScannerListenerList();
-            if (list != null) {
-                // mHandler_b.post(new C_aus(this, list, i1));
-                mHandler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        // TODO Auto-generated method stub
-                        // todo. do nothing?
-                        for (Iterator iterator = list.iterator(); iterator.hasNext();) {
-                            iterator.next();
-                            // int = b;
-                        }
-                    }
-
-                });
-            }
-        }
-    }
-
-    static boolean getErrorState(DeviceScanner aur1) {
-        return aur1.mErrorState;
-    }
-
-    static void checkBSSID(DeviceScanner aur1) {
-        aur1.checkBSSID();
-    }
-
-    static boolean d(DeviceScanner aur1) {
-        return aur1.m;
-    }
-
-    static void stopScanInit(DeviceScanner aur1) {
-        aur1.stopScanInit();
-    }
-
-    static boolean f(DeviceScanner aur1) {
-        aur1.m = false;
-        return false;
-    }
-
-    static void startScanInit(DeviceScanner aur1) {
-        aur1.startScanInit();
-    }
-
     static LOG getLogs() {
         return mLogs;
     }
 
-    private static List getFlingNetworkInterfaceList() {
-        ArrayList arraylist = new ArrayList();
+    private static List<NetworkInterface> getFlingNetworkInterfaceList() {
+        ArrayList<NetworkInterface> arraylist = new ArrayList<NetworkInterface>();
         try {
-            Enumeration enumeration = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
             if (enumeration != null) {
 
                 while (enumeration.hasMoreElements()) {
@@ -118,7 +62,7 @@ public abstract class DeviceScanner {
                             && !networkinterface.isLoopback()
                             && !networkinterface.isPointToPoint()
                             && networkinterface.supportsMulticast()) {
-                        Iterator iterator = networkinterface
+                        Iterator<InterfaceAddress> iterator = networkinterface
                                 .getInterfaceAddresses().iterator();
                         while (iterator.hasNext()) {
                             if (((InterfaceAddress) iterator.next())
@@ -139,14 +83,12 @@ public abstract class DeviceScanner {
     private void startScanInit() {
         mLogs.d("startScanInit");
         mErrorState = false;
-        k = false;
         checkBSSID();
         startScanInternal(getFlingNetworkInterfaceList());
     }
 
     private void stopScanInit() {
         mLogs.d("stopScanInit");
-        k = true;
         stopScanInternal();
     }
 
@@ -166,34 +108,32 @@ public abstract class DeviceScanner {
         if (mScanning)
             return;
         mScanning = true;
-        a(1);
         if (mConnectChangeReceiver == null) {
-            // mConnectChangeReceiver_h = new C_aux(this, (byte) 0); // todo
             mConnectChangeReceiver = new BroadcastReceiver() {
 
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    // TODO Auto-generated method stub
-                    NetworkInfo localNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+                    NetworkInfo localNetworkInfo = mConnectivityManager
+                            .getActiveNetworkInfo();
                     boolean connected;
-                    if ((localNetworkInfo != null) && (localNetworkInfo.isConnected()))
-                    {
-                        connected = true;  
-                        DeviceScanner.getLogs().d("connectivity state changed. connected? %b, errorState? %b",
-                        		connected, mErrorState);
+                    if ((localNetworkInfo != null)
+                            && (localNetworkInfo.isConnected())) {
+                        connected = true;
+                        DeviceScanner
+                                .getLogs()
+                                .d("connectivity state changed. connected? %b, errorState? %b",
+                                        connected, mErrorState);
                         checkBSSID();
                         if (!connected)
                             onAllDevicesOffline();
-                        if (m)
-                        {
+                        if (m) {
                             stopScanInit();
                             m = false;
                         }
                         if (connected) {
                             DeviceScanner
                                     .getLogs()
-                                    .d(
-                                            "re-established connectivity after connectivity changed;  restarting scan");
+                                    .d("re-established connectivity after connectivity changed;  restarting scan");
                             startScanInit();
 
                             return;
@@ -203,7 +143,8 @@ public abstract class DeviceScanner {
                             return;
                         }
 
-                        DeviceScanner.getLogs().d("lost connectivity while scanning;");
+                        DeviceScanner.getLogs().d(
+                                "lost connectivity while scanning;");
                         g();
                     }
                 }
@@ -215,7 +156,7 @@ public abstract class DeviceScanner {
             mContext.registerReceiver(mConnectChangeReceiver, intentfilter);
         }
         startScanInit();
-        
+
         mLogs.d("scan started");
     }
 
@@ -232,27 +173,25 @@ public abstract class DeviceScanner {
 
     protected final void notifyDeviceOffline(final FlingDevice device) {
         mLogs.d("notifyDeviceOffline: %s", device);
-        
-        final List list = getDeviceScannerListenerList();
-        
+
+        final List<IDeviceScanListener> list = getDeviceScannerListenerList();
+
         if (list != null) {
             mHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
-                    for (Iterator iterator = list.iterator(); iterator.hasNext(); ((IDeviceScanListener) iterator
-                            .next()).onDeviceOffline(device))
-                        ;
+                    for (IDeviceScanListener listener : list) {
+                        listener.onDeviceOffline(device);
+                    }
                 }
-
             });
         }
     }
 
     public abstract void setDeviceOffline(String s);
 
-    protected abstract void startScanInternal(List list);
+    protected abstract void startScanInternal(List<NetworkInterface> list);
 
     public final void stopScan() {
         if (!mScanning)
@@ -268,7 +207,6 @@ public abstract class DeviceScanner {
         m = false;
         mHandler.removeCallbacksAndMessages(null);
         mScanning = false;
-        a(0);
         mLogs.d("scan stopped");
     }
 
@@ -276,18 +214,14 @@ public abstract class DeviceScanner {
 
     public abstract void onAllDevicesOffline();
 
-    List getDeviceScannerListenerList() {
-        ArrayList arraylist = null;
+    List<IDeviceScanListener> getDeviceScannerListenerList() {
         synchronized (mListenerList) {
             boolean flag = mListenerList.isEmpty();
-
-            arraylist = null;
             if (flag) {
                 return null;
             }
-            arraylist = new ArrayList(mListenerList);
         }
-        return arraylist;
+        return mListenerList;
     }
 
     protected final void reportNetworkError() {
@@ -295,22 +229,16 @@ public abstract class DeviceScanner {
             mLogs.d("reportNetworkError; errorState now true");
             mErrorState = true;
             onAllDevicesOffline();
-            a(2);
         }
     }
 
     protected final void g() {
         if (!f.getAndSet(true)) {
-            // mHandler_b.post(new C_auw(this));
-
             mHandler.post(new Runnable() {
-
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
                     reportNetworkError();
                 }
-
             });
         }
     }
