@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.server.fling.bridge;
 
 import tv.matchstick.client.internal.IFlingCallbacks;
@@ -8,8 +24,6 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
-import android.os.IBinder;
-import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 
 /**
@@ -86,9 +100,8 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 		try {
 			mFlingDeviceControllerListener.asBinder().linkToDeath(
 					mListenerDeathHandler, 0);
-		} catch (RemoteException remoteexception) {
-			FlingService.log().e("client disconnected before listener was set",
-					new Object[0]);
+		} catch (RemoteException e) {
+			FlingService.log().e("client disconnected before listener was set");
 			if (!mFlingDeviceController.isDisposed())
 				mFlingDeviceController.releaseReference();
 		}
@@ -110,7 +123,7 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 			try {
 				mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
 						mStubImpl.asBinder(), null);
-			} catch (RemoteException remoteexception2) {
+			} catch (RemoteException e) {
 				FlingService.log().d("client died while brokering service");
 			}
 			return;
@@ -138,8 +151,7 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 			mFlingCallbacks.asBinder().linkToDeath(mFlingCallbackDeathHandler,
 					0);
 		} catch (RemoteException e) {
-			FlingService.log().w("Unable to link listener reaper",
-					new Object[0]);
+			FlingService.log().w("Unable to link listener reaper");
 		}
 	}
 
@@ -152,8 +164,7 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 		if (client.mFlingDeviceController != null
 				&& !client.mFlingDeviceController.isDisposed()) {
 			FlingService.log().w(
-					"calling releaseReference from handleBinderDeath()",
-					new Object[0]);
+					"calling releaseReference from handleBinderDeath()");
 			client.mFlingDeviceController.releaseReference();
 			FlingService.log().d("Released controller.");
 		}
@@ -191,9 +202,9 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 		FlingService.log().d("onDisconnected: status=%d", status);
 		try {
 			mFlingDeviceControllerListener.onDisconnected(status);
-		} catch (RemoteException remoteexception) {
-			FlingService.log().d(remoteexception,
-					"client died while brokering service", new Object[0]);
+		} catch (RemoteException e) {
+			FlingService.log().d(e.toString(),
+					"client died while brokering service");
 		}
 
 		/**
@@ -202,8 +213,7 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 		if (!mFlingDeviceController.isDisposed()) {
 			FlingService
 					.log()
-					.w("calling releaseReference from ConnectedClient.onDisconnected",
-							new Object[0]);
+					.w("calling releaseReference from ConnectedClient.onDisconnected");
 			mFlingDeviceController.releaseReference();
 		}
 	}
@@ -290,8 +300,8 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 			FlingService.log().d("Connected to device without app.");
 		} catch (RemoteException e) {
 			e.printStackTrace();
-			FlingService.log().d(e, "client died while brokering service",
-					new Object[0]);
+			FlingService.log().d(e.toString(),
+					"client died while brokering service");
 		}
 	}
 
@@ -318,8 +328,8 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 					null, null);
 		} catch (RemoteException e) {
 			e.printStackTrace();
-			FlingService.log().d(e, "client died while brokering service",
-					new Object[0]);
+			FlingService.log().d(e.toString(),
+					"client died while brokering service");
 		}
 	}
 
