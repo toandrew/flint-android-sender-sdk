@@ -77,7 +77,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
     void onResults(FlingDeviceInfo info) {
         if (mLogs.isDebugEnabled()) {
-            mLogs.d("FQDN: %s", info.FQDN_a);
+            mLogs.d("FQDN: %s", info.mFQDN);
             List localList4 = info.mIpV4AddrList;
             if (localList4 != null) {
                 Iterator localIterator4 = localList4.iterator();

@@ -221,9 +221,9 @@ abstract class MdnsClient {
                         localavm.mFlingDeviceInfo.mName = str5;
                         String str6 = arrayOfString[2];
                         if (str6.equals("_tcp")) {
-                            localavm.setProto_a(1);
+                            localavm.setProto(1);
                         } else if (str6.equals("_udp")) {
-                            localavm.setProto_a(2);
+                            localavm.setProto(2);
                         }
 
                         break;
