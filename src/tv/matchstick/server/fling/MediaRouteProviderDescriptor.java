@@ -33,53 +33,54 @@ public final class MediaRouteProviderDescriptor {
 	}
 
 	private List getMediaRouteDescriptorList() {
-		check_b();
+		init();
 		return this.mMediaRouteDescriptorList;
 	}
 
-	private void check_b() {
+	private void init() {
 		if (mMediaRouteDescriptorList == null) {
-			ArrayList arraylist = mRoutes.getParcelableArrayList("routes");
-			if (arraylist == null || arraylist.isEmpty()) {
+			ArrayList routes = mRoutes.getParcelableArrayList("routes");
+			if (routes == null || routes.isEmpty()) {
 				mMediaRouteDescriptorList = Collections.emptyList();
 			} else {
-				int i = arraylist.size();
-				mMediaRouteDescriptorList = new ArrayList(i);
-				int j = 0;
-				while (j < i) {
-					List list = mMediaRouteDescriptorList;
-					Bundle bundle = (Bundle) arraylist.get(j);
-					MediaRouteDescriptor ns1;
+				int size = routes.size();
+				mMediaRouteDescriptorList = new ArrayList(size);
+				int i = 0;
+				while (i < size) {
+					Bundle bundle = (Bundle) routes.get(i);
+					MediaRouteDescriptor desc = null;
 					if (bundle != null)
-						ns1 = new MediaRouteDescriptor(bundle, null);
-					else
-						ns1 = null;
-					list.add(ns1);
-					j++;
+						desc = new MediaRouteDescriptor(bundle, null);
+
+					if (desc != null) {
+						mMediaRouteDescriptorList.add(desc);
+					}
+					i++;
 				}
 			}
 		}
 	}
 
 	private boolean isValid() {
-		check_b();
-		int i = this.mMediaRouteDescriptorList.size();
-		for (int j = 0; j < i; j++) {
-			MediaRouteDescriptor localns = (MediaRouteDescriptor) this.mMediaRouteDescriptorList
-					.get(j);
-			if ((localns == null) || (!localns.isValid()))
+		init();
+		int size = this.mMediaRouteDescriptorList.size();
+		for (int i = 0; i < size; i++) {
+			MediaRouteDescriptor desc = (MediaRouteDescriptor) this.mMediaRouteDescriptorList
+					.get(i);
+			if ((desc == null) || (!desc.isValid()))
 				return false;
 		}
 		return true;
 	}
 
+	@Override
 	public final String toString() {
-		StringBuilder localStringBuilder = new StringBuilder();
-		localStringBuilder.append("MediaRouteProviderDescriptor{ ");
-		localStringBuilder.append("routes=").append(
+		StringBuilder dn = new StringBuilder();
+		dn.append("MediaRouteProviderDescriptor{ ");
+		dn.append("routes=").append(
 				Arrays.toString(getMediaRouteDescriptorList().toArray()));
-		localStringBuilder.append(", isValid=").append(isValid());
-		localStringBuilder.append(" }");
-		return localStringBuilder.toString();
+		dn.append(", isValid=").append(isValid());
+		dn.append(" }");
+		return dn.toString();
 	}
 }
