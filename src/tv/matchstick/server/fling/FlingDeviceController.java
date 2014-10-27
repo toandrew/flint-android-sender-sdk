@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -208,7 +207,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			log.d("onStatusRequestFailed: statusCode=%d", statusCode);
 
 			if (mApplicationId != null) {
-				if (mReconnectStrategy.b()) {
+				if (mReconnectStrategy.reset()) {
 					log.d("calling Listener.onConnectedWithoutApp()");
 
 					try {
@@ -244,7 +243,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 	private boolean w;
 	private String mApplicationId;
 	private String mSessionId_y;
-	private final long z = 10000L;
 
 	private static FlingDeviceController mFlingDeviceController;
 
@@ -316,7 +314,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 		mSessionId = applicationInfo.getSessionId();
 		mLastApplicationId = applicationInfo.getApplicationId();
 		mLastSessionId = mSessionId;
-		if (mReconnectStrategy.b()) {
+		if (mReconnectStrategy.reset()) {
 			mHandler.removeCallbacks(mReconnectRunnable);
 			try {
 				mFlingSrvController.onConnected();
@@ -418,7 +416,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			mLastApplicationId = null;
 			mLastSessionId = null;
 			if (!w) {
-				if (mReconnectStrategy.b()) {
+				if (mReconnectStrategy.reset()) {
 					try {
 						mFlingSrvController.onConnectedWithoutApp();
 					} catch (RemoteException e) {
@@ -464,13 +462,13 @@ public final class FlingDeviceController implements FlingSocketListener {
 		boolean wasReconnecting = mReconnectStrategy.wasReconnecting();
 		log.d("handleConnectionFailure; wasReconnecting=%b", wasReconnecting);
 		if (flag) {
-			long l1 = mReconnectStrategy.d();
-			if (l1 >= 0L) {
-				mHandler.postDelayed(mReconnectRunnable, l1);
+			long time = mReconnectStrategy.getCurrentReconnectTime();
+			if (time >= 0L) {
+				mHandler.postDelayed(mReconnectRunnable, time);
 				return;
 			}
 		} else {
-			mReconnectStrategy.b();
+			mReconnectStrategy.reset();
 		}
 
 		if (wasReconnecting) {
@@ -534,7 +532,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			disconnectStatusCode = FlingStatusCodes.AUTHENTICATION_FAILED;
 		else
 			disconnectStatusCode = FlingStatusCodes.NETWORK_ERROR;
-		mReconnectStrategy.b();
+		mReconnectStrategy.reset();
 
 		try {
 			mFlingSrvController.onDisconnected(disconnectStatusCode);
@@ -573,7 +571,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			joinApplicationInternal(mLastApplicationId, mLastSessionId);
 			return;
 		}
-		mReconnectStrategy.b();
+		mReconnectStrategy.reset();
 		try {
 			mFlingSrvController.onConnected();
 		} catch (RemoteException e) {
@@ -929,10 +927,10 @@ public final class FlingDeviceController implements FlingSocketListener {
 		}
 		mIsConnecting = true;
 		if (!mReconnectStrategy.wasReconnecting()) {
-			mReconnectStrategy.a();
+			mReconnectStrategy.markConnectTime();
 		}
 
-		mReconnectStrategy.e();
+		mReconnectStrategy.markStartConnectTime();
 		try {
 			log.d("connecting socket now");
 			mFlingSocket.connect(mFlingDevice.getIpAddress(),
@@ -986,7 +984,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			log.d("clearing mLastConnected* variables");
 			mLastApplicationId = null;
 			mLastSessionId = null;
-			if (mReconnectStrategy.b()) {
+			if (mReconnectStrategy.reset()) {
 				try {
 					mFlingSrvController.onConnectedWithoutApp();
 				} catch (RemoteException e) {
@@ -1149,7 +1147,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 				mDisposed = true;
 
 				log.d("[%s] *** disposing ***", mFlingDevice);
-				mReconnectStrategy.b();
+				mReconnectStrategy.reset();
 				mHandler.removeCallbacks(mHeartbeatRunnable);
 				mHandler.removeCallbacks(mReconnectRunnable);
 				if (mFlingSocket.isConnected()) {
@@ -1160,57 +1158,61 @@ public final class FlingDeviceController implements FlingSocketListener {
 	}
 
 	final class ReconnectStrategy {
-		private final long a;
-		private final long b;
-		private long c;
-		private long d;
+		private final long mTimeout;
+		private final long mMaxTimeout;
+		private long mStartConnectTime;
+		private long startReconnectTime;
 
 		private ReconnectStrategy() {
-			a = 3000L;
-			b = 15000L;
+			mTimeout = 3000L;
+			mMaxTimeout = 15000L;
 		}
 
-		public final void a() {
-			long l = SystemClock.elapsedRealtime();
-			c = l;
-			d = l;
+		public final void markConnectTime() {
+			long time = SystemClock.elapsedRealtime();
+			mStartConnectTime = time;
+			startReconnectTime = time;
 		}
 
-		public final boolean b() {
-			boolean flag;
-			if (d != 0L)
-				flag = true;
-			else
-				flag = false;
-			d = 0L;
-			c = 0L;
-			return flag;
+		public final boolean reset() {
+			boolean isReconnecting = false;
+			if (startReconnectTime != 0L) {
+				isReconnecting = true;
+			}
+
+			startReconnectTime = 0L;
+			mStartConnectTime = 0L;
+			return isReconnecting;
 		}
 
 		public final boolean wasReconnecting() {
-			return d != 0L;
+			return startReconnectTime != 0L;
 		}
 
-		public final long d() {
-			long l = -1L;
-			if (d != 0L) {
-				long l1 = SystemClock.elapsedRealtime();
-				if (c == 0L)
+		public final long getCurrentReconnectTime() {
+			long delay = -1L;
+			if (startReconnectTime != 0L) {
+				long time = SystemClock.elapsedRealtime();
+				if (mStartConnectTime == 0L) {
 					return 0L;
-				if (l1 - d >= b) {
-					d = 0L;
-					return l;
 				}
-				l = a - (l1 - c);
-				if (l <= 0L)
+
+				if (time - startReconnectTime >= mMaxTimeout) {
+					startReconnectTime = 0L;
+					return delay;
+				}
+
+				delay = mTimeout - (time - mStartConnectTime);
+				if (delay <= 0L)
 					return 0L;
 			}
-			return l;
+			return delay;
 		}
 
-		public final void e() {
-			if (d != 0L)
-				c = SystemClock.elapsedRealtime();
+		public final void markStartConnectTime() {
+			if (startReconnectTime != 0L) {
+				mStartConnectTime = SystemClock.elapsedRealtime();
+			}
 		}
 	}
 }
