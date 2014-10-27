@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.server.fling;
 
 import java.lang.ref.WeakReference;
@@ -21,9 +37,12 @@ import android.util.SparseArray;
 public abstract class MediaRouteProviderSrv extends IntentService {
 	private static final boolean DEBUG = Log.isLoggable(
 			"MediaRouteProviderSrv", Log.DEBUG);
+
 	private final ArrayList mFlingDeathRecipientList = new ArrayList();
+
 	private final MediaRouteProviderSrvHandler mMessageTargetHandler = new MediaRouteProviderSrvHandler(
 			this);
+
 	private final Messenger mMessenger;
 
 	private final Handler mBinderDiedHandler = new Handler() {
@@ -32,9 +51,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 			default:
 				return;
 
-			case 1: // '\001'
-				onBinderDied(MediaRouteProviderSrv.this,
-						(Messenger) message.obj);
+			case 1:
+				onBinderDied((Messenger) message.obj);
 				break;
 			}
 		}
@@ -43,74 +61,208 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 	private final DescriptorChangedListener mDescriptorChangedListener = new DescriptorChangedListener() {
 		public final void onDescriptorChanged(
 				MediaRouteProviderDescriptor descriptor) {
-			sendDescriptorChangeEvent(MediaRouteProviderSrv.this, descriptor);
+
+			sendDescriptorChangeEvent(descriptor);
 		}
 	};
 
 	private MediaRouteProvider mMediaRouteProvider;
+
 	private DiscoveryRequest mDiscoveryRequest;
 
 	public MediaRouteProviderSrv() {
 		super("MediaRouteProviderSrv");
+
 		mMessenger = new Messenger(mMessageTargetHandler);
 	}
 
-	static int getFlingDeathRecipitentListIndex(
-			MediaRouteProviderSrv mediaRouteProvider, Messenger messenger) {
-		return mediaRouteProvider.getFlingDeathRecipitentListIndex(messenger);
+	private static final int CLIENT_MSG_REGISTER = 1;
+	private static final int CLIENT_MSG_UNREGISTER = 2;
+	private static final int CLIENT_MSG_CREATE_ROUTE_CONTROLLER = 3;
+	private static final int CLIENT_MSG_RELEASE_ROUTE_CONTROLLER = 4;
+	private static final int CLIENT_MSG_SELECT_ROUTE = 5;
+	private static final int CLIENT_MSG_UNSELECT_ROUTE = 6;
+	private static final int CLIENT_MSG_SET_ROUTE_VOLUME = 7;
+	private static final int CLIENT_MSG_UPDATE_ROUTE_VOLUME = 8;
+	private static final int CLIENT_MSG_ROUTE_CONTROL_REQUEST = 9;
+	private static final int CLIENT_MSG_SET_DISCOVERY_REQUEST = 10;
+
+	private class MediaRouteProviderSrvHandler extends Handler {
+
+		private final WeakReference mRouteProviderRef;
+
+		public MediaRouteProviderSrvHandler(MediaRouteProviderSrv routeProvider) {
+			mRouteProviderRef = new WeakReference(routeProvider);
+		}
+
+		@Override
+		public final void handleMessage(Message message) {
+			android.os.Messenger messenger = message.replyTo;
+			if (!isValid(messenger)) {
+				if (isDebugable()) {
+					Log.d("MediaRouteProviderSrv",
+							"Ignoring message without valid reply messenger.");
+				}
+				return;
+			}
+			boolean ok = false;
+			int what = message.what;
+			int requestId = message.arg1;
+			int arg = message.arg2;
+			Object obj = message.obj;
+			Bundle data = message.peekData();
+			MediaRouteProviderSrv routeProvider = (MediaRouteProviderSrv) mRouteProviderRef
+					.get();
+
+			if (routeProvider != null) {
+				switch (message.what) {
+				case CLIENT_MSG_REGISTER:
+					ok = register(messenger, requestId, arg);
+					break;
+				case CLIENT_MSG_UNREGISTER:
+					ok = unRegister(messenger, requestId);
+					break;
+				case CLIENT_MSG_CREATE_ROUTE_CONTROLLER:
+					String routeId = data.getString("routeId");
+					if (routeId == null) {
+						ok = false;
+					} else {
+						ok = createRouteController(messenger, requestId, arg,
+								routeId);
+					}
+					break;
+				case CLIENT_MSG_RELEASE_ROUTE_CONTROLLER:
+					ok = releaseRouteController(messenger, requestId, arg);
+					break;
+				case CLIENT_MSG_SELECT_ROUTE:
+					ok = selectRoute(messenger, requestId, arg);
+					break;
+				case CLIENT_MSG_UNSELECT_ROUTE:
+					ok = unselectRoute(messenger, requestId, arg);
+					break;
+				case CLIENT_MSG_SET_ROUTE_VOLUME:
+					int volume = data.getInt("volume", -1);
+					if (volume < 0) {
+						ok = false;
+					} else {
+						// flag =
+						// MediaRouteProviderSrv.setRouteVolume(routeProvider,
+						// messenger,
+						// requestId, arg, volume);
+					}
+					break;
+				case CLIENT_MSG_UPDATE_ROUTE_VOLUME:
+					volume = data.getInt("volume", 0);
+					if (volume == 0) {
+						ok = false;
+					} else {
+						// flag =
+						// MediaRouteProviderSrv.updateRouteVolume(routeProvider,
+						// messenger,
+						// requestId, arg, volume);
+					}
+					break;
+				case CLIENT_MSG_ROUTE_CONTROL_REQUEST:
+					if (!(obj instanceof Intent)) {
+						ok = false;
+					} else {
+						// flag =
+						// MediaRouteProviderSrv.routeControlRequest(routeProvider,
+						// messenger,
+						// requestId, arg,
+						// (Intent) obj);
+					}
+
+					break;
+				case CLIENT_MSG_SET_DISCOVERY_REQUEST:
+					if (obj != null && !(obj instanceof Bundle)) {
+						ok = false;
+					} else {
+						Bundle bundle1 = (Bundle) obj;
+						DiscoveryRequest request;
+						if (bundle1 != null)
+							request = new DiscoveryRequest(bundle1);
+						else
+							request = null;
+						if (request == null || !request.isValid())
+							request = null;
+						ok = setDiscoveryRequest(messenger, requestId, request);
+					}
+					break;
+				}
+			} else {
+				ok = false;
+			}
+
+			if (!ok) {
+				if (isDebugable())
+					Log.d("MediaRouteProviderSrv",
+							getClientConnectionInfo(messenger)
+									+ ": Message failed, what=" + what
+									+ ", requestId=" + requestId + ", arg="
+									+ arg + ", obj=" + obj + ", data=" + data);
+
+				sendFailureReplyMsg(messenger, requestId);
+			}
+
+			return;
+		}
+
+		public boolean isValid(Messenger messenger) {
+			boolean flag = false;
+			if (messenger != null) {
+				android.os.IBinder ibinder;
+				try {
+					ibinder = messenger.getBinder();
+				} catch (NullPointerException e) {
+					return false;
+				}
+				flag = false;
+				if (ibinder != null)
+					flag = true;
+			}
+			return flag;
+		}
 	}
 
-	static String getClientConnectionInfo(Messenger messenger) {
-		return getClientConnectionInfo_d(messenger);
-	}
-
-	static MediaRouteProvider getMediaRouteProvider(
-			MediaRouteProviderSrv routePrivider) {
-		return routePrivider.mMediaRouteProvider;
-	}
-
-	static void sendFailureReplyMsg(Messenger messenger, int requestId) {
-		if (requestId != 0)
+	private void sendFailureReplyMsg(Messenger messenger, int requestId) {
+		if (requestId != 0) {
 			sendReplyMsg(messenger, 0, requestId, 0, null, null); // 0:SERVICE_MSG_GENERIC_FAILURE
+		}
 	}
 
-	private static void sendReplyMsg(Messenger messenger, int what,
-			int requestId, int arg, Object obj, Bundle data) {
+	private void sendReplyMsg(Messenger messenger, int what, int requestId,
+			int arg, Object obj, Bundle data) {
 		Message message = Message.obtain();
 		message.what = what;
 		message.arg1 = requestId;
 		message.arg2 = arg;
 		message.obj = obj;
 		message.setData(data);
+
 		try {
 			messenger.send(message);
 			return;
-		} catch (DeadObjectException deadobjectexception) {
+		} catch (DeadObjectException de) {
 			return;
-		} catch (RemoteException remoteexception) {
+		} catch (RemoteException e) {
 			Log.e("MediaRouteProviderSrv",
-					("Could not send message to " + getClientConnectionInfo_d(messenger)),
-					remoteexception);
+					("Could not send message to " + getClientConnectionInfo(messenger)),
+					e);
 		}
 	}
 
-	static void sendReplyMsg(Messenger messenger, int what, int requestId,
-			Object obj, Bundle data) {
-		sendReplyMsg(messenger, what, requestId, 0, obj, data);
-	}
-
-	static void sendDescriptorChangeEvent(MediaRouteProviderSrv routeProvider,
+	private void sendDescriptorChangeEvent(
 			MediaRouteProviderDescriptor descriptor) {
-		Bundle bundle;
-		int size;
-		if (descriptor != null)
+		Bundle bundle = null;
+		if (descriptor != null) {
 			bundle = descriptor.mRoutes;
-		else
-			bundle = null;
-		size = routeProvider.mFlingDeathRecipientList.size();
-		for (int index = 0; index < size; index++) {
-			FlingDeathRecipient deathRecipient = (FlingDeathRecipient) routeProvider.mFlingDeathRecipientList
-					.get(index);
+		}
+
+		int size = mFlingDeathRecipientList.size();
+		for (int i = 0; i < size; i++) {
+			FlingDeathRecipient deathRecipient = (FlingDeathRecipient) mFlingDeathRecipientList
+					.get(i);
 			sendReplyMsg(deathRecipient.mMessenger, 5, 0, 0, bundle, null); // 5:SERVICE_MSG_DESCRIPTOR_CHANGED
 			if (DEBUG)
 				Log.d("MediaRouteProviderSrv",
@@ -133,24 +285,25 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 
 				if (requestId != 0) {
 					MediaRouteProviderDescriptor descriptor = mMediaRouteProvider.mMediaRouteProviderDescriptor;
-					Bundle bundle;
-					if (descriptor != null)
+					Bundle bundle = null;
+					if (descriptor != null) {
 						bundle = descriptor.mRoutes;
-					else
-						bundle = null;
+					}
+
 					sendReplyMsg(messenger, 2, requestId, 1, bundle, null); // 2:SERVICE_MSG_REGISTERED
 				}
+
 				return true;
 			}
 		}
+
 		return false;
 	}
 
-	static boolean unRegister(MediaRouteProviderSrv routeProvider,
-			Messenger messenger, int requestId) {
-		int j = routeProvider.getFlingDeathRecipitentListIndex(messenger);
+	private boolean unRegister(Messenger messenger, int requestId) {
+		int j = getFlingDeathRecipitentListIndex(messenger);
 		if (j >= 0) {
-			FlingDeathRecipient deathRecipient = (FlingDeathRecipient) routeProvider.mFlingDeathRecipientList
+			FlingDeathRecipient deathRecipient = (FlingDeathRecipient) mFlingDeathRecipientList
 					.remove(j);
 
 			if (DEBUG)
@@ -159,21 +312,16 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 
 			deathRecipient.onBinderDied();
 			sendReplyMsg(messenger, requestId);
+
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
-	static boolean register(MediaRouteProviderSrv routeProvider,
-			Messenger messenger, int requestId, int arg) {
-		return routeProvider.register(messenger, requestId, arg);
-	}
-
-	static boolean createRouteController(MediaRouteProviderSrv routeProvider,
-			Messenger messenger, int requestId, int controllerId, String routeId) {
-		FlingDeathRecipient deathRecipient = routeProvider
-				.getFlingDeathRecipient(messenger);
+	private boolean createRouteController(Messenger messenger, int requestId,
+			int controllerId, String routeId) {
+		FlingDeathRecipient deathRecipient = getFlingDeathRecipient(messenger);
 		if (deathRecipient != null
 				&& deathRecipient.checkRouteController(routeId, controllerId)) {
 			if (DEBUG)
@@ -181,52 +329,53 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 						+ ": Route controller created, controllerId="
 						+ controllerId + ", routeId=" + routeId);
 			sendReplyMsg(messenger, requestId);
+
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
-	static boolean setDiscoveryRequest(MediaRouteProviderSrv routeProvider,
-			Messenger messenger, int requestId, DiscoveryRequest request) {
-		FlingDeathRecipient deathRecipient = routeProvider
-				.getFlingDeathRecipient(messenger);
+	private boolean setDiscoveryRequest(Messenger messenger, int requestId,
+			DiscoveryRequest request) {
+		FlingDeathRecipient deathRecipient = getFlingDeathRecipient(messenger);
 		if (deathRecipient != null) {
 			boolean actuallyChanged = deathRecipient
-					.setDiscoveryRequest(request);
+					.setDiscoveryRequestInternal(request);
 
 			if (DEBUG)
 				Log.d("MediaRouteProviderSrv", deathRecipient
 						+ ": Set discovery request, request=" + request
 						+ ", actuallyChanged=" + actuallyChanged
-						+ ", compositeDiscoveryRequest="
-						+ routeProvider.mDiscoveryRequest);
+						+ ", compositeDiscoveryRequest=" + mDiscoveryRequest);
 
 			sendReplyMsg(messenger, requestId);
+
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	private FlingDeathRecipient getFlingDeathRecipient(Messenger messenger) {
 		int index = getFlingDeathRecipitentListIndex(messenger);
-		if (index >= 0)
-			return (FlingDeathRecipient) mFlingDeathRecipientList.get(index);
-		else
-			return null;
-	}
-
-	private static void sendReplyMsg(Messenger messenger, int requestId) {
-		if (requestId != 0)
-			sendReplyMsg(messenger, 1, requestId, 0, null, null); // 1:SERVICE_MSG_GENERIC_SUCCESS
-	}
-
-	static void onBinderDied(MediaRouteProviderSrv routeProvider,
-			Messenger messenger) {
-		int index = routeProvider.getFlingDeathRecipitentListIndex(messenger);
 		if (index >= 0) {
-			FlingDeathRecipient deathRecipient = (FlingDeathRecipient) routeProvider.mFlingDeathRecipientList
+			return (FlingDeathRecipient) mFlingDeathRecipientList.get(index);
+		}
+
+		return null;
+	}
+
+	private void sendReplyMsg(Messenger messenger, int requestId) {
+		if (requestId != 0) {
+			sendReplyMsg(messenger, 1, requestId, 0, null, null); // 1:SERVICE_MSG_GENERIC_SUCCESS
+		}
+	}
+
+	private void onBinderDied(Messenger messenger) {
+		int index = getFlingDeathRecipitentListIndex(messenger);
+		if (index >= 0) {
+			FlingDeathRecipient deathRecipient = (FlingDeathRecipient) mFlingDeathRecipientList
 					.remove(index);
 
 			if (DEBUG)
@@ -236,97 +385,97 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 		}
 	}
 
-	static boolean isDebugable() {
+	private boolean isDebugable() {
 		return DEBUG;
 	}
 
-	static boolean setDiscoveryRequest(MediaRouteProviderSrv mediaRouteProvider) {
+	private boolean setDiscoveryRequest() {
 		Object obj = null;
-		int size = mediaRouteProvider.mFlingDeathRecipientList.size();
-		int j = 0;
+		int size = mFlingDeathRecipientList.size();
+		int i = 0;
 		boolean flag = false;
 		DiscoveryRequest request = null;
 
 		Bundle bundle;
-		MediaRouteSelector oj1;
+		MediaRouteSelector anotherSelector;
 		MediaRouteSelector selector;
-		while (j < size) {
-			DiscoveryRequest discoveryRequest = ((FlingDeathRecipient) mediaRouteProvider.mFlingDeathRecipientList
-					.get(j)).mDiscoveryRequest;
-			boolean flag1;
-			CategoriesData ok1;
-			DiscoveryRequest nu3;
+		while (i < size) {
+			DiscoveryRequest discoveryRequest = ((FlingDeathRecipient) mFlingDeathRecipientList
+					.get(i)).mDiscoveryRequest;
+			boolean f;
+			CategoriesData category;
+			DiscoveryRequest reqeust;
 			if (discoveryRequest != null
 					&& (!discoveryRequest.getSelector().isEmpty() || discoveryRequest
 							.isActiveScan())) {
-				flag1 = flag | discoveryRequest.isActiveScan();
+				f = flag | discoveryRequest.isActiveScan();
 				if (request == null) {
-					ok1 = (CategoriesData) obj;
-					nu3 = discoveryRequest;
+					category = (CategoriesData) obj;
+					reqeust = discoveryRequest;
 				} else {
 
 					if (obj == null)
-						ok1 = new CategoriesData(request.getSelector());
+						category = new CategoriesData(request.getSelector());
 					else
-						ok1 = (CategoriesData) obj;
+						category = (CategoriesData) obj;
 					selector = discoveryRequest.getSelector();
-					if (selector == null)
+					if (selector == null) {
 						throw new IllegalArgumentException(
 								"selector must not be null");
-					ok1.addCategoryList(selector.getControlCategories());
-					nu3 = request;
+					}
+
+					category.addCategoryList(selector.getControlCategories());
+					reqeust = request;
 				}
 			} else {
-				flag1 = flag;
-				ok1 = (CategoriesData) obj;
-				nu3 = request;
+				f = flag;
+				category = (CategoriesData) obj;
+				reqeust = request;
 			}
-			j++;
-			request = nu3;
-			obj = ok1;
-			flag = flag1;
+			i++;
+			request = reqeust;
+			obj = category;
+			flag = f;
 		}
 		if (obj != null) {
 			if (((CategoriesData) (obj)).mControlCategories == null) {
-				oj1 = MediaRouteSelector.EMPTY;
+				anotherSelector = MediaRouteSelector.EMPTY;
 			} else {
 				bundle = new Bundle();
 				bundle.putStringArrayList("controlCategories",
 						((CategoriesData) (obj)).mControlCategories);
-				oj1 = new MediaRouteSelector(bundle,
+				anotherSelector = new MediaRouteSelector(bundle,
 						((CategoriesData) (obj)).mControlCategories);
 			}
-			request = new DiscoveryRequest(oj1, flag);
+			request = new DiscoveryRequest(anotherSelector, flag);
 		}
-		if (mediaRouteProvider.mDiscoveryRequest == request
-				|| mediaRouteProvider.mDiscoveryRequest != null
-				&& mediaRouteProvider.mDiscoveryRequest.equals(request)) {
+		if (mDiscoveryRequest == request || mDiscoveryRequest != null
+				&& mDiscoveryRequest.equals(request)) {
 			return false;
 		}
 
-		mediaRouteProvider.mDiscoveryRequest = request;
-		// nv1 = od1.g;
+		mDiscoveryRequest = request;
+
 		MainThreadChecker.isOnAppMainThread();
-		if (mediaRouteProvider.mMediaRouteProvider.mDiscoveryRequest != request
-				&& (mediaRouteProvider.mMediaRouteProvider.mDiscoveryRequest == null || !mediaRouteProvider.mMediaRouteProvider.mDiscoveryRequest
+
+		if (mMediaRouteProvider.mDiscoveryRequest != request
+				&& (mMediaRouteProvider.mDiscoveryRequest == null || !mMediaRouteProvider.mDiscoveryRequest
 						.equals(request))) {
-			mediaRouteProvider.mMediaRouteProvider.mDiscoveryRequest = request;
-			if (!mediaRouteProvider.mMediaRouteProvider.mPendingDiscoveryRequestChange) {
-				mediaRouteProvider.mMediaRouteProvider.mPendingDiscoveryRequestChange = true;
-				mediaRouteProvider.mMediaRouteProvider.mHandler
-						.sendEmptyMessage(2); // device
-												// discovery
-												// request
+			mMediaRouteProvider.mDiscoveryRequest = request;
+			if (!mMediaRouteProvider.mPendingDiscoveryRequestChange) {
+				mMediaRouteProvider.mPendingDiscoveryRequestChange = true;
+				mMediaRouteProvider.mHandler.sendEmptyMessage(2); // device
+																	// discovery
+																	// request
 			}
 		}
 
 		return true;
 	}
 
-	static boolean releaseRouteController(MediaRouteProviderSrv routeProvider,
-			Messenger messenger, int requestId, int controllerId) {
-		FlingDeathRecipient deathRecipient = routeProvider
-				.getFlingDeathRecipient(messenger);
+	private boolean releaseRouteController(Messenger messenger, int requestId,
+			int controllerId) {
+		FlingDeathRecipient deathRecipient = getFlingDeathRecipient(messenger);
 		if (deathRecipient != null
 				&& deathRecipient.releaseRouteController(controllerId)) {
 			if (DEBUG)
@@ -336,29 +485,24 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 
 			sendReplyMsg(messenger, requestId);
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	private int getFlingDeathRecipitentListIndex(Messenger messenger) {
 		int size = mFlingDeathRecipientList.size();
-		for (int j = 0; j < size; j++)
-			if (((FlingDeathRecipient) mFlingDeathRecipientList.get(j))
+		for (int i = 0; i < size; i++)
+			if (((FlingDeathRecipient) mFlingDeathRecipientList.get(i))
 					.isBinderEquals(messenger))
-				return j;
+				return i;
 
 		return -1;
 	}
 
-	static Handler getHandler(MediaRouteProviderSrv routeProvider) {
-		return routeProvider.mBinderDiedHandler;
-	}
-
-	static boolean selectRoute(MediaRouteProviderSrv mediaRouteProvider,
-			Messenger messenger, int requestId, int controllerId) {
-		FlingDeathRecipient deathRecipient = mediaRouteProvider
-				.getFlingDeathRecipient(messenger);
+	private boolean selectRoute(Messenger messenger, int requestId,
+			int controllerId) {
+		FlingDeathRecipient deathRecipient = getFlingDeathRecipient(messenger);
 		if (deathRecipient != null) {
 			RouteController routeController = deathRecipient
 					.getRouteController(controllerId);
@@ -373,17 +517,17 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
-	private static String getClientConnectionInfo_d(Messenger messenger) {
+	private String getClientConnectionInfo(Messenger messenger) {
 		return ("Client connection" + messenger.getBinder().toString());
 	}
 
-	static boolean unselectRoute(MediaRouteProviderSrv mediaRouteProvider,
-			Messenger messenger, int requestId, int controllerId) {
-		FlingDeathRecipient deathRecipient = mediaRouteProvider
-				.getFlingDeathRecipient(messenger);
+	private boolean unselectRoute(Messenger messenger, int requestId,
+			int controllerId) {
+		FlingDeathRecipient deathRecipient = getFlingDeathRecipient(messenger);
 		if (deathRecipient != null) {
 			RouteController routeController = deathRecipient
 					.getRouteController(controllerId);
@@ -424,8 +568,10 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 					mMediaRouteProvider.mDescriptorChangedListener = mDescriptorChangedListener;
 				}
 			}
-			if (mMediaRouteProvider != null)
+
+			if (mMediaRouteProvider != null) {
 				return mMessenger.getBinder();
+			}
 		}
 		return null;
 	}
@@ -474,8 +620,7 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 		public final boolean checkRouteController(String routeId,
 				int controllerId) {
 			if (mRouteControllerList.indexOfKey(controllerId) < 0) {
-				RouteController routeController = MediaRouteProviderSrv
-						.getMediaRouteProvider(mMediaRouteProviderSrv)
+				RouteController routeController = mMediaRouteProvider
 						.getRouteController(routeId);
 				if (routeController != null) {
 					mRouteControllerList.put(controllerId, routeController);
@@ -485,13 +630,13 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 			return false;
 		}
 
-		public final boolean setDiscoveryRequest(DiscoveryRequest request) {
+		public final boolean setDiscoveryRequestInternal(
+				DiscoveryRequest request) {
 			if (mDiscoveryRequest != request
 					&& (mDiscoveryRequest == null || !mDiscoveryRequest
 							.equals(request))) {
 				mDiscoveryRequest = request;
-				return MediaRouteProviderSrv
-						.setDiscoveryRequest(mMediaRouteProviderSrv);
+				return setDiscoveryRequest();
 			} else {
 				return false;
 			}
@@ -508,162 +653,15 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 
 			mRouteControllerList.clear();
 			mMessenger.getBinder().unlinkToDeath(this, 0);
-			setDiscoveryRequest(((DiscoveryRequest) (null)));
+			setDiscoveryRequestInternal(((DiscoveryRequest) (null)));
 		}
 
 		public final void binderDied() {
-			MediaRouteProviderSrv.getHandler(mMediaRouteProviderSrv)
-					.obtainMessage(1, mMessenger).sendToTarget();
+			mBinderDiedHandler.obtainMessage(1, mMessenger).sendToTarget();
 		}
 
 		public final String toString() {
-			return MediaRouteProviderSrv.getClientConnectionInfo(mMessenger);
-		}
-	}
-
-	class MediaRouteProviderSrvHandler extends Handler {
-
-		private final WeakReference mRouteProviderRef;
-
-		public MediaRouteProviderSrvHandler(MediaRouteProviderSrv routeProvider) {
-			mRouteProviderRef = new WeakReference(routeProvider);
-		}
-
-		public final void handleMessage(Message message) {
-			android.os.Messenger messenger = message.replyTo;
-			if (!isValid(messenger)) {
-				if (MediaRouteProviderSrv.isDebugable()) {
-					Log.d("MediaRouteProviderSrv",
-							"Ignoring message without valid reply messenger.");
-				}
-				return;
-			}
-			boolean flag = false;
-			int what = message.what;
-			int requestId = message.arg1;
-			int arg = message.arg2;
-			Object obj = message.obj;
-			Bundle data = message.peekData();
-			MediaRouteProviderSrv routeProvider = (MediaRouteProviderSrv) mRouteProviderRef
-					.get();
-
-			if (routeProvider != null) {
-				switch (message.what) {
-				case 1: // CLIENT_MSG_REGISTER
-					flag = MediaRouteProviderSrv.register(routeProvider,
-							messenger, requestId, arg);
-					break;
-				case 2: // CLIENT_MSG_UNREGISTER
-					flag = MediaRouteProviderSrv.unRegister(routeProvider,
-							messenger, requestId);
-					break;
-				case 3: // CLIENT_MSG_CREATE_ROUTE_CONTROLLER
-					String routeId = data.getString("routeId");
-					if (routeId == null) {
-						flag = false;
-					} else {
-						flag = MediaRouteProviderSrv.createRouteController(
-								routeProvider, messenger, requestId, arg,
-								routeId);
-					}
-					break;
-				case 4: // CLIENT_MSG_RELEASE_ROUTE_CONTROLLER
-					flag = MediaRouteProviderSrv.releaseRouteController(
-							routeProvider, messenger, requestId, arg);
-					break;
-				case 5: // CLIENT_MSG_SELECT_ROUTE
-					flag = MediaRouteProviderSrv.selectRoute(routeProvider,
-							messenger, requestId, arg);
-					break;
-				case 6: // CLIENT_MSG_UNSELECT_ROUTE
-					flag = MediaRouteProviderSrv.unselectRoute(routeProvider,
-							messenger, requestId, arg);
-					break;
-				case 7: // CLIENT_MSG_SET_ROUTE_VOLUME
-					int volume = data.getInt("volume", -1);
-					if (volume < 0) {
-						flag = false;
-					} else {
-						// flag =
-						// MediaRouteProviderSrv.setRouteVolume(routeProvider,
-						// messenger,
-						// requestId, arg, volume);
-					}
-					break;
-				case 8: // CLIENT_MSG_UPDATE_ROUTE_VOLUME
-					volume = data.getInt("volume", 0);
-					if (volume == 0) {
-						flag = false;
-					} else {
-						// flag =
-						// MediaRouteProviderSrv.updateRouteVolume(routeProvider,
-						// messenger,
-						// requestId, arg, volume);
-					}
-					break;
-				case 9: // CLIENT_MSG_ROUTE_CONTROL_REQUEST
-					if (!(obj instanceof Intent)) {
-						flag = false;
-					} else {
-						// flag =
-						// MediaRouteProviderSrv.routeControlRequest(routeProvider,
-						// messenger,
-						// requestId, arg,
-						// (Intent) obj);
-					}
-
-					break;
-				case 10: // CLIENT_MSG_SET_DISCOVERY_REQUEST
-					if (obj != null && !(obj instanceof Bundle)) {
-						flag = false;
-					} else {
-						Bundle bundle1 = (Bundle) obj;
-						DiscoveryRequest request;
-						if (bundle1 != null)
-							request = new DiscoveryRequest(bundle1);
-						else
-							request = null;
-						if (request == null || !request.isValid())
-							request = null;
-						flag = MediaRouteProviderSrv.setDiscoveryRequest(
-								routeProvider, messenger, requestId, request);
-					}
-					break;
-				}
-			} else {
-				flag = false;
-			}
-
-			if (!flag) {
-				if (MediaRouteProviderSrv.isDebugable())
-					Log.d("MediaRouteProviderSrv",
-							(new StringBuilder())
-									.append(MediaRouteProviderSrv
-											.getClientConnectionInfo(messenger))
-									.append(": Message failed, what=")
-									.append(what).append(", requestId=")
-									.append(requestId).append(", arg=")
-									.append(arg).append(", obj=").append(obj)
-									.append(", data=").append(data).toString());
-				MediaRouteProviderSrv.sendFailureReplyMsg(messenger, requestId);
-			}
-			return;
-		}
-
-		public boolean isValid(Messenger messenger) {
-			boolean flag = false;
-			if (messenger != null) {
-				android.os.IBinder ibinder;
-				try {
-					ibinder = messenger.getBinder();
-				} catch (NullPointerException nullpointerexception) {
-					return false;
-				}
-				flag = false;
-				if (ibinder != null)
-					flag = true;
-			}
-			return flag;
+			return getClientConnectionInfo(mMessenger);
 		}
 	}
 
