@@ -16,20 +16,20 @@ public final class FlingRouteController extends RouteController {
 
     @Override
     public final void onRelease() {
-        FlingMediaRouteProvider.getLogs_a().d("Controller released",
+        FlingMediaRouteProvider.log().d("Controller released",
                 new Object[0]);
     }
 
     @Override
     public final void onSelect() {
-        FlingMediaRouteProvider.getLogs_a().d("onSelect");
+        FlingMediaRouteProvider.log().d("onSelect");
         mFlingMediaRouteProvider
                 .setDeviceControllerListener(this);
     }
 
     @Override
     public final void onUnselect() {
-        FlingMediaRouteProvider.getLogs_a().d("onUnselect");
+        FlingMediaRouteProvider.log().d("onUnselect");
         mFlingMediaRouteProvider.b(this);
     }
 

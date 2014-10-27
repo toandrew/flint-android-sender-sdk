@@ -10,8 +10,8 @@ import android.os.Message;
  * @author jianminz
  */
 public abstract class MediaRouteProvider {
-    private static final int MSG_DELIVER_DESCRIPTOR_CHANGED = 1;
-    private static final int MSG_DELIVER_DISCOVERY_REQUEST_CHANGED = 2;
+    public static final int MSG_DELIVER_DESCRIPTOR_CHANGED = 1;
+    public static final int MSG_DELIVER_DISCOVERY_REQUEST_CHANGED = 2;
 
     public final Context mContext;
     final ComponentName mProviderComponentName;

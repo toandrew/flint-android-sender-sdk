@@ -289,7 +289,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			mConnectionControlChannel.connect(transportId);
 		} catch (Exception e) {
 			mReceiverControlChannel.setTransportId(null);
-			onSocketError(FlingStatusCodes.NETWORK_ERROR); // 7
+			onSocketError(FlingStatusCodes.NETWORK_ERROR);
 			return;
 		}
 
