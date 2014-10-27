@@ -1,5 +1,33 @@
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package tv.matchstick.server.fling.mdns;
 
+import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.server.utils.LOG;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,235 +39,232 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 
-import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.NetworkInterface;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.net.InterfaceAddress;
-
-import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.utils.LOG;
-
 public abstract class DeviceScanner {
-    static final LOG mLogs = new LOG("DeviceScanner");
-    final Handler mHandler = new Handler(Looper.getMainLooper());
-    private final Context mContext;
-    private final List<IDeviceScanListener> mListenerList = new ArrayList<IDeviceScanListener>();
-    private final AtomicBoolean f = new AtomicBoolean();
-    private final ConnectivityManager mConnectivityManager;
-    private BroadcastReceiver mConnectChangeReceiver;
-    private final WifiManager mWifiManager;
-    private String mBSSID;
-    private boolean mScanning;
-    private boolean m;
-    private boolean mErrorState;
+	static final LOG log = new LOG("DeviceScanner");
 
-    protected DeviceScanner(Context context) {
-        mContext = context;
-        mConnectivityManager = (ConnectivityManager) context
-                .getSystemService("connectivity");
-        mWifiManager = (WifiManager) context.getSystemService("wifi");
-    }
+	final Handler mHandler = new Handler(Looper.getMainLooper());
 
-    static LOG getLogs() {
-        return mLogs;
-    }
+	private final Context mContext;
+	private final List<IDeviceScanListener> mListenerList = new ArrayList<IDeviceScanListener>();
+	private final AtomicBoolean mGuard = new AtomicBoolean();
+	private final ConnectivityManager mConnectivityManager;
+	private BroadcastReceiver mConnectChangeReceiver;
+	private final WifiManager mWifiManager;
+	private String mBSSID;
+	private boolean mScanning;
+	private boolean m;
+	private boolean mErrorState;
 
-    private static List<NetworkInterface> getFlingNetworkInterfaceList() {
-        ArrayList<NetworkInterface> arraylist = new ArrayList<NetworkInterface>();
-        try {
-            Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
-            if (enumeration != null) {
+	protected DeviceScanner(Context context) {
+		mContext = context;
+		mConnectivityManager = (ConnectivityManager) context
+				.getSystemService("connectivity");
+		mWifiManager = (WifiManager) context.getSystemService("wifi");
+	}
 
-                while (enumeration.hasMoreElements()) {
-                    NetworkInterface networkinterface = (NetworkInterface) enumeration
-                            .nextElement();
-                    if (networkinterface.isUp()
-                            && !networkinterface.isLoopback()
-                            && !networkinterface.isPointToPoint()
-                            && networkinterface.supportsMulticast()) {
-                        Iterator<InterfaceAddress> iterator = networkinterface
-                                .getInterfaceAddresses().iterator();
-                        while (iterator.hasNext()) {
-                            if (((InterfaceAddress) iterator.next())
-                                    .getAddress() instanceof Inet4Address)
-                                arraylist.add(networkinterface);
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            mLogs.d(e, "Exception while selecting network interface",
-                    new Object[0]);
-        }
-        return arraylist;
-    }
+	static LOG log() {
+		return log;
+	}
 
-    private void startScanInit() {
-        mLogs.d("startScanInit");
-        mErrorState = false;
-        checkBSSID();
-        startScanInternal(getFlingNetworkInterfaceList());
-    }
+	private static List<NetworkInterface> getFlingNetworkInterfaceList() {
+		ArrayList<NetworkInterface> networkInterfaces = new ArrayList<NetworkInterface>();
+		try {
+			Enumeration<NetworkInterface> enumeration = NetworkInterface
+					.getNetworkInterfaces();
+			if (enumeration != null) {
 
-    private void stopScanInit() {
-        mLogs.d("stopScanInit");
-        stopScanInternal();
-    }
+				while (enumeration.hasMoreElements()) {
+					NetworkInterface networkinterface = (NetworkInterface) enumeration
+							.nextElement();
+					if (networkinterface.isUp()
+							&& !networkinterface.isLoopback()
+							&& !networkinterface.isPointToPoint()
+							&& networkinterface.supportsMulticast()) {
+						Iterator<InterfaceAddress> addresses = networkinterface
+								.getInterfaceAddresses().iterator();
+						while (addresses.hasNext()) {
+							if (((InterfaceAddress) addresses.next())
+									.getAddress() instanceof Inet4Address)
+								networkInterfaces.add(networkinterface);
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.d(e.toString(), "Exception while selecting network interface");
+		}
 
-    private void checkBSSID() {
-        WifiInfo wifiinfo = mWifiManager.getConnectionInfo();
-        String bssId = null;
-        if (wifiinfo != null)
-            bssId = wifiinfo.getBSSID();
-        if (mBSSID == null || bssId == null || !mBSSID.equals(bssId)) {
-            mLogs.d("BSSID changed", new Object[0]);
-            onAllDevicesOffline();
-        }
-        mBSSID = bssId;
-    }
+		return networkInterfaces;
+	}
 
-    public final void startScan() {
-        if (mScanning)
-            return;
-        mScanning = true;
-        if (mConnectChangeReceiver == null) {
-            mConnectChangeReceiver = new BroadcastReceiver() {
+	private void startScanInit() {
+		log.d("startScanInit");
 
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    NetworkInfo localNetworkInfo = mConnectivityManager
-                            .getActiveNetworkInfo();
-                    boolean connected;
-                    if ((localNetworkInfo != null)
-                            && (localNetworkInfo.isConnected())) {
-                        connected = true;
-                        DeviceScanner
-                                .getLogs()
-                                .d("connectivity state changed. connected? %b, errorState? %b",
-                                        connected, mErrorState);
-                        checkBSSID();
-                        if (!connected)
-                            onAllDevicesOffline();
-                        if (m) {
-                            stopScanInit();
-                            m = false;
-                        }
-                        if (connected) {
-                            DeviceScanner
-                                    .getLogs()
-                                    .d("re-established connectivity after connectivity changed;  restarting scan");
-                            startScanInit();
+		mErrorState = false;
+		checkBSSID();
+		startScanInternal(getFlingNetworkInterfaceList());
+	}
 
-                            return;
-                        }
+	private void stopScanInit() {
+		log.d("stopScanInit");
 
-                        if (mErrorState) {
-                            return;
-                        }
+		stopScanInternal();
+	}
 
-                        DeviceScanner.getLogs().d(
-                                "lost connectivity while scanning;");
-                        g();
-                    }
-                }
+	private void checkBSSID() {
+		WifiInfo wifiinfo = mWifiManager.getConnectionInfo();
+		String bssId = null;
+		if (wifiinfo != null)
+			bssId = wifiinfo.getBSSID();
+		if (mBSSID == null || bssId == null || !mBSSID.equals(bssId)) {
+			log.d("BSSID changed");
+			onAllDevicesOffline();
+		}
+		mBSSID = bssId;
+	}
 
-            };
+	public final void startScan() {
+		if (mScanning) {
+			return;
+		}
 
-            IntentFilter intentfilter = new IntentFilter(
-                    "android.net.conn.CONNECTIVITY_CHANGE");
-            mContext.registerReceiver(mConnectChangeReceiver, intentfilter);
-        }
-        startScanInit();
+		mScanning = true;
 
-        mLogs.d("scan started");
-    }
+		if (mConnectChangeReceiver == null) {
+			mConnectChangeReceiver = new BroadcastReceiver() {
 
-    public final void addListener(IDeviceScanListener auy) {
-        if (auy == null)
-            throw new IllegalArgumentException("listener cannot be null");
-        synchronized (mListenerList) {
-            if (mListenerList.contains(auy))
-                throw new IllegalArgumentException(
-                        "the same listener cannot be added twice");
-            mListenerList.add(auy);
-        }
-    }
+				@Override
+				public void onReceive(Context context, Intent intent) {
+					NetworkInfo networkInfo = mConnectivityManager
+							.getActiveNetworkInfo();
+					boolean connected;
+					if ((networkInfo != null) && (networkInfo.isConnected())) {
+						connected = true;
+						DeviceScanner
+								.log()
+								.d("connectivity state changed. connected? %b, errorState? %b",
+										connected, mErrorState);
+						checkBSSID();
+						if (!connected)
+							onAllDevicesOffline();
+						if (m) {
+							stopScanInit();
+							m = false;
+						}
+						if (connected) {
+							DeviceScanner
+									.log()
+									.d("re-established connectivity after connectivity changed;  restarting scan");
+							startScanInit();
 
-    protected final void notifyDeviceOffline(final FlingDevice device) {
-        mLogs.d("notifyDeviceOffline: %s", device);
+							return;
+						}
 
-        final List<IDeviceScanListener> list = getDeviceScannerListenerList();
+						if (mErrorState) {
+							return;
+						}
 
-        if (list != null) {
-            mHandler.post(new Runnable() {
+						DeviceScanner.log().d(
+								"lost connectivity while scanning;");
+						reportError();
+					}
+				}
 
-                @Override
-                public void run() {
-                    for (IDeviceScanListener listener : list) {
-                        listener.onDeviceOffline(device);
-                    }
-                }
-            });
-        }
-    }
+			};
 
-    public abstract void setDeviceOffline(String s);
+			IntentFilter intentfilter = new IntentFilter(
+					"android.net.conn.CONNECTIVITY_CHANGE");
+			mContext.registerReceiver(mConnectChangeReceiver, intentfilter);
+		}
+		startScanInit();
 
-    protected abstract void startScanInternal(List<NetworkInterface> list);
+		log.d("scan started");
+	}
 
-    public final void stopScan() {
-        if (!mScanning)
-            return;
-        if (mConnectChangeReceiver != null) {
-            try {
-                mContext.unregisterReceiver(mConnectChangeReceiver);
-            } catch (IllegalArgumentException illegalargumentexception) {
-            }
-            mConnectChangeReceiver = null;
-        }
-        stopScanInit();
-        m = false;
-        mHandler.removeCallbacksAndMessages(null);
-        mScanning = false;
-        mLogs.d("scan stopped");
-    }
+	public final void addListener(IDeviceScanListener listener) {
+		if (listener == null)
+			throw new IllegalArgumentException("listener cannot be null");
+		synchronized (mListenerList) {
+			if (mListenerList.contains(listener))
+				throw new IllegalArgumentException(
+						"the same listener cannot be added twice");
+			mListenerList.add(listener);
+		}
+	}
 
-    protected abstract void stopScanInternal();
+	protected final void notifyDeviceOffline(final FlingDevice device) {
+		log.d("notifyDeviceOffline: %s", device);
 
-    public abstract void onAllDevicesOffline();
+		final List<IDeviceScanListener> list = getDeviceScannerListenerList();
 
-    List<IDeviceScanListener> getDeviceScannerListenerList() {
-        synchronized (mListenerList) {
-            boolean flag = mListenerList.isEmpty();
-            if (flag) {
-                return null;
-            }
-        }
-        return mListenerList;
-    }
+		if (list != null) {
+			mHandler.post(new Runnable() {
 
-    protected final void reportNetworkError() {
-        if (!mErrorState) {
-            mLogs.d("reportNetworkError; errorState now true");
-            mErrorState = true;
-            onAllDevicesOffline();
-        }
-    }
+				@Override
+				public void run() {
+					for (IDeviceScanListener listener : list) {
+						listener.onDeviceOffline(device);
+					}
+				}
+			});
+		}
+	}
 
-    protected final void g() {
-        if (!f.getAndSet(true)) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    reportNetworkError();
-                }
-            });
-        }
-    }
+	public abstract void setDeviceOffline(String s);
+
+	protected abstract void startScanInternal(List<NetworkInterface> list);
+
+	public final void stopScan() {
+		if (!mScanning) {
+			return;
+		}
+
+		if (mConnectChangeReceiver != null) {
+			try {
+				mContext.unregisterReceiver(mConnectChangeReceiver);
+			} catch (IllegalArgumentException illegalargumentexception) {
+			}
+			mConnectChangeReceiver = null;
+		}
+		stopScanInit();
+		m = false;
+		mHandler.removeCallbacksAndMessages(null);
+		mScanning = false;
+		log.d("scan stopped");
+	}
+
+	protected abstract void stopScanInternal();
+
+	public abstract void onAllDevicesOffline();
+
+	List<IDeviceScanListener> getDeviceScannerListenerList() {
+		synchronized (mListenerList) {
+			if (mListenerList.isEmpty()) {
+				return null;
+			}
+		}
+		return mListenerList;
+	}
+
+	protected final void reportNetworkError() {
+		if (!mErrorState) {
+			log.d("reportNetworkError; errorState now true");
+
+			mErrorState = true;
+
+			onAllDevicesOffline();
+		}
+	}
+
+	protected final void reportError() {
+		if (!mGuard.getAndSet(true)) {
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					reportNetworkError();
+				}
+			});
+		}
+	}
 }

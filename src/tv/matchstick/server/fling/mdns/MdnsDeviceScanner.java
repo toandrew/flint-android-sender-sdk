@@ -212,7 +212,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             if (device == null)
                 return;
 
-            DeviceScanner.mLogs.d("notifyDeviceOnline: %s", device);
+            DeviceScanner.log.d("notifyDeviceOnline: %s", device);
 
             final List listenerList = getDeviceScannerListenerList();
             if (listenerList == null)
