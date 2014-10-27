@@ -42,9 +42,9 @@ import android.os.Looper;
 public abstract class DeviceScanner {
 	static final LOG log = new LOG("DeviceScanner");
 
-	final Handler mHandler = new Handler(Looper.getMainLooper());
+	protected final Handler mHandler = new Handler(Looper.getMainLooper());
 
-	private final Context mContext;
+	protected final Context mContext;
 	private final List<IDeviceScanListener> mListenerList = new ArrayList<IDeviceScanListener>();
 	private final AtomicBoolean mGuard = new AtomicBoolean();
 	private final ConnectivityManager mConnectivityManager;
@@ -238,7 +238,7 @@ public abstract class DeviceScanner {
 
 	public abstract void onAllDevicesOffline();
 
-	List<IDeviceScanListener> getDeviceScannerListenerList() {
+	protected List<IDeviceScanListener> getDeviceScannerListenerList() {
 		synchronized (mListenerList) {
 			if (mListenerList.isEmpty()) {
 				return null;
