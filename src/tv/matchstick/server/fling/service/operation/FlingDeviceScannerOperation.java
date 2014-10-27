@@ -20,6 +20,7 @@ import tv.matchstick.server.fling.mdns.DeviceScanner;
 
 public abstract class FlingDeviceScannerOperation {
 	public static String TAG = "FlingDeviceScannerOperation";
+	
 	protected final DeviceScanner mDeviceScanner;
 
 	public FlingDeviceScannerOperation(DeviceScanner scanner) {
