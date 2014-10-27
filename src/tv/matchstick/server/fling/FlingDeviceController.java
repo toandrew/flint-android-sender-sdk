@@ -830,7 +830,7 @@ public final class FlingDeviceController implements FlingSocketListener {
         }
     }
 
-    public final void setVolume_b(double level, double expected_level,
+    public final void setVolumeInternal(double level, double expected_level,
             boolean muted) {
         try {
             mReceiverControlChannel.setVolume(level, expected_level, muted);
@@ -980,7 +980,7 @@ public final class FlingDeviceController implements FlingSocketListener {
         }
     }
 
-    public final void setMute_b(boolean mute, double level, boolean isMuted) {
+    public final void setMuteInternal(boolean mute, double level, boolean isMuted) {
         try {
             mReceiverControlChannel.setMute(mute, level, isMuted);
             return;
