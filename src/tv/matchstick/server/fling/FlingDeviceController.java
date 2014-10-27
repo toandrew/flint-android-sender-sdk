@@ -23,7 +23,7 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.PlatformChecker;
-import tv.matchstick.server.common.exception.FlingMessageLargeException;
+import tv.matchstick.server.common.exception.FlingMessageTooLargeException;
 import tv.matchstick.server.fling.bridge.FlingConnectedClient;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.fling.channels.ConnectionControlChannel;
@@ -451,7 +451,7 @@ public final class FlingDeviceController implements FlingSocketListener {
             mFlingSocket.send(bytebuffer);
             mFlingSrvController.onRequestCallback(namespace, id, 0);
             return;
-        } catch (FlingMessageLargeException aue1) {
+        } catch (FlingMessageTooLargeException aue1) {
             mFlingSrvController.onRequestCallback(namespace, id,
                     FlingStatusCodes.MESSAGE_TOO_LARGE); // 2006
         }
@@ -751,7 +751,7 @@ public final class FlingDeviceController implements FlingSocketListener {
         try {
             byte abyte0[] = msg.buildJson().toString().getBytes("UTF-8");
             if (abyte0.length > 0x10000) {
-                throw new FlingMessageLargeException();
+                throw new FlingMessageTooLargeException();
             } else {
                 sendMessage(ByteBuffer.wrap(abyte0), namespace, id);
             }

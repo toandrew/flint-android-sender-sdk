@@ -16,20 +16,17 @@
 
 package tv.matchstick.server.common.exception;
 
-import android.os.Parcel;
+import java.io.IOException;
 
 /**
- * Fling Runtime exception.
+ * Message too large exception.
  */
-public final class FlingRuntimeException extends RuntimeException {
+public final class FlingMessageTooLargeException extends IOException {
 	/**
-	 * auto gen version UID.
+	 * auto gen version uid.
 	 */
-	private static final long serialVersionUID = 3065715124018403311L;
+	private static final long serialVersionUID = 879854749912478568L;
 
-	public FlingRuntimeException(String message, Parcel data) {
-		super((new StringBuilder()).append(message).append(" Parcel: pos=")
-				.append(data.dataPosition()).append(" size=")
-				.append(data.dataSize()).toString());
+	public FlingMessageTooLargeException() {
 	}
 }
