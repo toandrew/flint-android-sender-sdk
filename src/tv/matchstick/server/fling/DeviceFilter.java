@@ -1,9 +1,20 @@
-package tv.matchstick.server.fling;
+/*
+ * Copyright (C) 2013-2014, Infthink (Beijing) Technology Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
+package tv.matchstick.server.fling;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,392 +35,380 @@ import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.LOG;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
+/**
+ * This is used to filter device
+ */
 abstract class DeviceFilter {
-    private static final LOG mLogs = new LOG("DeviceFilter");
-    private static AtomicLong b = new AtomicLong(0L);
-    private final Context mContext;
-    private final String d;
-    private final List e = new ArrayList();
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
-    private Set mDiscoveryCriterias;
+	private static final LOG log = new LOG("DeviceFilter");
+	private static AtomicLong mIdGen = new AtomicLong(0L);
+	private final Context mContext;
+	private final String mPackageName;
+	private final List mDeviceConnections = new ArrayList();
+	private final Handler mHandler = new Handler(Looper.getMainLooper());
+	private Set<DiscoveryCriteria> mDiscoveryCriterias;
 
-    public DeviceFilter(Context context, Set set, String s) {
-        mContext = context;
-        mDiscoveryCriterias = new HashSet(set);
-        d = s;
-    }
+	public DeviceFilter(Context context, Set<DiscoveryCriteria> set,
+			String packageName) {
+		mContext = context;
+		mDiscoveryCriterias = new HashSet<DiscoveryCriteria>(set);
+		mPackageName = packageName;
+	}
 
-    static Context getContext_a(DeviceFilter awz1) {
-        return awz1.mContext;
-    }
+	protected abstract void setDeviceOffline(FlingDevice flingdevice);
 
-    static AtomicLong a() {
-        return b;
-    }
+	protected abstract void onDeviceAccepted(FlingDevice flingdevice, Set set);
 
-    static LOG getLogs() {
-        return mLogs;
-    }
+	/**
+	 * Reset discovery criteria.
+	 * 
+	 * @param criterias
+	 */
+	public final void reset(Set<DiscoveryCriteria> criterias) {
+		for (Iterator iterator = mDeviceConnections.iterator(); iterator
+				.hasNext();) {
+			((FlingDeviceManager) iterator.next()).mIsConnecting = false;
+		}
 
-    static String b(DeviceFilter awz1) {
-        return awz1.d;
-    }
+		mDeviceConnections.clear();
 
-    static Set getDiscoveryCriterias(DeviceFilter awz1) {
-        return awz1.mDiscoveryCriterias;
-    }
+		mDiscoveryCriterias = new HashSet<DiscoveryCriteria>(criterias);
+	}
 
-    static Handler getHandler(DeviceFilter awz1) {
-        return awz1.mHandler;
-    }
+	/**
+	 * Connect or accept device
+	 * 
+	 * @param device
+	 */
+	public final void connectOrAcceptDevice(FlingDevice device) {
+		FlingDeviceManager manager = new FlingDeviceManager(this, device);
 
-    protected abstract void setDeviceOffline(FlingDevice flingdevice);
+		if (!manager.mNoApp || !manager.mNoNamespace) {
+			try {
+				log.d("connecting to: %s:%d (%s)", manager.mFlingDevice
+						.getIpAddress().toString(), manager.mFlingDevice
+						.getServicePort(), manager.mFlingDevice
+						.getFriendlyName());
 
-    protected abstract void onDeviceAccepted(FlingDevice flingdevice, Set set);
+				manager.mFlingSocket.connect(
+						manager.mFlingDevice.getIpAddress(),
+						manager.mFlingDevice.getServicePort());
+			} catch (Exception e) {
+				log.e(e, "Exception while connecting socket");
+			}
+		} else {
+			log.d("accept device to: %s:%d (%s)", manager.mFlingDevice
+					.getIpAddress().toString(), manager.mFlingDevice
+					.getServicePort(), manager.mFlingDevice.getFriendlyName());
 
-    public final void reset(Set set) {
-        for (Iterator iterator = e.iterator(); iterator.hasNext();)
-            ((FlingDeviceManager) iterator.next()).e = false;
+			manager.acceptDevice(manager.mFlingDevice,
+					manager.mDeviceFilter.mDiscoveryCriterias);
+		}
 
-        e.clear();
-        mDiscoveryCriterias = new HashSet(set);
-    }
+		mDeviceConnections.add(manager);
+	}
 
-    public final void connectOrAcceptDevice(FlingDevice flingdevice) {
-        FlingDeviceManager axb1 = new FlingDeviceManager(this, flingdevice);
-        if (!axb1.mNoApp || !axb1.mNoNamespace) {
-            try {
-                mLogs.d("connecting to: %s:%d (%s)", axb1.mFlingDevice
-                        .getIpAddress().toString(), axb1.mFlingDevice
-                        .getServicePort(), axb1.mFlingDevice.getFriendlyName());
+	private final class FlingDeviceManager implements FlingSocketListener {
+		final FlingSocket mFlingSocket;
+		final FlingDevice mFlingDevice;
+		boolean mNoApp;
+		boolean mNoNamespace;
+		boolean mIsConnecting;
+		final DeviceFilter mDeviceFilter;
+		private final String mSourceId;
+		private final AppInfoHelper mAppInfoHelper = new AppInfoHelper();
+		private final JSONArray mApplicationIds = new JSONArray();
 
-                axb1.mFlingSocket.connect(axb1.mFlingDevice.getIpAddress(),
-                        axb1.mFlingDevice.getServicePort());
-            } catch (Exception ioexception) {
-                mLogs.e(ioexception, "Exception while connecting socket",
-                        new Object[0]);
-            }
-        } else {
-            mLogs.d("accept device to: %s:%d (%s)", axb1.mFlingDevice
-                    .getIpAddress().toString(), axb1.mFlingDevice
-                    .getServicePort(), axb1.mFlingDevice.getFriendlyName());
+		public FlingDeviceManager(DeviceFilter deviceFilter,
+				FlingDevice flingDevice) {
+			super();
 
-            axb1.acceptDevice(axb1.mFlingDevice,
-                    axb1.mDeviceFilter.mDiscoveryCriterias);
-        }
-        e.add(axb1);
-    }
+			mDeviceFilter = deviceFilter;
 
-    final class FlingDeviceManager implements FlingSocketListener {
-        final FlingSocket mFlingSocket;
-        final FlingDevice mFlingDevice;
-        boolean mNoApp;
-        boolean mNoNamespace;
-        boolean e;
-        final DeviceFilter mDeviceFilter;
-        private final String g;
-        private final AppInfoHelper h = new AppInfoHelper();
-        private final JSONArray i = new JSONArray();
+			mNoApp = true;
+			mNoNamespace = false;
+			mIsConnecting = true;
+			mFlingSocket = new FlingSocket(mContext, this);
+			mFlingDevice = flingDevice;
 
-        public FlingDeviceManager(DeviceFilter deviceFilter,
-                FlingDevice flingDevice) {
-            super();
+			mSourceId = String.format("%s-%d", mPackageName,
+					mIdGen.incrementAndGet());
 
-            mDeviceFilter = deviceFilter;
+			if (mDiscoveryCriterias.size() > 0) {
+				boolean noNameSpace = true;
+				boolean noApp = true;
 
-            mNoApp = true;
-            mNoNamespace = false;
-            e = true;
-            mFlingSocket = new FlingSocket(
-                    DeviceFilter.getContext_a(deviceFilter), this);
-            mFlingDevice = flingDevice;
-            Object aobj[] = new Object[2];
-            aobj[0] = DeviceFilter.b(deviceFilter);
-            aobj[1] = Long.valueOf(DeviceFilter.a().incrementAndGet());
-            g = String.format("%s-%d", aobj);
-            if (DeviceFilter.getDiscoveryCriterias(deviceFilter).size() > 0) {
-                Iterator iterator = DeviceFilter.getDiscoveryCriterias(
-                        deviceFilter).iterator();
-                boolean noNameSpace = true;
-                boolean noApp = true;
-                while (iterator.hasNext()) {
-                    DiscoveryCriteria criteria = (DiscoveryCriteria) iterator
-                            .next();
-                    Set set = Collections
-                            .unmodifiableSet(criteria.mNamespaceList);
-                    if (criteria.mAppid != null) {
-                        i.put(criteria.mAppid);
-                        noApp = false;
-                    }
-                    if (set.size() > 0)
-                        noNameSpace = false;
-                }
-                if (noApp)
-                    setNoApp();
-                if (noNameSpace)
-                    setNoNameSpace();
-            }
-        }
+				Iterator<DiscoveryCriteria> iterator = mDiscoveryCriterias
+						.iterator();
+				while (iterator.hasNext()) {
+					DiscoveryCriteria criteria = (DiscoveryCriteria) iterator
+							.next();
+					Set namespaces = Collections
+							.unmodifiableSet(criteria.mNamespaceList);
+					if (criteria.mAppid != null) {
+						mApplicationIds.put(criteria.mAppid);
+						noApp = false;
+					}
+					if (namespaces.size() > 0) {
+						noNameSpace = false;
+					}
+				}
 
-        private void sendMessage(String namespace, String message)
-                throws Exception {
-            DeviceFilter.getLogs().d(
-                    "Sending text message to %s: (ns=%s, dest=%s) %s",
-                    mFlingDevice.getFriendlyName(), namespace, "receiver-0",
-                    message);
-            FlingMessage msg = new FlingMessage();
-            msg.setProtocolVersion(0);
-            msg.setSourceId(g);
-            msg.setDestinationId("receiver-0");
-            msg.setNamespace(namespace);
-            msg.setPayloadMessage(message);
-            byte abyte0[] = msg.buildJson().toString().getBytes("UTF-8");
-            mFlingSocket.send(ByteBuffer.wrap(abyte0));
-        }
+				if (noApp) {
+					setNoApp();
+				}
 
-        private void setNoApp() {
-            mNoApp = true;
-            if (mNoApp && mNoNamespace)
-                updateStatus();
-        }
+				if (noNameSpace) {
+					setNoNameSpace();
+				}
+			}
+		}
 
-        private void setNoNameSpace() {
-            mNoNamespace = true;
-            if (mNoApp && mNoNamespace)
-                updateStatus();
-        }
+		private void sendMessage(String namespace, String message)
+				throws Exception {
+			log.d("Sending text message to %s: (ns=%s, dest=%s) %s",
+					mFlingDevice.getFriendlyName(), namespace, "receiver-0",
+					message);
 
-        private void updateStatus() {
-            HashSet hashset;
-            if (mFlingSocket.isConnected()) {
-                Iterator iterator;
-                DiscoveryCriteria aty1;
-                AppInfoHelper axa1;
-                String s;
-                try {
-                    sendMessage("urn:x-cast:com.google.cast.tp.connection",
-                            (new JSONObject()).put("type", "CLOSE").toString());
-                } catch (IOException ioexception) {
-                    DeviceFilter.getLogs().d(ioexception,
-                            "Failed to send disconnect message", new Object[0]);
-                } catch (JSONException jsonexception) {
-                    DeviceFilter.getLogs()
-                            .e(jsonexception,
-                                    "Failed to build disconnect message",
-                                    new Object[0]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    DeviceFilter.getLogs().d(e,
-                            "Failed to send disconnect message", new Object[0]);
-                }
-                mFlingSocket.disconnect();
-            }
-            hashset = new HashSet();
-            Iterator iterator = DeviceFilter.getDiscoveryCriterias(
-                    mDeviceFilter).iterator();
-            do {
-                if (!iterator.hasNext())
-                    break;
-                DiscoveryCriteria criteria = (DiscoveryCriteria) iterator
-                        .next();
+			FlingMessage msg = new FlingMessage();
+			msg.setProtocolVersion(0);
+			msg.setSourceId(mSourceId);
+			msg.setDestinationId("receiver-0");
+			msg.setNamespace(namespace);
+			msg.setPayloadMessage(message);
 
-                boolean flag;
-                // if we need setNoApp later, the mAppAvailabityList must
-                // contains
-                if (/*
-                     * (criteria.mAppid == null ||
-                     * h.mAppAvailabityList.contains(criteria.mAppid)) &&
-                     */h.mAppNamespaceList.containsAll(Collections
-                        .unmodifiableSet(criteria.mNamespaceList)))
-                    flag = true;
-                else
-                    flag = false;
-                if (flag)
-                    hashset.add(criteria);
-            } while (true);
+			byte bytes[] = msg.buildJson().toString().getBytes("UTF-8");
 
-            if (e && hashset.size() > 0) {
-                acceptDevice(mFlingDevice, hashset);
-                return;
-            }
+			mFlingSocket.send(ByteBuffer.wrap(bytes));
+		}
 
-            DeviceFilter.getLogs().d("rejected device: %s", mFlingDevice);
-            return;
-        }
+		private void setNoApp() {
+			mNoApp = true;
+			if (mNoApp && mNoNamespace) {
+				updateStatus();
+			}
+		}
 
-        public final void onConnected() {
-            try {
-                sendMessage(
-                        "urn:x-cast:com.google.cast.tp.connection",
-                        (new JSONObject())
-                                .put("type", "CONNECT")
-                                .put("origin",
-                                        new JSONObject().put("package",
-                                                DeviceFilter.b(mDeviceFilter)))
-                                .toString());
+		private void setNoNameSpace() {
+			mNoNamespace = true;
+			if (mNoApp && mNoNamespace) {
+				updateStatus();
+			}
+		}
 
-                if (!mNoApp)
-                    sendMessage(
-                            "urn:x-cast:com.google.cast.receiver",
-                            (new JSONObject()).put("requestId", 1)
-                                    .put("type", "GET_APP_AVAILABILITY")
-                                    .put("appId", i).toString());
+		private void updateStatus() {
+			if (mFlingSocket.isConnected()) {
+				try {
+					sendMessage("urn:x-cast:com.google.cast.tp.connection",
+							(new JSONObject()).put("type", "CLOSE").toString());
+				} catch (IOException ex) {
+					log.d(ex.toString(), "Failed to send disconnect message");
+				} catch (JSONException je) {
+					log.e(je.toString(), "Failed to build disconnect message");
+				} catch (Exception e) {
+					e.printStackTrace();
+					log.d(e.toString(), "Failed to send disconnect message");
+				}
+				mFlingSocket.disconnect();
+			}
+			HashSet hashset = new HashSet();
+			Iterator<DiscoveryCriteria> iterator = mDiscoveryCriterias
+					.iterator();
+			do {
+				if (!iterator.hasNext()) {
+					break;
+				}
+				DiscoveryCriteria criteria = (DiscoveryCriteria) iterator
+						.next();
 
-                if (!mNoNamespace)
-                    sendMessage(
-                            "urn:x-cast:com.google.cast.receiver",
-                            (new JSONObject()).put("requestId", 2)
-                                    .put("type", "GET_STATUS").toString());
+				boolean flag = false;
 
-                return;
-                // } catch (IOException ioexception)
-                // {
-                // DeviceFilter_awz.b().c(ioexception,
-                // "Failed to send messages",
-                // new Object[0]);
-                // return;
-            } catch (JSONException jsonexception) {
-                DeviceFilter.getLogs().e(jsonexception,
-                        "Failed to build messages", new Object[0]);
-            } catch (Exception e) {
-                DeviceFilter.getLogs().e(e, "Failed to send messages",
-                        new Object[0]);
-                e.printStackTrace();
-            }
-        }
+				// if we need setNoApp later, the mAppAvailabityList must
+				// contains
+				if (/*
+					 * (criteria.mAppid == null ||
+					 * h.mAppAvailabityList.contains(criteria.mAppid)) &&
+					 */mAppInfoHelper.mAppNamespaceList.containsAll(Collections
+						.unmodifiableSet(criteria.mNamespaceList))) {
+					flag = true;
+				}
 
-        public final void onConnectionFailed(int j) {
-            Object aobj[] = new Object[4];
-            aobj[0] = mFlingDevice.getIpAddress().toString();
-            aobj[1] = Integer.valueOf(mFlingDevice.getServicePort());
-            aobj[2] = mFlingDevice.getFriendlyName();
-            aobj[3] = Integer.valueOf(j);
-            DeviceFilter.getLogs().w(
-                    "Connection to %s:%d (%s) failed with error %d", aobj);
+				if (flag) {
+					hashset.add(criteria);
+				}
+			} while (true);
 
-            DeviceFilter.getHandler(mDeviceFilter).post(new Runnable() {
+			if (mIsConnecting && hashset.size() > 0) {
+				acceptDevice(mFlingDevice, hashset);
+				return;
+			}
 
-                @Override
-                public void run() {
-                    // TODO Auto-generated method stub
-                    mDeviceFilter.setDeviceOffline(mFlingDevice);
-                }
+			log.d("rejected device: %s", mFlingDevice);
+			return;
+		}
 
-            });
-        }
+		@Override
+		public final void onConnected() {
+			try {
+				sendMessage(
+						"urn:x-cast:com.google.cast.tp.connection",
+						(new JSONObject())
+								.put("type", "CONNECT")
+								.put("origin",
+										new JSONObject().put("package",
+												mPackageName)).toString());
 
-        final void acceptDevice(final FlingDevice flingdevice, final Set set) {
-            DeviceFilter.getHandler(mDeviceFilter).post(new Runnable() {
+				if (!mNoApp)
+					sendMessage(
+							"urn:x-cast:com.google.cast.receiver",
+							(new JSONObject()).put("requestId", 1)
+									.put("type", "GET_APP_AVAILABILITY")
+									.put("appId", mApplicationIds).toString());
 
-                @Override
-                public void run() {
-                    // TODO Auto-generated method stub
-                    mDeviceFilter.onDeviceAccepted(flingdevice, set);
-                }
+				if (!mNoNamespace)
+					sendMessage(
+							"urn:x-cast:com.google.cast.receiver",
+							(new JSONObject()).put("requestId", 2)
+									.put("type", "GET_STATUS").toString());
 
-            });
-        }
+				return;
+			} catch (JSONException ex) {
+				log.e(ex.toString(), "Failed to build messages");
+			} catch (Exception e) {
+				log.e(e.toString(), "Failed to send messages");
+				e.printStackTrace();
+			}
+		}
 
-        public final void onMessageReceived(ByteBuffer receivedMessage) {
-            long requestId;
-            DeviceFilter.getLogs().d("onMessageReceived:in[%s]", g);
+		@Override
+		public final void onConnectionFailed(int reason) {
+			log.w("Connection to %s:%d (%s) failed with error %d", mFlingDevice
+					.getIpAddress().toString(), mFlingDevice.getServicePort(),
+					mFlingDevice.getFriendlyName(), reason);
 
-            FlingMessage flingMessage = new FlingMessage(
-                    receivedMessage.array());
+			mHandler.post(new Runnable() {
 
-            if (flingMessage.getPayloadType() != 0) {
-                return;
-            }
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					mDeviceFilter.setDeviceOffline(mFlingDevice);
+				}
 
-            String message = flingMessage.getMessage();
-            Log.d("DeviceFilter", "onMessageReceived:" + message);
-            try {
-                JSONObject jsonobject = new JSONObject(message);
-                requestId = jsonobject.optLong("requestId", -1L);
-                if (requestId == -1L) {
-                    return;
-                }
-                if (requestId != 1L) {
-                    if (requestId != 2L) {
-                        DeviceFilter.getLogs().d(
-                                "Unrecognized request ID: " + requestId);
-                        return;
-                    }
-                    h.fillNamespaceList(jsonobject);
-                    setNoNameSpace();
-                    return;
-                }
-                h.fillAppAvailabityList(jsonobject);
-                setNoApp();
-            } catch (JSONException jsonexception) {
-                Object aobj3[] = new Object[1];
-                aobj3[0] = jsonexception.getMessage();
-                DeviceFilter.getLogs().e("Failed to parse response: %s", aobj3);
-            }
+			});
+		}
 
-        }
+		final void acceptDevice(final FlingDevice flingdevice, final Set set) {
+			mHandler.post(new Runnable() {
 
-        public final void onDisconnected(int statusCode) {
-            DeviceFilter.getLogs().d("Device filter disconnected");
-        }
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					mDeviceFilter.onDeviceAccepted(flingdevice, set);
+				}
 
-        final class AppInfoHelper {
-            final Set mAppNamespaceList;
-            final Set mAppAvailabityList;
+			});
+		}
 
-            private AppInfoHelper() {
-                mAppNamespaceList = new HashSet();
-                mAppAvailabityList = new HashSet();
-            }
+		@Override
+		public final void onMessageReceived(ByteBuffer receivedMessage) {
+			long requestId;
+			log.d("onMessageReceived:in[%s]", mSourceId);
 
-            public final void fillNamespaceList(JSONObject jsonobject) {
-                try {
-                    JSONArray jsonarray = jsonobject.getJSONObject("status")
-                            .getJSONArray("applications");
-                    int i = 0;
-                    while (i < jsonarray.length()) {
-                        JSONArray jsonarray1 = jsonarray.getJSONObject(i)
-                                .getJSONArray("namespaces");
-                        int j = 0;
-                        while (j < jsonarray1.length()) {
-                            String name = jsonarray1.getJSONObject(j)
-                                    .getString("name");
-                            mAppNamespaceList.add(name);
-                            j++;
-                        }
-                        i++;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+			FlingMessage flingMessage = new FlingMessage(
+					receivedMessage.array());
 
-                    DeviceFilter.getLogs().d(
-                            "No namespaces found in receiver response: %s",
-                            e.getMessage());
-                }
-            }
+			if (flingMessage.getPayloadType() != 0) {
+				return;
+			}
 
-            public final void fillAppAvailabityList(JSONObject jsonobject) {
-                try {
-                    JSONObject jsonobject1 = jsonobject
-                            .getJSONObject("availability");
-                    Iterator iterator = jsonobject1.keys();
-                    do {
-                        if (!iterator.hasNext())
-                            break;
-                        String appId = (String) iterator.next();
-                        if ("APP_AVAILABLE"
-                                .equals(jsonobject1.optString(appId)))
-                            mAppAvailabityList.add(appId);
-                    } while (true);
-                } catch (JSONException jsonexception) {
-                    DeviceFilter
-                            .getLogs()
-                            .d("No app availabities found in receiver response: %s",
-                                    jsonexception.getMessage());
-                }
-            }
-        }
-    }
+			String message = flingMessage.getMessage();
+			Log.d("DeviceFilter", "onMessageReceived:" + message);
+
+			try {
+				JSONObject obj = new JSONObject(message);
+				requestId = obj.optLong("requestId", -1L);
+				if (requestId == -1L) {
+					return;
+				}
+				if (requestId != 1L) {
+					if (requestId != 2L) {
+						log.d("Unrecognized request ID: " + requestId);
+						return;
+					}
+					mAppInfoHelper.fillNamespaceList(obj);
+					setNoNameSpace();
+					return;
+				}
+				mAppInfoHelper.fillAppAvailabityList(obj);
+				setNoApp();
+			} catch (JSONException e) {
+				log.e("Failed to parse response: %s", e.getMessage());
+			}
+
+		}
+
+		@Override
+		public final void onDisconnected(int reason) {
+			log.d("Device filter disconnected:" + reason);
+		}
+
+		private final class AppInfoHelper {
+			final Set mAppNamespaceList;
+			final Set mAppAvailabityList;
+
+			private AppInfoHelper() {
+				mAppNamespaceList = new HashSet();
+				mAppAvailabityList = new HashSet();
+			}
+
+			public final void fillNamespaceList(JSONObject jsonobject) {
+				try {
+					JSONArray applications = jsonobject.getJSONObject("status")
+							.getJSONArray("applications");
+					int i = 0;
+					while (i < applications.length()) {
+						JSONArray namespaces = applications.getJSONObject(i)
+								.getJSONArray("namespaces");
+						int j = 0;
+						while (j < namespaces.length()) {
+							String name = namespaces.getJSONObject(j)
+									.getString("name");
+							mAppNamespaceList.add(name);
+							j++;
+						}
+						i++;
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+
+					log.d("No namespaces found in receiver response: %s",
+							e.getMessage());
+				}
+			}
+
+			public final void fillAppAvailabityList(JSONObject obj) {
+				try {
+					JSONObject availability = obj.getJSONObject("availability");
+					Iterator<String> iterator = availability.keys();
+					do {
+						if (!iterator.hasNext())
+							break;
+						String appId = (String) iterator.next();
+						if ("APP_AVAILABLE".equals(availability
+								.optString(appId))) {
+							mAppAvailabityList.add(appId);
+						}
+					} while (true);
+				} catch (JSONException e) {
+					log.d("No app availabities found in receiver response: %s",
+							e.getMessage());
+				}
+			}
+		}
+	}
 
 }

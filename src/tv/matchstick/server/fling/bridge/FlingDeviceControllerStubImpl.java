@@ -37,7 +37,7 @@ public final class FlingDeviceControllerStubImpl extends
         if (namespace == null || namespace.length() > 128) {
             return;
         } else {
-            mFlingDeviceController.sendMessage_a(namespace, message, id);
+            mFlingDeviceController.sendMessageInternal(namespace, message, id);
             return;
         }
     }
