@@ -53,7 +53,7 @@ public final class HeartbeatChannel extends FlingChannel {
 			if (mCounter < 5) {
 				android.util.Log.d("HeartbeatChannel", "retry PING: "
 						+ mCounter);
-				log.v("retry PING", new Object[0]);
+				log.v("retry PING");
 				sendPing();
 				mCounter++;
 			} else {
@@ -71,17 +71,17 @@ public final class HeartbeatChannel extends FlingChannel {
 	}
 
 	private void sendPing() {
-		JSONObject jsonobject;
-		log.v("sending PING", new Object[0]);
-		jsonobject = new JSONObject();
+		log.v("sending PING");
+
+		JSONObject obj = new JSONObject();
 		try {
-			jsonobject.put("type", "PING");
+			obj.put("type", "PING");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
 		try {
-			sendTextMessage(jsonobject.toString(), 0L, "transport-0");
+			sendTextMessage(obj.toString(), 0L, "transport-0");
 		} catch (IOException e) {
 			// TODO: No FlingManager available
 			e.printStackTrace();
@@ -108,16 +108,16 @@ public final class HeartbeatChannel extends FlingChannel {
 			return;
 		}
 
-		log.v("sending PONG", new Object[0]);
-		JSONObject jsonobject = new JSONObject();
+		log.v("sending PONG");
+		JSONObject obj = new JSONObject();
 		try {
-			jsonobject.put("type", "PONG");
+			obj.put("type", "PONG");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
 		try {
-			sendTextMessage(jsonobject.toString(), 0L, "transport-0");
+			sendTextMessage(obj.toString(), 0L, "transport-0");
 		} catch (IOException e) {
 			// TODO: No FlingManager available
 			e.printStackTrace();
