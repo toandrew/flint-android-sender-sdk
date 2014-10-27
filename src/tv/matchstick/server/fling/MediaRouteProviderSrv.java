@@ -411,7 +411,7 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             if (mMediaRouteProvider == null) {
                 MediaRouteProvider mediaRouteProvider = getInstance();
                 if (mediaRouteProvider != null) {
-                    String packageName = mediaRouteProvider.mProviderComponentName
+                    String packageName = mediaRouteProvider.mComponentName
                             .getPackageName();
                     if (!packageName.equals(getPackageName()))
                         throw new IllegalStateException(

@@ -347,7 +347,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 			int size = list.size();
 			ArrayList routes = new ArrayList(size);
 			for (int i = 0; i < size; i++) {
-				routes.add(((MediaRouteDescriptor) list.get(i)).bundleData);
+				routes.add(((MediaRouteDescriptor) list.get(i)).mData);
 			}
 
 			bundle.putParcelableArrayList("routes", routes);
@@ -355,7 +355,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 		return new MediaRouteProviderDescriptor(bundle, list);
 	}
 
-	public void b(FlingRouteController controller) {
+	public void onUnselect(FlingRouteController controller) {
 		FlingDevice flingdevice = controller.getFlingDevice();
 		String id = flingdevice.getDeviceId();
 		FlingDeviceControllerHelper helper = (FlingDeviceControllerHelper) mFlingDeviceControllerMap
