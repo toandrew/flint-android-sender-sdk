@@ -527,6 +527,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 		}
 	}
 
+	@Override
 	public final void onConnected() {
 		FlingDeviceService.onSocketConnected(mContext, this);
 	}
@@ -537,6 +538,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 				flag);
 	}
 
+	@Override
 	public final void onConnectionFailed(int socketError) {
 		log.d("onConnectionFailed; socketError=%d", socketError);
 		FlingDeviceService
@@ -672,6 +674,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 		return;
 	}
 
+	@Override
 	public final void onMessageReceived(ByteBuffer message) {
 		FlingDeviceService.procReceivedMessage(mContext, this, message);
 	}
@@ -702,6 +705,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 		onSocketError(FlingStatusCodes.NETWORK_ERROR);
 	}
 
+	@Override
 	public final void onDisconnected(int reason) {
 		FlingDeviceService.onSocketDisconnected(mContext, this, reason);
 

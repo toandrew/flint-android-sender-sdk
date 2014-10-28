@@ -30,7 +30,6 @@ import android.os.RemoteException;
 /**
  * This class used to interact with app about current status(application,fling
  * device,etc)
- * 
  */
 public final class FlingConnectedClient implements IFlingSrvController {
 	final FlingService mFlingService;
@@ -70,6 +69,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
 
 		mFlingCallbacks = (IFlingCallbacks) ValueChecker
 				.checkNullPointer(callbacks);
+
 		mFlingDevice = device;
 		mLastAppId = lastApplicationId;
 		mLastSessionId = lastSessionId;
