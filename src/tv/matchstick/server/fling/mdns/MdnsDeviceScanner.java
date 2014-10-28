@@ -25,16 +25,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
-import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.net.Uri;
 import android.os.SystemClock;
 
 public final class MdnsDeviceScanner extends DeviceScanner {
-	private static final LogUtil log = new LogUtil("MdnsDeviceScanner");
+	private static final LOG log = new LOG("MdnsDeviceScanner");
 
 	private final List mFlingMdnsClientList = new ArrayList();
 

@@ -28,12 +28,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import tv.matchstick.server.utils.LogUtil;
+import tv.matchstick.client.internal.LOG;
 import android.content.Context;
 import android.os.SystemClock;
 
 public final class FlingSocketMultiplexer {
-	private static LogUtil log = new LogUtil("FlingSocketMultiplexer");
+	private static LOG log = new LOG("FlingSocketMultiplexer");
 
 	private static FlingSocketMultiplexer mInstance;
 	private final LinkedList mRegistedFlingSocketList = new LinkedList();

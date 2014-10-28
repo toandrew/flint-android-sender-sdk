@@ -25,7 +25,7 @@ public final class RequestTracker {
 	private long mRequestId;
 	private long mCurrentTime;
 	private RequestTrackerCallback mCallback;
-	private static final LogUtil log = new LogUtil("RequestTracker");
+	private static final LOG log = new LOG("RequestTracker");
 	public static final Object mLock = new Object();
 
 	public RequestTracker(long timeOut) {

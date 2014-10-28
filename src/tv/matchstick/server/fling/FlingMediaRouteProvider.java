@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.common.checker.MainThreadChecker;
@@ -35,14 +36,13 @@ import tv.matchstick.server.fling.mdns.IDeviceScanListener;
 import tv.matchstick.server.fling.mdns.MdnsDeviceScanner;
 import tv.matchstick.server.fling.media.RouteController;
 import tv.matchstick.server.fling.ssdp.SsdpDeviceScanner;
-import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
 
 public class FlingMediaRouteProvider extends MediaRouteProvider {
-	private static final LogUtil log = new LogUtil("FlingMediaRouteProvider");
+	private static final LOG log = new LOG("FlingMediaRouteProvider");
 
 	private static FlingMediaRouteProvider mInstance;
 
@@ -168,7 +168,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 		publishRoutes();
 	}
 
-	public static LogUtil log() {
+	public static LOG log() {
 		return log;
 	}
 

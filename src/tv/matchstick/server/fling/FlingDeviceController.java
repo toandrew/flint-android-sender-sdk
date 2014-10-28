@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import tv.matchstick.client.internal.FlingChannel;
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.client.internal.MessageSender;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
@@ -41,7 +42,6 @@ import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.BinaryPayload;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.ApplicationInfo;
-import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
@@ -103,7 +103,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 	private String mLastApplicationId;
 	private String mLastSessionId;
-	private final LogUtil log = new LogUtil("FlingDeviceController");
+	private final LOG log = new LOG("FlingDeviceController");
 	private Integer controlerId;
 	private final Context mContext;
 	private final Handler mHandler;
@@ -613,7 +613,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 		else
 			enable = false;
 		log.setDebugEnabled(enable);
-		LogUtil.setDebugEnabledByDefault(enable);
+		LOG.setDebugEnabledByDefault(enable);
 	}
 
 	public final void setSender(FlingChannel flingChannel) {

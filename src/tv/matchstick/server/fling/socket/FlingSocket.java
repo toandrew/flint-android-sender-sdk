@@ -26,13 +26,13 @@ import java.nio.channels.SocketChannel;
 
 import javax.net.ssl.SSLException;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
-import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.os.SystemClock;
 
 public final class FlingSocket {
-	private static final LogUtil log = new LogUtil("FlingSocket");
+	private static final LOG log = new LOG("FlingSocket");
 
 	private static final int SIMPLE_SOCKET_PORT = 8011;
 	private final FlingSocketListener mSocketListener;

@@ -42,7 +42,7 @@ import android.text.TextUtils;
  * This class will communicate with Fling service.
  */
 public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
-	private static final LogUtil log = new LogUtil("FlingClientImpl");
+	private static final LOG log = new LOG("FlingClientImpl");
 
 	private static final Object mLock_x = new Object();
 	private static final Object mLock_y = new Object();
@@ -84,10 +84,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 	private ResultCallback<Fling.ApplicationConnectionResult> mResultCallback;
 
 	private ResultCallback<Status> mStatusResultCallback;
-
-	public static LogUtil log() {
-		return FlingClientImpl.log;
-	}
 
 	/**
 	 * Constructor.

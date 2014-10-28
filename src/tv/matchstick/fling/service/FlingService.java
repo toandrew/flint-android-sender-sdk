@@ -19,9 +19,9 @@ package tv.matchstick.fling.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.server.fling.bridge.FlingConnectedClient;
 import tv.matchstick.server.fling.bridge.FlingServiceBinder;
-import tv.matchstick.server.utils.LogUtil;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
@@ -35,7 +35,7 @@ import android.os.Looper;
  *
  */
 public class FlingService extends Service {
-	private static final LogUtil log = new LogUtil("FlingService");
+	private static final LOG log = new LOG("FlingService");
 
 	private static final String DEVICE_CONTROL_ACTION = "tv.matchstick.fling.service.FLING";
 
@@ -46,7 +46,7 @@ public class FlingService extends Service {
 	 */
 	private List<FlingConnectedClient> mFlingClients;
 
-	public static LogUtil log() {
+	public static LOG log() {
 		return log;
 	}
 

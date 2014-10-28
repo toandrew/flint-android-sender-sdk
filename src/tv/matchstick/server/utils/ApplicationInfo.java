@@ -25,11 +25,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.checker.PlatformChecker;
 
 public final class ApplicationInfo {
-	private static final LogUtil log = new LogUtil("ApplicationInfo");
+	private static final LOG log = new LOG("ApplicationInfo");
 	private String appId;
 	private String displayName;
 	private String transportId;

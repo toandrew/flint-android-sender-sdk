@@ -18,7 +18,7 @@ package tv.matchstick.client.internal;
 
 import android.util.Log;
 
-public class LogUtil {
+public class LOG {
 
 	private static boolean DEBUG = false;
 
@@ -27,13 +27,13 @@ public class LogUtil {
 	private boolean isVerbose;
 	private String prefixMsg;
 
-	public LogUtil(String tag, boolean enable) {
+	public LOG(String tag, boolean enable) {
 		this.TAG = tag;
 		this.mDebugEnabled = enable;
 		this.isVerbose = false;
 	}
 
-	public LogUtil(String tag) {
+	public LOG(String tag) {
 		this(tag, isDefaultDebugable());
 	}
 
@@ -77,8 +77,20 @@ public class LogUtil {
 		Log.i(TAG, format(message, args));
 	}
 
+	public final void w(Throwable t, String message, Object... args) {
+		Log.w(TAG, String.format(message, args), t);
+	}
+
 	public void w(String message, Object... args) {
 		Log.w(TAG, format(message, args));
+	}
+
+	public void e(String message, Object... args) {
+		Log.e(TAG, format(message, args));
+	}
+
+	public final void e(Throwable t, String message, Object... args) {
+		Log.e(TAG, String.format(message, args), t);
 	}
 
 	private String format(String message, Object... args) {
@@ -94,4 +106,11 @@ public class LogUtil {
 		return DEBUG;
 	}
 
+	public static void setDebugEnabledByDefault(boolean flag) {
+		DEBUG = flag;
+	}
+
+	public final void setDebugEnabled(boolean flag) {
+		mDebugEnabled = flag;
+	}
 }

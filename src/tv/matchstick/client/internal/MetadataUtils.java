@@ -33,7 +33,7 @@ import android.text.TextUtils;
 
 public class MetadataUtils {
 
-	private static final LogUtil log = new LogUtil("MetadataUtils");
+	private static final LOG log = new LOG("MetadataUtils");
 	private static final String[] FORMATS = { "Z", "+hh", "+hhmm", "+hh:mm" };
 	private static final String DEFAULT_FORMAT = "yyyyMMdd'T'HHmmss"
 			+ FORMATS[0];

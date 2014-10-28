@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class FlingChannel {
 	private static final AtomicInteger idGen = new AtomicInteger(0);
 
-	protected final LogUtil log;
+	protected final LOG log;
 
 	private final String mNamespace;
 
@@ -34,7 +34,7 @@ public abstract class FlingChannel {
 	protected FlingChannel(String namespace, String tag) {
 		mNamespace = namespace;
 
-		log = new LogUtil(tag);
+		log = new LOG(tag);
 		log.setPrefixMsg(String.format("instance-%d", idGen.incrementAndGet()));
 	}
 

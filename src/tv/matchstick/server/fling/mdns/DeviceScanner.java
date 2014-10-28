@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.utils.LogUtil;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,7 +40,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 public abstract class DeviceScanner {
-	static final LogUtil log = new LogUtil("DeviceScanner");
+	static final LOG log = new LOG("DeviceScanner");
 
 	protected final Handler mHandler = new Handler(Looper.getMainLooper());
 

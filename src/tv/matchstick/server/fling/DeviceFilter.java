@@ -30,11 +30,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
-import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -44,7 +44,7 @@ import android.util.Log;
  * This is used to filter device
  */
 abstract class DeviceFilter {
-	private static final LogUtil log = new LogUtil("DeviceFilter");
+	private static final LOG log = new LOG("DeviceFilter");
 	private static AtomicLong mIdGen = new AtomicLong(0L);
 	private final Context mContext;
 	private final String mPackageName;
