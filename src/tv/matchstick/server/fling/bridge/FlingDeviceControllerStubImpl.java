@@ -124,17 +124,4 @@ public final class FlingDeviceControllerStubImpl extends
 
 		mFlingDeviceController.removeMessageReceivedCallbacks(namespace);
 	}
-
-	@Override
-	public void sendBinaryMessage(String namespace, byte[] message,
-			long requestId) throws RemoteException {
-		// TODO Auto-generated method stub
-
-		if (namespace == null || namespace.length() > 128) {
-			return;
-		}
-
-		mFlingDeviceController.sendBinaryMessage(namespace, message, requestId);
-	}
-
 }

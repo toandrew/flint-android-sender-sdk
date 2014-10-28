@@ -133,23 +133,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 					.sendTextMessage(mContext, FlingDeviceController.this,
 							namespace, message, id, transId);
 		}
-
-		@Override
-		public void sendBinaryMessage(String nameSpace, byte[] message,
-				long requestId, String transportId) {
-			String transId;
-			if (transportId == null) {
-				transId = getTransId();
-			} else {
-				transId = transportId;
-			}
-
-			FlingDeviceService
-					.sendBinaryMessage(mContext, FlingDeviceController.this,
-							nameSpace, message, 0L, transId);
-
-		}
-
 	};
 
 	private final ReceiverControlChannel mReceiverControlChannel = new ReceiverControlChannel(
@@ -565,9 +548,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 		mFlingChannelMap.put(flingChannel.getNamespace(), flingChannel);
 	}
 
-	public final void setSubTag(String tag) {
-	}
-
 	public final void reconnectToDevice(String lastApplicationId,
 			String lastSessionId) {
 		log.d("reconnectToDevice: lastApplicationId=%s, lastSessionId=%s",
@@ -630,12 +610,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 			boolean relaunchIfRunning) {
 		FlingDeviceService.launchApplication(mContext, this, applicationId,
 				sessionId, relaunchIfRunning);
-	}
-
-	public final void sendBinaryMessage(String namespace, byte message[],
-			long requestId) {
-		FlingDeviceService.sendBinaryMessage(mContext, this, namespace,
-				message, requestId, mReceiverControlChannel.mTransportId);
 	}
 
 	public final void sendBinaryMessage(String nameSpace, byte message[],

@@ -85,7 +85,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
 			@Override
 			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
 				controller.connectToDeviceInternal();
 			}
 		});
@@ -148,7 +147,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
 			@Override
 			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
 				controller.stopApplicationInternal(sessionId);
 			}
 
@@ -170,7 +168,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
 			@Override
 			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
 				controller.joinApplicationInternal(applicationId, sessionId);
 			}
 
@@ -194,7 +191,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
 			@Override
 			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
 				try {
 					Log.e("FlingDeviceService", "sendMessage: namespace:"
 							+ namespace + " message:" + message + " id:" + id
@@ -226,39 +222,8 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
 			@Override
 			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
 				controller.launchApplicationInternal(applicationId, param,
 						relaunch);
-			}
-
-		});
-	}
-
-	/**
-	 * Send Binary message to fling device
-	 * 
-	 * @param context
-	 * @param controller
-	 * @param namespace
-	 * @param message
-	 * @param requestId
-	 * @param transId
-	 */
-	public static void sendBinaryMessage(Context context,
-			final FlingDeviceController controller, final String namespace,
-			final byte message[], final long requestId, final String transId) {
-		startFlingService(context, new FlingOperation(controller) {
-
-			@Override
-			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
-				try {
-					controller.sendBinaryMessage(namespace, message, requestId,
-							transId);
-					return;
-				} catch (IllegalStateException e) {
-					Log.e(TAG, e.getMessage());
-				}
 			}
 
 		});
@@ -277,7 +242,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
 			@Override
 			public void doFling() throws IOException {
-				// TODO Auto-generated method stub
 				controller.onReceivedMessage(message);
 			}
 

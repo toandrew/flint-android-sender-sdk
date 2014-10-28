@@ -834,11 +834,6 @@ public class RemoteMediaPlayer implements Fling.MessageReceivedCallback {
 			}
 		}
 
-		@Override
-		public void sendBinaryMessage(String namespace, byte[] message,
-				long requestId, String targetId) {
-
-		}
 	}
 
 	/**

@@ -42,7 +42,4 @@ interface IFlingDeviceController
 	void setMessageReceivedCallbacks(String namespace);
 
 	void removeMessageReceivedCallbacks(String namespace);
-
-	void sendBinaryMessage(String namespace, in byte[] message,
-			long requestId);
 }

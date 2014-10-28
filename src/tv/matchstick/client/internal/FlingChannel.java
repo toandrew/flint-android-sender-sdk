@@ -83,18 +83,6 @@ public abstract class FlingChannel {
 	}
 
 	/**
-	 * Send binary message
-	 * 
-	 * @param message
-	 * @param transId
-	 */
-	protected final void sendBinaryMessage(byte message[], String transId) {
-		log.v("Sending binary message to: %s", new Object[] { transId });
-
-		mMessageSender.sendBinaryMessage(mNamespace, message, 0L, transId);
-	}
-
-	/**
 	 * Called when string message received
 	 * 
 	 * @param message
