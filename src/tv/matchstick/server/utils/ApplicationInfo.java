@@ -45,58 +45,58 @@ public final class ApplicationInfo {
 		appImages = new ArrayList<WebImage>();
 	}
 
-	public ApplicationInfo(JSONObject jsonobject) {
+	public ApplicationInfo(JSONObject obj) {
 		this();
 		try {
-			appId = jsonobject.getString("appId");
-			sessionId = jsonobject.getString("sessionId");
-			transportId = jsonobject.optString("transportId");
-			displayName = jsonobject.optString("displayName");
-			statusText = jsonobject.optString("statusText");
-			if (jsonobject.has("appImages")) {
-				JSONArray jsonarray2 = jsonobject.getJSONArray("appImages");
-				int j1 = jsonarray2.length();
-				int k1 = 0;
-				while (k1 < j1) {
-					JSONObject jsonobject1 = jsonarray2.getJSONObject(k1);
+			appId = obj.getString("appId");
+			sessionId = obj.getString("sessionId");
+			transportId = obj.optString("transportId");
+			displayName = obj.optString("displayName");
+			statusText = obj.optString("statusText");
+			if (obj.has("appImages")) {
+				JSONArray images = obj.getJSONArray("appImages");
+				int len = images.length();
+				int i = 0;
+				while (i < len) {
+					JSONObject img = images.getJSONObject(i);
 					try {
-						appImages.add(new WebImage(jsonobject1));
+						appImages.add(new WebImage(img));
 					} catch (IllegalArgumentException e) {
 						log.w(e, "Ignoring invalid image structure");
 					}
-					k1++;
+					i++;
 				}
 			}
-			if (jsonobject.has("senderApps")) {
-				JSONArray jsonarray1 = jsonobject.getJSONArray("senderApps");
-				int l = jsonarray1.length();
-				int i1 = 0;
+
+			if (obj.has("senderApps")) {
+				JSONArray apps = obj.getJSONArray("senderApps");
+				int len = apps.length();
+				int i = 0;
 				do {
-					if (i1 >= l)
+					if (i >= len)
 						break;
 					try {
-						PlatformChecker aui1 = new PlatformChecker(
-								jsonarray1.getJSONObject(i1));
-						senderApps.add(aui1);
+						PlatformChecker checker = new PlatformChecker(
+								apps.getJSONObject(i));
+						senderApps.add(checker);
 					} catch (JSONException e) {
 						log.w("Ignorning invalid sender app structure: %s",
 								e.getMessage());
 					}
-					i1++;
+					i++;
 				} while (true);
 			}
-			if (jsonobject.has("namespaces")) {
-				JSONArray jsonarray = jsonobject.getJSONArray("namespaces");
-				int j = jsonarray.length();
-				if (j > 0) {
+			if (obj.has("namespaces")) {
+				JSONArray ns = obj.getJSONArray("namespaces");
+				int i = ns.length();
+				if (i > 0) {
 					namespaces = new ArrayList();
-					for (int k = 0; k < j; k++)
-						namespaces.add(jsonarray.getString(k));
+					for (int j = 0; j < i; j++)
+						namespaces.add(ns.getString(j));
 
 				}
 			}
 		} catch (Exception e) {
-
 		}
 	}
 
