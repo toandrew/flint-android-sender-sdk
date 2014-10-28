@@ -445,7 +445,7 @@ public class MediaMetadata {
 		this.mMediaType = MEDIA_TYPE_GENERIC;
 		try {
 			this.mMediaType = json.getInt("metadataType");
-		} catch (JSONException localJSONException) {
+		} catch (JSONException e) {
 		}
 		MetadataUtils.getWebImageListFromJson(this.mImages, json);
 		switch (this.mMediaType) {

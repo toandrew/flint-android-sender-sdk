@@ -71,8 +71,8 @@ public class Status implements Result, SafeParcelable {
 					statusMessage = ParcelRead.readString(source, type);
 					break;
 				case 3:
-					intent = (PendingIntent) ParcelRead.readParcelable(
-							source, type, PendingIntent.CREATOR);
+					intent = (PendingIntent) ParcelRead.readParcelable(source,
+							type, PendingIntent.CREATOR);
 					break;
 				default:
 					ParcelRead.skip(source, type);
@@ -223,12 +223,12 @@ public class Status implements Result, SafeParcelable {
 	public boolean equals(Object obj) {
 		if (!(obj instanceof Status))
 			return false;
-		Status localStatus = (Status) obj;
-		return ((this.mVersionCode == localStatus.mVersionCode)
-				&& (this.mStatusCode == localStatus.mStatusCode)
+		Status status = (Status) obj;
+		return ((this.mVersionCode == status.mVersionCode)
+				&& (this.mStatusCode == status.mStatusCode)
 				&& (MyStringBuilder.compare(this.mStatusMessage,
-						localStatus.mStatusMessage)) && (MyStringBuilder
-					.compare(this.mPendingIntent, localStatus.mPendingIntent)));
+						status.mStatusMessage)) && (MyStringBuilder.compare(
+				this.mPendingIntent, status.mPendingIntent)));
 	}
 
 	/**

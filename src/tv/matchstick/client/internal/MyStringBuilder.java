@@ -49,6 +49,7 @@ public class MyStringBuilder {
 			return this;
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder(100).append(
 					this.rootObj.getClass().getSimpleName()).append('{');
