@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
 import tv.matchstick.server.utils.LOG;
 import android.text.TextUtils;
@@ -626,4 +627,23 @@ abstract class MdnsClient {
 		}
 	}
 
+	private static final class MdnsClientPrivData {
+		final byte[] a;
+		final long mCurrentTime;
+		final int c;
+
+		public MdnsClientPrivData(byte[] paramArrayOfByte, int paramInt) {
+			boolean bool = false;
+			if (paramInt <= 0 || paramInt >= 604800) {
+				bool = false;
+			} else {
+				bool = true;
+			}
+
+			ValueChecker.checkTrue(bool);
+			this.a = paramArrayOfByte;
+			this.mCurrentTime = System.currentTimeMillis();
+			this.c = paramInt;
+		}
+	}
 }
