@@ -266,9 +266,9 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 	public static FlingDeviceController create(Context context,
 			Handler handler, String packageName, FlingDevice device,
-			long debugLevel, IFlingSrvController.Stub controler) {
+			long debugLevel, IFlingSrvController.Stub crtl) {
 		FlingDeviceController controller = new FlingDeviceController(context,
-				handler, device, packageName, debugLevel, controler);
+				handler, device, packageName, debugLevel, crtl);
 		controller.generateId();
 
 		mFlingDeviceController = controller;

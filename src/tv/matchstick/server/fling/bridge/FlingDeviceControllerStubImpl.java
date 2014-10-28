@@ -19,6 +19,7 @@ package tv.matchstick.server.fling.bridge;
 import tv.matchstick.client.internal.IFlingDeviceController;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
+import android.os.RemoteException;
 
 public final class FlingDeviceControllerStubImpl extends
 		IFlingDeviceController.Stub {
@@ -32,40 +33,103 @@ public final class FlingDeviceControllerStubImpl extends
 		mFlingDeviceController = controller;
 	}
 
-	public final void disconnect() {
-		if (!mFlingDeviceController.isDisposed())
+	@Override
+	public void disconnect() throws RemoteException {
+		// TODO Auto-generated method stub
+
+		if (!mFlingDeviceController.isDisposed()) {
 			mFlingDeviceController.releaseReference();
-	}
-
-	public final void setVolume(double volume, double expected_level,
-			boolean flag) {
-		mFlingDeviceController.setVolume(volume, expected_level, flag);
-	}
-
-	public final void stopApplication(String sessionId) {
-		mFlingDeviceController.stopApplication(sessionId);
-	}
-
-	public final void joinApplication(String applicationId, String sessionId) {
-		mFlingDeviceController.joinApplication(applicationId, sessionId);
-	}
-
-	public final void sendMessage(String namespace, String message, long id) {
-		if (namespace == null || namespace.length() > 128) {
-			return;
 		}
-
-		mFlingDeviceController.sendMessageInternal(namespace, message, id);
 	}
 
-	public final void launchApplication(String applicationId,
-			boolean relaunchIfRunning) {
+	@Override
+	public void launchApplication(String applicationId,
+			boolean relaunchIfRunning) throws RemoteException {
+		// TODO Auto-generated method stub
+
 		mFlingDeviceController.launchApplication(applicationId, null,
 				relaunchIfRunning);
 	}
 
-	public final void sendBinaryMessage(String namespace, byte message[],
-			long requestId) {
+	@Override
+	public void joinApplication(String applicationId, String sessionId)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.joinApplication(applicationId, sessionId);
+	}
+
+	@Override
+	public void leaveApplication() throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.leaveApplication();
+	}
+
+	@Override
+	public void stopApplication(String sessionId) throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.stopApplication(sessionId);
+	}
+
+	@Override
+	public void requestStatus() throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.requestStatus();
+	}
+
+	@Override
+	public void setVolume(double volume, double originalVolume, boolean isMute)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.setVolume(volume, originalVolume, isMute);
+	}
+
+	@Override
+	public void setMute(boolean mute, double volume, boolean isMute)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.setMute(mute, volume, isMute);
+	}
+
+	@Override
+	public void sendMessage(String namespace, String message, long requestId)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+
+		if (namespace == null || namespace.length() > 128) {
+			return;
+		}
+
+		mFlingDeviceController.sendMessageInternal(namespace, message,
+				requestId);
+	}
+
+	@Override
+	public void setMessageReceivedCallbacks(String namespace)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.setMessageReceivedCallbacks(namespace);
+	}
+
+	@Override
+	public void removeMessageReceivedCallbacks(String namespace)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+
+		mFlingDeviceController.removeMessageReceivedCallbacks(namespace);
+	}
+
+	@Override
+	public void sendBinaryMessage(String namespace, byte[] message,
+			long requestId) throws RemoteException {
+		// TODO Auto-generated method stub
+
 		if (namespace == null || namespace.length() > 128) {
 			return;
 		}
@@ -73,23 +137,4 @@ public final class FlingDeviceControllerStubImpl extends
 		mFlingDeviceController.sendBinaryMessage(namespace, message, requestId);
 	}
 
-	public final void setMute(boolean flag, double d, boolean flag1) {
-		mFlingDeviceController.setMute(flag, d, flag1);
-	}
-
-	public final void leaveApplication() {
-		mFlingDeviceController.leaveApplication();
-	}
-
-	public final void setMessageReceivedCallbacks(String namespace) {
-		mFlingDeviceController.setMessageReceivedCallbacks(namespace);
-	}
-
-	public final void requestStatus() {
-		mFlingDeviceController.requestStatus();
-	}
-
-	public final void removeMessageReceivedCallbacks(String s) {
-		mFlingDeviceController.removeMessageReceivedCallbacks(s);
-	}
 }

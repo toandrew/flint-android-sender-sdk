@@ -49,26 +49,27 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 	 * Fling Client which will be interacted with app side to do all media
 	 * control works
 	 * 
-	 * @param flingservice
+	 * @param service
 	 * @param callbacks
-	 * @param flingdevice
+	 * @param device
 	 * @param lastApplicationId
 	 * @param lastSessionId
 	 * @param listener
 	 * @param packageName
 	 * @param flags
 	 */
-	public FlingConnectedClient(FlingService flingservice, IFlingCallbacks callbacks,
-			FlingDevice flingdevice, String lastApplicationId,
-			String lastSessionId, IFlingDeviceControllerListener listener,
-			String packageName, long flags) {
+	public FlingConnectedClient(FlingService service,
+			IFlingCallbacks callbacks, FlingDevice device,
+			String lastApplicationId, String lastSessionId,
+			IFlingDeviceControllerListener listener, String packageName,
+			long flags) {
 		super();
 
-		mFlingService = flingservice;
+		mFlingService = service;
 
 		mFlingCallbacks = (IFlingCallbacks) ValueChecker
 				.checkNullPointer(callbacks);
-		mFlingDevice = flingdevice;
+		mFlingDevice = device;
 		mLastAppId = lastApplicationId;
 		mLastSessionId = lastSessionId;
 		mFlingDeviceControllerListener = listener;
