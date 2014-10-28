@@ -99,14 +99,14 @@ public final class ConnectionResult {
 	public static final int CANCELED = 13;
 
 	/**
-	 * The timeout was exceeded while waiting for the connection to complete.
-	 */
-	public static final int TIMEOUT = 14;
-
-	/**
 	 * An interrupt occurred while waiting for the connection complete.
 	 */
-	public static final int INTERRUPTED = 15;
+	public static final int INTERRUPTED = 14;
+
+	/**
+	 * The timeout was exceeded while waiting for the connection to complete.
+	 */
+	public static final int TIMEOUT = 15;
 
 	/**
 	 * Connection result instance.
@@ -197,8 +197,8 @@ public final class ConnectionResult {
 			return "INTERRUPTED";
 		case 15:
 			return "TIMEOUT";
-
 		}
+
 		return "unknown status code " + this.mStatusCode;
 	}
 
