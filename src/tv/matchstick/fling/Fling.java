@@ -480,9 +480,9 @@ public class Fling {
 							throws RemoteException {
 						try {
 							client.sendMessage(namespace, message, this);
-						} catch (IllegalArgumentException localIllegalArgumentException) {
+						} catch (IllegalArgumentException e) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
-						} catch (IllegalStateException localIllegalStateException) {
+						} catch (IllegalStateException ex) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
 					}
@@ -498,7 +498,7 @@ public class Fling {
 								try {
 									client.launchApplication(applicationId,
 											false, this);
-								} catch (IllegalStateException localIllegalStateException) {
+								} catch (IllegalStateException e) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
 							}
@@ -515,7 +515,7 @@ public class Fling {
 								try {
 									client.launchApplication(applicationId,
 											relaunchIfRunning, this);
-								} catch (IllegalStateException localIllegalStateException) {
+								} catch (IllegalStateException e) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
 							}
@@ -532,7 +532,7 @@ public class Fling {
 								try {
 									client.joinApplication(applicationId,
 											sessionId, this);
-								} catch (IllegalStateException localIllegalStateException) {
+								} catch (IllegalStateException e) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
 							}
@@ -548,7 +548,7 @@ public class Fling {
 								try {
 									client.joinApplication(applicationId, null,
 											this);
-								} catch (IllegalStateException localIllegalStateException) {
+								} catch (IllegalStateException e) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
 							}
@@ -563,7 +563,7 @@ public class Fling {
 									throws RemoteException {
 								try {
 									client.joinApplication(null, null, this);
-								} catch (IllegalStateException localIllegalStateException) {
+								} catch (IllegalStateException e) {
 									notifyResult(FlingStatusCodes.INVALID_REQUEST);
 								}
 							}
@@ -576,7 +576,7 @@ public class Fling {
 							throws RemoteException {
 						try {
 							client.leaveApplication(this);
-						} catch (IllegalStateException localIllegalStateException) {
+						} catch (IllegalStateException e) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
 					}
@@ -589,7 +589,7 @@ public class Fling {
 							throws RemoteException {
 						try {
 							client.stopApplication("", this);
-						} catch (IllegalStateException localIllegalStateException) {
+						} catch (IllegalStateException e) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
 					}
@@ -608,7 +608,7 @@ public class Fling {
 						}
 						try {
 							client.stopApplication(sessionId, this);
-						} catch (IllegalStateException localIllegalStateException) {
+						} catch (IllegalStateException e) {
 							notifyResult(FlingStatusCodes.INVALID_REQUEST);
 						}
 					}
@@ -621,7 +621,7 @@ public class Fling {
 				try {
 					manager.getConnectionApi(Fling.mConnectionBuilder)
 							.setVolume(volume);
-				} catch (RemoteException localRemoteException) {
+				} catch (RemoteException e) {
 					throw new IOException("service error");
 				}
 			}
@@ -637,7 +637,7 @@ public class Fling {
 				try {
 					manager.getConnectionApi(Fling.mConnectionBuilder).setMute(
 							mute);
-				} catch (RemoteException localRemoteException) {
+				} catch (RemoteException e) {
 					throw new IOException("service error");
 				}
 			}
@@ -666,7 +666,7 @@ public class Fling {
 				try {
 					manager.getConnectionApi(Fling.mConnectionBuilder)
 							.setMessageReceivedCallbacks(namespace, callbacks);
-				} catch (RemoteException localRemoteException) {
+				} catch (RemoteException e) {
 					throw new IOException("service error");
 				}
 			}
@@ -677,7 +677,7 @@ public class Fling {
 				try {
 					manager.getConnectionApi(Fling.mConnectionBuilder)
 							.removeMessageReceivedCallbacks(namespace);
-				} catch (RemoteException localRemoteException) {
+				} catch (RemoteException e) {
 					throw new IOException("service error");
 				}
 			}
