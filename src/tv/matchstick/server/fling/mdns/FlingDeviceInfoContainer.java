@@ -16,6 +16,7 @@
 
 package tv.matchstick.server.fling.mdns;
 
+import java.net.Inet4Address;
 import java.util.List;
 
 public final class FlingDeviceInfoContainer {
@@ -32,16 +33,16 @@ public final class FlingDeviceInfoContainer {
 
 	final class FlingDeviceInfo {
 		String mFQDN;
-		List mIpV4AddrList;
+		List<Inet4Address> mIpV4AddrList;
 		List mIpV6AddrList;
 		String mName;
-		String e;
+		String mFriendlyName;
 		String mHost;
 		int mProto; // 1:tcp, 2: udp
 		int mPort;
 		int mPriority;
 		int mWeight;
-		List mTextStringList;
+		List<String> mTextStringList;
 		long mTTL;
 
 		private FlingDeviceInfo(String fqdn) {

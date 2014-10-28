@@ -203,7 +203,7 @@ public abstract class DeviceScanner {
 		}
 	}
 
-	public abstract void setDeviceOffline(String s);
+	public abstract void setDeviceOffline(String deviceId);
 
 	protected abstract void startScanInternal(List<NetworkInterface> list);
 

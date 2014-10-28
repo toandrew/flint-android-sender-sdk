@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
@@ -36,60 +37,154 @@ import android.os.SystemClock;
 public final class MdnsDeviceScanner extends DeviceScanner {
 	private static final LOG log = new LOG("MdnsDeviceScanner");
 
-	private final List mFlingMdnsClientList = new ArrayList();
+	private final List<MdnsClient> mMdnsClientList = new ArrayList<MdnsClient>();
 
-	private final Map e = new HashMap();
+	private final Map<String, ScannerDeviceData> mFoundDevices = new HashMap<String, ScannerDeviceData>();
+
 	private final String mName;
-	private Thread mScannerLoopThread;
-	private boolean h;
 
-	public MdnsDeviceScanner(Context paramContext) {
-		super(paramContext);
-		this.mName = "Fling Device";
+	private Thread mScannerLoopThread;
+
+	private boolean mQuit;
+
+	public MdnsDeviceScanner(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+
+		mName = "Fling Device";
 	}
 
-	void scanLoop() {
-		while (!h) {
-			try {
-				Thread.sleep(3000L);
-			} catch (InterruptedException e) {
-				if (h) {
-					break;
+	@Override
+	public void setDeviceOffline(String deviceId) {
+		// TODO Auto-generated method stub
+
+		// let device offline according to the input 'deviceId';
+		synchronized (this.mFoundDevices) {
+			ScannerDeviceData deviceInfo = (ScannerDeviceData) mFoundDevices
+					.get(deviceId);
+
+			if (deviceInfo != null) {
+				deviceInfo.mElapsedRealtime = SystemClock.elapsedRealtime();
+				deviceInfo.mIsOffline = true;
+
+				FlingDevice device = deviceInfo.mFlingDevice;
+				if (device != null) {
+					notifyDeviceOffline(device);
 				}
 			}
-			synchronized (e) {
-				long l = SystemClock.elapsedRealtime();
-				Iterator localIterator = e.entrySet().iterator();
-				while (localIterator.hasNext()) {
-					ScannerPrivData localavi = (ScannerPrivData) ((Map.Entry) localIterator
-							.next()).getValue();
-					int i = 0;
-					if (l - localavi.mElapsedRealtime < 60000L) {
-						i = 0;
-					} else {
-						i = 1;
-					}
-					if (i == 0)
-						continue;
-					final FlingDevice device = localavi.mFlingDevice;
+		}
+	}
 
-					mHandler.post(new Runnable() {
+	@Override
+	protected void startScanInternal(List<NetworkInterface> list) {
+		// TODO Auto-generated method stub
+		log.d("startScanInternal");
 
-						@Override
-						public void run() {
-							notifyDeviceOffline(device);
-						}
+		if (list.isEmpty()) {
+			log.w("No network interfaces to scan on!");
+			return;
+		}
 
-					});
-					log.d("expired record for %s", device);
+		Iterator<NetworkInterface> it = list.iterator();
+		while (it.hasNext()) {
+			NetworkInterface network = (NetworkInterface) it.next();
 
-					localIterator.remove();
+			MdnsClient mdnsClient = new MdnsClient("_MatchStick._tcp.local.",
+					network) {
+
+				@Override
+				protected void onScanResults(FlingDeviceInfo info) {
+					onResults(info);
+				}
+
+			};
+
+			try {
+				mdnsClient.startScan();
+
+				mMdnsClientList.add(mdnsClient);
+			} catch (Exception e) {
+				log.w("Couldn't start MDNS client for %s", network);
+			}
+		}
+
+		mScannerLoopThread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				scanLoop();
+			}
+
+		});
+
+		mScannerLoopThread.start();
+	}
+
+	@Override
+	protected void stopScanInternal() {
+		// TODO Auto-generated method stub
+
+		synchronized (mMdnsClientList) {
+			if (!mMdnsClientList.isEmpty()) {
+				Iterator<MdnsClient> it = mMdnsClientList.iterator();
+				while (it.hasNext()) {
+					((MdnsClient) it.next()).stopScan();
+				}
+
+				mMdnsClientList.clear();
+			}
+		}
+
+		mQuit = true;
+
+		if (mScannerLoopThread != null) {
+			boolean needWait = true;
+			while (needWait) {
+				try {
+					mScannerLoopThread.interrupt();
+					mScannerLoopThread.join();
+
+					needWait = false;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+
+					needWait = true;
 				}
 			}
 		}
 
-		log.d("refreshLoop exiting");
-		return;
+		mScannerLoopThread = null;
+	}
+
+	@Override
+	public void onAllDevicesOffline() {
+		// TODO Auto-generated method stub
+
+		synchronized (mMdnsClientList) {
+			if (!mMdnsClientList.isEmpty()) {
+				mMdnsClientList.clear();
+
+				final List<IDeviceScanListener> listeners = super
+						.getDeviceScannerListenerList();
+
+				if (listeners != null) {
+					this.mHandler.post(new Runnable() {
+
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							Iterator<IDeviceScanListener> it = listeners
+									.iterator();
+							while (it.hasNext()) {
+								((IDeviceScanListener) it.next())
+										.onAllDevicesOffline();
+							}
+						}
+
+					});
+				}
+			}
+		}
 	}
 
 	void onResults(FlingDeviceInfo info) {
@@ -136,237 +231,194 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
 			log.d("TTL: %d", info.mTTL);
 		}
-		List localList1 = info.mTextStringList;
-		if (localList1 != null) {
-			Iterator localIterator1 = localList1.iterator();
-			Object localObject1 = null;
-			Object localObject2 = null;
-			String str1 = null;
-			Object deviceId = null;
-			Object localObject5;
-			while (localIterator1.hasNext()) {
-				String str4 = (String) localIterator1.next();
-				int k = str4.indexOf('=');
-				if (k > 0) {
-					String str5 = str4.substring(0, k);
-					localObject5 = str4.substring(k + 1);
-					if ("id".equalsIgnoreCase(str5))
-						deviceId = localObject5;
-					else if ("md".equalsIgnoreCase(str5))
-						str1 = ((String) localObject5).replaceAll(
+
+		List<String> deviceInfos = info.mTextStringList;
+		if (deviceInfos != null) {
+			String icon = null;
+			String deviceVersion = null;
+			String deviceName = null;
+			String deviceId = null;
+			String val;
+
+			Iterator<String> it = deviceInfos.iterator();
+			while (it.hasNext()) {
+				String line = (String) it.next();
+				int split = line.indexOf('=');
+				if (split > 0) {
+					String key = line.substring(0, split);
+					val = line.substring(split + 1);
+					if ("id".equalsIgnoreCase(key)) {
+						deviceId = val;
+					} else if ("md".equalsIgnoreCase(key)) {
+						deviceName = val.replaceAll(
 								"(Eureka|Chromekey)( Dongle)?", "Dongle");
-					else if ("ve".equalsIgnoreCase(str5))
-						localObject2 = localObject5;
-					else if (!"ic".equalsIgnoreCase(str5)) {
-						// break label1011;
-						localObject5 = localObject1;
+					} else if ("ve".equalsIgnoreCase(key))
+						deviceVersion = val;
+					else if (!"ic".equalsIgnoreCase(key)) {
+						val = icon;
 					} else {
-						localObject1 = localObject5;
+						icon = val;
 					}
 				}
 			}
-			if (deviceId == null)
+
+			if (deviceId == null) {
 				return;
-			if (str1 == null)
-				str1 = mName;
+			}
+
+			if (deviceName == null) {
+				deviceName = mName;
+			}
+
 			final FlingDevice device;
-			ScannerPrivData localavi;
-			synchronized (e) {
-				List localList2 = info.mIpV4AddrList;
-				if ((localList2 == null) || (localList2.isEmpty())) {
-					e.remove(deviceId);
+			ScannerDeviceData scannerDeviceData;
+			synchronized (mFoundDevices) {
+
+				if ((info.mIpV4AddrList == null)
+						|| (info.mIpV4AddrList.isEmpty())) {
+					mFoundDevices.remove(deviceId);
 					return;
 				}
-				Inet4Address localInet4Address1 = (Inet4Address) localList2
+
+				Inet4Address v4Address = (Inet4Address) info.mIpV4AddrList
 						.get(0);
-				ArrayList iconList = new ArrayList();
-				if (localObject1 != null) {
-					String str2 = localInet4Address1.toString();
-					int i = str2.indexOf('/');
-					if (i >= 0)
-						str2 = str2.substring(i + 1);
+				ArrayList<WebImage> iconList = new ArrayList<WebImage>();
+				if (icon != null) {
+					String address = v4Address.toString();
+					int split = address.indexOf('/');
+					if (split >= 0) {
+						address = address.substring(split + 1);
+					}
+
 					iconList.add(new WebImage(Uri.parse(String.format(
-							"http://%s:8008%s", new Object[] { str2,
-									localObject1 }))));
+							"http://%s:8008%s", address, icon))));
 				}
 
-				deviceId = deviceId + localInet4Address1.getHostAddress();
+				deviceId = deviceId + v4Address.getHostAddress();
 
-				FlingDeviceHelper localatr = FlingDevice.createHelper(
-						(String) deviceId, localInet4Address1);
-				String str3 = info.e;
-				FlingDevice.setFriendlyName(localatr.mFlingDevice, str3);
-				FlingDevice.setModelName(localatr.mFlingDevice, str1);
-				FlingDevice.setDeviceVersion(localatr.mFlingDevice,
-						(String) localObject2);
-				int port = info.mPort;
-				FlingDevice.setServicePort(localatr.mFlingDevice, port);
-				FlingDevice.setIconList(localatr.mFlingDevice, iconList);
-				device = localatr.mFlingDevice;
-				localavi = (ScannerPrivData) e.get(deviceId);
-				if (localavi != null) {
-					if (device.equals(localavi.mFlingDevice)) {
-						if (!localavi.d) {
-							localavi.mElapsedRealtime = SystemClock
+				FlingDeviceHelper helper = FlingDevice.createHelper(
+						(String) deviceId, v4Address);
+
+				FlingDevice.setFriendlyName(helper.mFlingDevice,
+						info.mFriendlyName);
+				FlingDevice.setModelName(helper.mFlingDevice, deviceName);
+				FlingDevice.setDeviceVersion(helper.mFlingDevice,
+						(String) deviceVersion);
+				FlingDevice.setServicePort(helper.mFlingDevice, info.mPort);
+				FlingDevice.setIconList(helper.mFlingDevice, iconList);
+				device = helper.mFlingDevice;
+
+				scannerDeviceData = (ScannerDeviceData) mFoundDevices
+						.get(deviceId);
+				if (scannerDeviceData != null) {
+					if (device.equals(scannerDeviceData.mFlingDevice)) {
+						if (!scannerDeviceData.mIsOffline) {
+							scannerDeviceData.mElapsedRealtime = SystemClock
 									.elapsedRealtime();
 						}
 						return;
 					} else {
-						e.remove(deviceId);
+						mFoundDevices.remove(deviceId);
 					}
 				}
 
-				e.put(deviceId, new ScannerPrivData(device, info.mTTL));
+				mFoundDevices.put((String) deviceId, new ScannerDeviceData(
+						device, info.mTTL));
 			}
-			// CastDevice localCastDevice2 = localavi.mCastDevice_a; // localavi
-			// will null???? need check this!!!!!!!!!!!!!!!!!!!!!!!!!
-			FlingDevice device2 = null;
-			if (localavi != null) {
-				device2 = localavi.mFlingDevice;
+
+			if (scannerDeviceData != null
+					&& scannerDeviceData.mFlingDevice != null) {
+				notifyDeviceOffline(scannerDeviceData.mFlingDevice);
 			}
-			if (device2 != null)
-				notifyDeviceOffline(device2);
-			if (device == null)
-				return;
 
-			DeviceScanner.log.d("notifyDeviceOnline: %s", device);
-
-			final List listenerList = getDeviceScannerListenerList();
-			if (listenerList == null)
+			if (device == null) {
 				return;
+			}
+
+			log.d("notifyDeviceOnline: %s", device);
+
+			final List<IDeviceScanListener> listenerList = getDeviceScannerListenerList();
+			if (listenerList == null) {
+				return;
+			}
 
 			mHandler.post(new Runnable() {
 
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
-					Iterator localIterator = listenerList.iterator();
-					while (localIterator.hasNext())
-						((IDeviceScanListener) localIterator.next())
+					Iterator<IDeviceScanListener> it = listenerList.iterator();
+					while (it.hasNext()) {
+						((IDeviceScanListener) it.next())
 								.onDeviceOnline(device);
+					}
 				}
 			});
 		}
 	}
 
-	public final void setDeviceOffline(String paramString) {
-		FlingDevice device = null;
-		synchronized (this.e) {
-			ScannerPrivData localavi = (ScannerPrivData) this.e
-					.get(paramString);
-			if (localavi != null) {
-				localavi.mElapsedRealtime = SystemClock.elapsedRealtime();
-				localavi.d = true;
-				device = localavi.mFlingDevice;
-				if (device != null)
-					notifyDeviceOffline(device);
-			}
-		}
-	}
-
-	protected final void startScanInternal(List networkInterfaceList) {
-		log.d("startScanInternal");
-		if (networkInterfaceList.isEmpty()) {
-			log.w("No network interfaces to scan on!", new Object[0]);
-			return;
-		}
-		Iterator localIterator = networkInterfaceList.iterator();
-		while (localIterator.hasNext()) {
-			NetworkInterface networkInterface = (NetworkInterface) localIterator
-					.next();
-
-			MdnsClient flingMdnsClient = new MdnsClient(
-					"_MatchStick._tcp.local.", networkInterface) {
-
-				@Override
-				protected void onScanResults(FlingDeviceInfo info) {
-					onResults(info);
-				}
-
-			};
-
+	/**
+	 * periodically check whether the scanned devices are expired.
+	 */
+	private void scanLoop() {
+		while (!mQuit) {
 			try {
-				flingMdnsClient.startScan();
-				mFlingMdnsClientList.add(flingMdnsClient);
-			} catch (Exception localIOException) { // todo
-				log.w("Couldn't start MDNS client for %s", networkInterface);
-			}
-		}
-		// this.g = new Thread(new C_avg(this));
-		this.mScannerLoopThread = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				scanLoop();
-			}
-
-		});
-		this.mScannerLoopThread.start();
-	}
-
-	protected final void stopScanInternal() {
-		if (!this.mFlingMdnsClientList.isEmpty()) {
-			Iterator localIterator = this.mFlingMdnsClientList.iterator();
-			while (localIterator.hasNext())
-				((MdnsClient) localIterator.next()).stopScan();
-			this.mFlingMdnsClientList.clear();
-		}
-		this.h = true;
-
-		if (this.mScannerLoopThread != null) {
-			boolean needWait = true;
-			while (needWait) {
-				try {
-					this.mScannerLoopThread.interrupt();
-					this.mScannerLoopThread.join();
-					needWait = false;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					needWait = true;
+				Thread.sleep(3000L);
+			} catch (InterruptedException e) {
+				if (mQuit) {
+					break;
 				}
 			}
-		}
 
-		this.mScannerLoopThread = null;
-	}
+			synchronized (mFoundDevices) {
+				long currentTime = SystemClock.elapsedRealtime();
 
-	public final void onAllDevicesOffline() {
-		synchronized (this.e) {
-			boolean bool = this.e.isEmpty();
-			int i = 0;
-			if (!bool) {
-				this.e.clear();
-				i = 1;
-			}
-			if (i != 0) {
-				final List listeners = super.getDeviceScannerListenerList();
-				if (listeners != null) {
-					this.mHandler.post(new Runnable() {
+				Iterator<Entry<String, ScannerDeviceData>> it = mFoundDevices
+						.entrySet().iterator();
+				while (it.hasNext()) {
+					ScannerDeviceData deviceInfo = it.next().getValue();
+
+					int offline = 0;
+					if (currentTime - deviceInfo.mElapsedRealtime < 60000L) {
+						offline = 0;
+					} else {
+						offline = 1;
+					}
+
+					if (offline == 0) {
+						continue;
+					}
+
+					final FlingDevice device = deviceInfo.mFlingDevice;
+
+					mHandler.post(new Runnable() {
 
 						@Override
 						public void run() {
-							// TODO Auto-generated method stub
-							Iterator localIterator = listeners.iterator();
-							while (localIterator.hasNext())
-								((IDeviceScanListener) localIterator.next())
-										.onAllDevicesOffline();
+							notifyDeviceOffline(device);
 						}
 
 					});
+
+					log.d("expired record for %s", device);
+
+					it.remove();
 				}
 			}
-			return;
 		}
+
+		log.d("refreshLoop exiting");
+
+		return;
 	}
 
-	final class ScannerPrivData {
+	private static final class ScannerDeviceData {
 		FlingDevice mFlingDevice;
 		long mElapsedRealtime;
 		long mTTl;
-		boolean d;
+		boolean mIsOffline;
 
-		ScannerPrivData(FlingDevice device, long ttl) {
-			super();
+		ScannerDeviceData(FlingDevice device, long ttl) {
 			mFlingDevice = device;
 			mTTl = ttl;
 			mElapsedRealtime = SystemClock.elapsedRealtime();

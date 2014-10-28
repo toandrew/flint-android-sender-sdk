@@ -237,7 +237,7 @@ abstract class MdnsClient {
 						}
 
 						String str4 = arrayOfString[0];
-						localavm.mFlingDeviceInfo.e = str4;
+						localavm.mFlingDeviceInfo.mFriendlyName = str4;
 						String str5 = arrayOfString[1];
 						localavm.mFlingDeviceInfo.mName = str5;
 						String str6 = arrayOfString[2];
