@@ -97,9 +97,8 @@ public class FlingDevice implements SafeParcelable {
 			}
 
 			if (source.dataPosition() != length) {
-				throw new FlingRuntimeException((new StringBuilder(
-						"Overread allowed size end=")).append(length)
-						.toString(), source);
+				throw new FlingRuntimeException("Overread allowed size end="
+						+ length, source);
 			}
 
 			return new FlingDevice(versionCode, deviceId, hostAddress,
@@ -208,14 +207,14 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set device's service port.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param port
 	 *            device service port
 	 * @return port device service port
 	 */
-	public static int setServicePort(FlingDevice flingdevice, int port) {
-		flingdevice.mServicePort = port;
+	public static int setServicePort(FlingDevice device, int port) {
+		device.mServicePort = port;
 		return port;
 	}
 
@@ -238,116 +237,115 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Set fling device's id.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param deviceID
 	 *            device Id
 	 * @return device Id
 	 */
-	public static String setDeviceId(FlingDevice flingdevice, String deviceID) {
-		flingdevice.mDeviceId = deviceID;
+	public static String setDeviceId(FlingDevice device, String deviceID) {
+		device.mDeviceId = deviceID;
 		return deviceID;
 	}
 
 	/**
 	 * Get fling device's host.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @return device's host address.
 	 */
-	public static Inet4Address getHost(FlingDevice flingdevice) {
-		return flingdevice.mHost;
+	public static Inet4Address getHost(FlingDevice device) {
+		return device.mHost;
 	}
 
 	/**
 	 * Set device's host.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param inet4address
 	 *            host address
 	 * @return device address
 	 */
-	public static Inet4Address setHost(FlingDevice flingdevice,
+	public static Inet4Address setHost(FlingDevice device,
 			Inet4Address inet4address) {
-		flingdevice.mHost = inet4address;
+		device.mHost = inet4address;
 		return inet4address;
 	}
 
 	/**
 	 * Set icon list.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param list
 	 *            icon list
 	 * @return icon list
 	 */
-	public static List<WebImage> setIconList(FlingDevice flingdevice,
+	public static List<WebImage> setIconList(FlingDevice device,
 			List<WebImage> list) {
-		flingdevice.mIconList = list;
+		device.mIconList = list;
 		return list;
 	}
 
 	/**
 	 * Get device from bundle data.
 	 *
-	 * @param bundle
+	 * @param data
 	 *            bundle data which contains device info
 	 * @return Fling device
 	 */
-	public static FlingDevice getFromBundle(Bundle bundle) {
-		if (bundle == null) {
+	public static FlingDevice getFromBundle(Bundle data) {
+		if (data == null) {
 			return null;
 		}
 
-		bundle.setClassLoader(FlingDevice.class.getClassLoader());
+		data.setClassLoader(FlingDevice.class.getClassLoader());
 
-		return (FlingDevice) bundle
+		return (FlingDevice) data
 				.getParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE");
 	}
 
 	/**
 	 * Set friendly name.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param name
 	 *            device name
 	 * @return device name
 	 */
-	public static String setFriendlyName(FlingDevice flingdevice, String name) {
-		flingdevice.mFriendlyName = name;
+	public static String setFriendlyName(FlingDevice device, String name) {
+		device.mFriendlyName = name;
 		return name;
 	}
 
 	/**
 	 * Set model name.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param name
 	 *            device model name
 	 * @return device model name
 	 */
-	public static String setModelName(FlingDevice flingdevice, String name) {
-		flingdevice.mModleName = name;
+	public static String setModelName(FlingDevice device, String name) {
+		device.mModleName = name;
 		return name;
 	}
 
 	/**
 	 * Set device's version.
 	 *
-	 * @param flingdevice
+	 * @param device
 	 *            Fling device
 	 * @param version
 	 *            device version
 	 * @return device version
 	 */
-	public static String setDeviceVersion(FlingDevice flingdevice,
-			String version) {
-		flingdevice.mDeviceVersion = version;
+	public static String setDeviceVersion(FlingDevice device, String version) {
+		device.mDeviceVersion = version;
 		return version;
 	}
 
@@ -363,15 +361,15 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Fill device's bundle data with FlingDevice data
 	 *
-	 * @param bundle
+	 * @param data
 	 *            FlingDevice bundle data
 	 */
-	public final void putInBundle(Bundle bundle) {
-		if (bundle == null) {
+	public final void putInBundle(Bundle data) {
+		if (data == null) {
 			return;
 		}
 
-		bundle.putParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE", this);
+		data.putParcelable("tv.matchstick.fling.EXTRA_FLING_DEVICE", this);
 	}
 
 	/**
@@ -427,21 +425,20 @@ public class FlingDevice implements SafeParcelable {
 	/**
 	 * Check whether they are the same Fling device.
 	 *
-	 * @param flingDevice
+	 * @param device
 	 *            Fling device
 	 * @return true for same device, or false
 	 */
-	public final boolean isSameDevice(FlingDevice flingDevice) {
-		if (flingDevice == null) {
+	public final boolean isSameDevice(FlingDevice device) {
+		if (device == null) {
 			return false;
 		}
 
 		if (getDeviceId() == null) {
-			return (flingDevice.getDeviceId() == null);
+			return (device.getDeviceId() == null);
 		}
 
-		return ObjEqualChecker.isEquals(getDeviceId(),
-				flingDevice.getDeviceId());
+		return ObjEqualChecker.isEquals(getDeviceId(), device.getDeviceId());
 
 	}
 
