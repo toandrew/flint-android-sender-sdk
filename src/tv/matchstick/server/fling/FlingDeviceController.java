@@ -41,7 +41,7 @@ import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.BinaryPayload;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
 import tv.matchstick.server.utils.ApplicationInfo;
-import tv.matchstick.server.utils.LOG;
+import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
@@ -103,7 +103,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 	private String mLastApplicationId;
 	private String mLastSessionId;
-	private final LOG log = new LOG("FlingDeviceController");
+	private final LogUtil log = new LogUtil("FlingDeviceController");
 	private Integer controlerId;
 	private final Context mContext;
 	private final Handler mHandler;
@@ -613,7 +613,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 		else
 			enable = false;
 		log.setDebugEnabled(enable);
-		LOG.setDebugEnabledByDefault(enable);
+		LogUtil.setDebugEnabledByDefault(enable);
 	}
 
 	public final void setSender(FlingChannel flingChannel) {
@@ -622,7 +622,6 @@ public final class FlingDeviceController implements FlingSocketListener {
 	}
 
 	public final void setSubTag(String tag) {
-		log.setSubTag(tag);
 	}
 
 	public final void reconnectToDevice(String lastApplicationId,

@@ -28,13 +28,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import tv.matchstick.server.utils.LOG;
+import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.os.SystemClock;
 
 public final class FlingSocketMultiplexer {
-	private static LOG log = new LOG("FlingSocketMultiplexer");
-	
+	private static LogUtil log = new LogUtil("FlingSocketMultiplexer");
+
 	private static FlingSocketMultiplexer mInstance;
 	private final LinkedList mRegistedFlingSocketList = new LinkedList();
 	private final LinkedList mAllFlingSocketList = new LinkedList();
@@ -60,10 +60,6 @@ public final class FlingSocketMultiplexer {
 		return mInstance;
 	}
 
-	static CountDownLatch getCountDownLatch(FlingSocketMultiplexer multi) {
-		return multi.mCountDownLatch;
-	}
-
 	static synchronized void processData(FlingSocketMultiplexer multiplexer) {
 		ArrayList errorFlingSocketList = new ArrayList();
 
@@ -82,12 +78,10 @@ public final class FlingSocketMultiplexer {
 									.register(multiplexer.mSelector, 0)
 									.attach(flingSocket);
 
-							// atv1.mContext_k.startService(atv1.mIntent_l);
 							multiplexer.mRegistedFlingSocketList
 									.add(flingSocket);
 						} catch (Exception e) {
-							log.d(e, "Error while connecting socket.",
-									new Object[0]);
+							log.e(e, "Error while connecting socket.");
 							errorFlingSocketList.add(flingSocket);
 						}
 					}
@@ -182,15 +176,6 @@ public final class FlingSocketMultiplexer {
 		}
 	}
 
-	static LOG c() {
-		return log;
-	}
-
-	static Thread d(FlingSocketMultiplexer atv1) {
-		atv1.mFlingSocketMultiplexerThread = null;
-		return null;
-	}
-
 	private void checkStatus() {
 		if (g) {
 			StringBuffer stringbuffer = new StringBuffer();
@@ -207,10 +192,9 @@ public final class FlingSocketMultiplexer {
 			}
 			throw new IllegalStateException(stringbuffer.toString());
 		}
-		if (mFlingSocketMultiplexerThread == null)
+		if (mFlingSocketMultiplexerThread == null) {
 			throw new IllegalStateException("not started; call start()");
-		else
-			return;
+		}
 	}
 
 	final synchronized void init() throws IOException {
@@ -218,7 +202,7 @@ public final class FlingSocketMultiplexer {
 			return;
 		}
 
-		log.d("starting multiplexer", new Object[0]);
+		log.d("starting multiplexer");
 		mCountDownLatch = new CountDownLatch(1);
 		g = false;
 		mQuitLoop = false;
@@ -235,15 +219,13 @@ public final class FlingSocketMultiplexer {
 						processData(FlingSocketMultiplexer.this);
 						return;
 					} catch (Throwable localThrowable) {
-						FlingSocketMultiplexer.c().e(localThrowable,
-								"Unexpected throwable in selector loop",
-								new Object[0]);
+						log.e(localThrowable,
+								"Unexpected throwable in selector loop");
 						j = localThrowable;
 						g = true;
 						return;
 					} finally {
-						log.d("**** selector loop thread exiting",
-								new Object[0]);
+						log.d("**** selector loop thread exiting");
 						mFlingSocketMultiplexerThread = null;
 					}
 				}
@@ -270,8 +252,7 @@ public final class FlingSocketMultiplexer {
 		try {
 			checkStatus();
 			synchronized (mAllFlingSocketList) {
-				log.d("added socket", new Object[0]);
-				// mContext_k.startService(mIntent_l);
+				log.d("added socket");
 				mAllFlingSocketList.add(flingSocket);
 			}
 			mReadyToConnect.set(true);

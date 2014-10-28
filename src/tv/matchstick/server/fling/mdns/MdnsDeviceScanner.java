@@ -28,13 +28,13 @@ import java.util.Map;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
-import tv.matchstick.server.utils.LOG;
+import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.net.Uri;
 import android.os.SystemClock;
 
 public final class MdnsDeviceScanner extends DeviceScanner {
-	private static final LOG log = new LOG("MdnsDeviceScanner");
+	private static final LogUtil log = new LogUtil("MdnsDeviceScanner");
 
 	private final List mFlingMdnsClientList = new ArrayList();
 

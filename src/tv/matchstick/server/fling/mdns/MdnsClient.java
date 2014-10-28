@@ -43,11 +43,11 @@ import java.util.Set;
 
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
-import tv.matchstick.server.utils.LOG;
+import tv.matchstick.server.utils.LogUtil;
 import android.text.TextUtils;
 
 abstract class MdnsClient {
-	private static final LOG log = new LOG("MdnsClient");
+	private static final LogUtil log = new LogUtil("MdnsClient");
 
 	private final String mHostName;
 

@@ -34,7 +34,7 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
 import tv.matchstick.server.fling.socket.data.FlingMessage;
-import tv.matchstick.server.utils.LOG;
+import tv.matchstick.server.utils.LogUtil;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -44,7 +44,7 @@ import android.util.Log;
  * This is used to filter device
  */
 abstract class DeviceFilter {
-	private static final LOG log = new LOG("DeviceFilter");
+	private static final LogUtil log = new LogUtil("DeviceFilter");
 	private static AtomicLong mIdGen = new AtomicLong(0L);
 	private final Context mContext;
 	private final String mPackageName;
@@ -208,7 +208,7 @@ abstract class DeviceFilter {
 				} catch (IOException ex) {
 					log.d(ex.toString(), "Failed to send disconnect message");
 				} catch (JSONException je) {
-					log.e(je.toString(), "Failed to build disconnect message");
+					log.e(je, "Failed to build disconnect message");
 				} catch (Exception e) {
 					e.printStackTrace();
 					log.d(e.toString(), "Failed to send disconnect message");
@@ -277,9 +277,9 @@ abstract class DeviceFilter {
 
 				return;
 			} catch (JSONException ex) {
-				log.e(ex.toString(), "Failed to build messages");
+				log.e(ex, "Failed to build messages");
 			} catch (Exception e) {
-				log.e(e.toString(), "Failed to send messages");
+				log.e(e, "Failed to send messages");
 				e.printStackTrace();
 			}
 		}

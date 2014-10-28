@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.utils.LOG;
+import tv.matchstick.server.utils.LogUtil;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,7 +40,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 public abstract class DeviceScanner {
-	static final LOG log = new LOG("DeviceScanner");
+	static final LogUtil log = new LogUtil("DeviceScanner");
 
 	protected final Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -60,10 +60,6 @@ public abstract class DeviceScanner {
 		mConnectivityManager = (ConnectivityManager) context
 				.getSystemService("connectivity");
 		mWifiManager = (WifiManager) context.getSystemService("wifi");
-	}
-
-	static LOG log() {
-		return log;
 	}
 
 	private static List<NetworkInterface> getFlingNetworkInterfaceList() {
@@ -141,9 +137,7 @@ public abstract class DeviceScanner {
 					boolean connected;
 					if ((networkInfo != null) && (networkInfo.isConnected())) {
 						connected = true;
-						DeviceScanner
-								.log()
-								.d("connectivity state changed. connected? %b, errorState? %b",
+						log.d("connectivity state changed. connected? %b, errorState? %b",
 										connected, mErrorState);
 						checkBSSID();
 						if (!connected)
@@ -153,9 +147,7 @@ public abstract class DeviceScanner {
 							m = false;
 						}
 						if (connected) {
-							DeviceScanner
-									.log()
-									.d("re-established connectivity after connectivity changed;  restarting scan");
+							log.d("re-established connectivity after connectivity changed;  restarting scan");
 							startScanInit();
 
 							return;
@@ -165,7 +157,7 @@ public abstract class DeviceScanner {
 							return;
 						}
 
-						DeviceScanner.log().d(
+						log.d(
 								"lost connectivity while scanning;");
 						reportError();
 					}
