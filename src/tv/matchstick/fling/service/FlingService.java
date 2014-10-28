@@ -19,14 +19,19 @@ package tv.matchstick.fling.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import tv.matchstick.client.internal.IFlingCallbacks;
+import tv.matchstick.client.internal.IFlingDeviceControllerListener;
+import tv.matchstick.client.internal.IFlingServiceBroker;
 import tv.matchstick.client.internal.LOG;
+import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.fling.bridge.FlingConnectedClient;
-import tv.matchstick.server.fling.bridge.FlingServiceBinder;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.RemoteException;
 
 /**
  * This service used to control all fling media actions
@@ -48,17 +53,6 @@ public class FlingService extends Service {
 
 	public static LOG log() {
 		return log;
-	}
-
-	/**
-	 * Get connected fling clients
-	 * 
-	 * @param flingservice
-	 * @return client list
-	 */
-	public static List<FlingConnectedClient> getFlingClients(
-			FlingService flingservice) {
-		return flingservice.mFlingClients;
 	}
 
 	private synchronized void removeFlingClient(FlingConnectedClient client) {
@@ -94,7 +88,7 @@ public class FlingService extends Service {
 
 		log.d("onBind!!!!");
 
-		return (new FlingServiceBinder(this, (byte) 0)).asBinder();
+		return mBinder.asBinder();
 	}
 
 	@Override
@@ -107,4 +101,49 @@ public class FlingService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		return Service.START_STICKY;
 	}
+
+	private final IFlingServiceBroker.Stub mBinder = new IFlingServiceBroker.Stub() {
+
+		@Override
+		public void init(IFlingCallbacks callbacks, int version,
+				String packageName, IBinder binder, Bundle bundle)
+				throws RemoteException {
+			// TODO Auto-generated method stub
+
+			log.d("begin init fling service binder!");
+
+			try {
+				FlingDevice flingdevice = FlingDevice.getFromBundle(bundle);
+				String lastApplicationId = bundle
+						.getString("last_application_id");
+				String lastSessionId = bundle.getString("last_session_id");
+				long flags = bundle.getLong(
+						"tv.matchstick.fling.EXTRA_FLING_FLAGS", 0L);
+
+				log.d("connecting to device with lastApplicationId=%s, lastSessionId=%s",
+						lastApplicationId, lastSessionId);
+
+				IFlingDeviceControllerListener listener = IFlingDeviceControllerListener.Stub
+						.asInterface(binder);
+
+				/**
+				 * Add one fling client to fling service's client list
+				 */
+				mFlingClients.add(new FlingConnectedClient(FlingService.this,
+						callbacks, flingdevice, lastApplicationId,
+						lastSessionId, listener, packageName, flags));
+
+				log.d("end init fling service binder!");
+			} catch (Exception e) {
+				log.e(e, "Failed to init fling service binder!");
+
+				try {
+					callbacks.onPostInitComplete(10, null, null);
+				} catch (RemoteException re) {
+					log.d("client died while brokering service");
+				}
+			}
+		}
+
+	};
 }

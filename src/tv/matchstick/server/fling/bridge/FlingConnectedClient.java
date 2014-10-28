@@ -58,7 +58,7 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 	 * @param packageName
 	 * @param flags
 	 */
-	FlingConnectedClient(FlingService flingservice, IFlingCallbacks callbacks,
+	public FlingConnectedClient(FlingService flingservice, IFlingCallbacks callbacks,
 			FlingDevice flingdevice, String lastApplicationId,
 			String lastSessionId, IFlingDeviceControllerListener listener,
 			String packageName, long flags) {
