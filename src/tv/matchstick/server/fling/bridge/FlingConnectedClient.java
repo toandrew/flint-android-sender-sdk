@@ -224,13 +224,13 @@ public final class FlingConnectedClient extends IFlingSrvController.Stub {
 	 */
 	@Override
 	public final void onApplicationConnected(
-			ApplicationMetadata applicationmetadata, String applicationId,
+			ApplicationMetadata applicationmetadata, String statusText,
 			String sessionId, boolean relaunched) {
 		mLastAppId = applicationmetadata.getApplicationId();
 		mLastSessionId = sessionId;
 		try {
 			mFlingDeviceControllerListener.onApplicationConnected(
-					applicationmetadata, applicationId, sessionId, relaunched);
+					applicationmetadata, statusText, sessionId, relaunched);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

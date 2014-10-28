@@ -24,7 +24,7 @@ interface IFlingDeviceControllerListener
 	void onDisconnected(int statusCode);
 
 	void onApplicationConnected(
-			in ApplicationMetadata applicationMetadata, String applicationId,
+			in ApplicationMetadata applicationMetadata, String statusText,
 			String sessionId, boolean relaunched);
 
 	void postApplicationConnectionResult(int statusCode);

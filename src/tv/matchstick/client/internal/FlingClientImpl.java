@@ -141,7 +141,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 			 */
 			@Override
 			public void onApplicationConnected(ApplicationMetadata data,
-					String applicationId, String sessionId, boolean relaunched) {
+					String statusText, String sessionId, boolean relaunched) {
 				mApplicationMetadata = data;
 				mApplicationId = data.getApplicationId();
 				mSessionId = sessionId;
@@ -149,7 +149,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 					if (mResultCallback != null) {
 						mResultCallback
 								.onResult(new ApplicationConnectionResultImpl(
-										new Status(0), data, applicationId,
+										new Status(0), data, statusText,
 										sessionId, relaunched));
 						mResultCallback = null;
 					}
