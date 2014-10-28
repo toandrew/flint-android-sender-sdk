@@ -24,6 +24,7 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
+import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 
 /**
@@ -31,7 +32,7 @@ import android.os.RemoteException;
  * device,etc)
  * 
  */
-public final class FlingConnectedClient extends IFlingSrvController.Stub {
+public final class FlingConnectedClient implements IFlingSrvController {
 	final FlingService mFlingService;
 	private FlingDeviceControllerStubImpl mStubImpl;
 	private final IFlingDeviceControllerListener mFlingDeviceControllerListener;

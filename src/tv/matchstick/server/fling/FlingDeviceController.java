@@ -108,7 +108,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 	private final Context mContext;
 	private final Handler mHandler;
 	private final FlingDevice mFlingDevice;
-	private final IFlingSrvController.Stub mFlingSrvController;
+	private final IFlingSrvController mFlingSrvController;
 	private final FlingSocket mFlingSocket;
 	private AtomicLong mRequestIdGen;
 
@@ -157,11 +157,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 		@Override
 		protected void onRequestStatus(int result) {
-			try {
-				mFlingSrvController.onRequestStatus(result);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onRequestStatus(result);
 		}
 
 		@Override
@@ -195,11 +191,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 		@Override
 		protected void onApplicationConnectionFailed(int result) {
-			try {
-				mFlingSrvController.onApplicationConnectionFailed(result);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onApplicationConnectionFailed(result);
 		}
 
 		@Override
@@ -210,18 +202,10 @@ public final class FlingDeviceController implements FlingSocketListener {
 				if (mReconnectStrategy.reset()) {
 					log.d("calling Listener.onConnectedWithoutApp()");
 
-					try {
-						mFlingSrvController.onConnectedWithoutApp();
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
+					mFlingSrvController.onConnectedWithoutApp();
 				} else {
-					try {
-						mFlingSrvController
-								.onApplicationConnectionFailed(statusCode);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
+					mFlingSrvController
+							.onApplicationConnectionFailed(statusCode);
 				}
 				mApplicationId = null;
 				mSessionId_y = null;
@@ -248,7 +232,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 	private FlingDeviceController(Context context, Handler handler,
 			FlingDevice device, String packageName, long debugLevel,
-			IFlingSrvController.Stub controller) {
+			IFlingSrvController controller) {
 		controlerId = 0;
 		mContext = context;
 		mHandler = handler;
@@ -266,9 +250,9 @@ public final class FlingDeviceController implements FlingSocketListener {
 
 	public static FlingDeviceController create(Context context,
 			Handler handler, String packageName, FlingDevice device,
-			long debugLevel, IFlingSrvController.Stub crtl) {
+			long debugLevel, IFlingSrvController ctrl) {
 		FlingDeviceController controller = new FlingDeviceController(context,
-				handler, device, packageName, debugLevel, crtl);
+				handler, device, packageName, debugLevel, ctrl);
 		controller.generateId();
 
 		mFlingDeviceController = controller;
@@ -316,19 +300,11 @@ public final class FlingDeviceController implements FlingSocketListener {
 		mLastSessionId = mSessionId;
 		if (mReconnectStrategy.reset()) {
 			mHandler.removeCallbacks(mReconnectRunnable);
-			try {
-				mFlingSrvController.onConnected();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+
+			mFlingSrvController.onConnected();
 		} else {
-			try {
-				mFlingSrvController.onApplicationConnected(
-						mApplicationMetadata, mStatusText, mSessionId,
-						relaunched);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onApplicationConnected(mApplicationMetadata,
+					mStatusText, mSessionId, relaunched);
 		}
 	}
 
@@ -345,11 +321,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 		}
 
 		mStatusText = statusText;
-		try {
-			mFlingSrvController.onVolumeChanged(mStatusText, volume, muteState);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+
+		mFlingSrvController.onVolumeChanged(mStatusText, volume, muteState);
 
 		if (mApplicationId != null) {
 			String applicationId;
@@ -373,12 +346,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 								((String) (null)), true);
 						return;
 					} else {
-						try {
-							mFlingSrvController
-									.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
-						} catch (RemoteException e) {
-							e.printStackTrace();
-						}
+						mFlingSrvController
+								.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
 						return;
 					}
 				}
@@ -398,11 +367,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 						result = '\u07D5';
 					else
 						result = '\u07D4';
-					try {
-						controller.onApplicationConnectionFailed(result);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
+
+					controller.onApplicationConnectionFailed(result);
 				}
 				mApplicationId = null;
 				mSessionId_y = null;
@@ -417,21 +383,13 @@ public final class FlingDeviceController implements FlingSocketListener {
 			mLastSessionId = null;
 			if (!w) {
 				if (mReconnectStrategy.reset()) {
-					try {
-						mFlingSrvController.onConnectedWithoutApp();
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
+					mFlingSrvController.onConnectedWithoutApp();
 					return;
 				} else {
 					log.d("calling mListener.onApplicationConnectionFailed");
 
-					try {
-						mFlingSrvController
-								.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
+					mFlingSrvController
+							.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
 
 					return;
 				}
@@ -472,19 +430,12 @@ public final class FlingDeviceController implements FlingSocketListener {
 		}
 
 		if (wasReconnecting) {
-			try {
-				mFlingSrvController.onDisconnected(mDisconnectStatusCode);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onDisconnected(mDisconnectStatusCode);
+
 			mDisconnectStatusCode = 0;
 			return;
 		} else {
-			try {
-				mFlingSrvController.onConnectionFailed();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onConnectionFailed();
 			return;
 		}
 	}
@@ -504,11 +455,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 			mApplicationMetadata = null;
 			mSessionId = null;
 		}
-		try {
-			mFlingSrvController.onApplicationDisconnected(statusCode);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+
+		mFlingSrvController.onApplicationDisconnected(statusCode);
 	}
 
 	private void finishDisconnecting(int socketError) {
@@ -534,11 +482,7 @@ public final class FlingDeviceController implements FlingSocketListener {
 			disconnectStatusCode = FlingStatusCodes.NETWORK_ERROR;
 		mReconnectStrategy.reset();
 
-		try {
-			mFlingSrvController.onDisconnected(disconnectStatusCode);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+		mFlingSrvController.onDisconnected(disconnectStatusCode);
 	}
 
 	private void onSocketError(int socketError) {
@@ -572,11 +516,9 @@ public final class FlingDeviceController implements FlingSocketListener {
 			return;
 		}
 		mReconnectStrategy.reset();
-		try {
-			mFlingSrvController.onConnected();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+
+		mFlingSrvController.onConnected();
+
 		try {
 			mReceiverControlChannel.getStatus();
 			return;
@@ -645,12 +587,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 		if (TextUtils.isEmpty(transId)) {
 			log.w("ignoring attempt to send a text message with no destination ID");
 
-			try {
-				mFlingSrvController.onRequestCallback(namespace, id,
-						FlingStatusCodes.INVALID_REQUEST);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onRequestCallback(namespace, id,
+					FlingStatusCodes.INVALID_REQUEST);
 
 			return;
 		}
@@ -703,12 +641,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 		if (TextUtils.isEmpty(transId)) {
 			log.w("ignoring attempt to send a binary message with no destination ID");
 
-			try {
-				mFlingSrvController.onRequestCallback(nameSpace, requestId,
-						FlingStatusCodes.INVALID_REQUEST);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController.onRequestCallback(nameSpace, requestId,
+					FlingStatusCodes.INVALID_REQUEST);
 			return;
 		}
 		if (transId == null) {
@@ -805,12 +739,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 			boolean relaunch) {
 		log.d("launchApplicationInternal() id=%s, relaunch=%b", appId, relaunch);
 		if (appId == null || appId.equals("")) {
-			try {
-				mFlingSrvController
-						.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_FOUND);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			mFlingSrvController
+					.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_FOUND);
 			return;
 		}
 		if (relaunch) {
@@ -880,12 +810,8 @@ public final class FlingDeviceController implements FlingSocketListener {
 				return;
 
 			case 0:
-				try {
-					mFlingSrvController.notifyOnMessageReceived(nameSpace,
-							message.getMessage());
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+				mFlingSrvController.notifyOnMessageReceived(nameSpace,
+						message.getMessage());
 				return;
 
 			case 1:
@@ -894,11 +820,9 @@ public final class FlingDeviceController implements FlingSocketListener {
 			}
 			byte bytes[] = new byte[binary.getLength()];
 			binary.copy(bytes);
-			try {
-				mFlingSrvController.onReceiveBinary(nameSpace, bytes);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+
+			mFlingSrvController.onReceiveBinary(nameSpace, bytes);
+
 			return;
 		}
 
@@ -971,32 +895,19 @@ public final class FlingDeviceController implements FlingSocketListener {
 					&& (sessionId == null || sessionId.equals(mSessionId))) {
 				log.d("already connected to requested app, so skipping join logic");
 
-				try {
-					mFlingSrvController.onApplicationConnected(
-							mApplicationMetadata, mStatusText, mSessionId,
-							false);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+				mFlingSrvController.onApplicationConnected(
+						mApplicationMetadata, mStatusText, mSessionId, false);
 				return;
 			}
 			log.d("clearing mLastConnected* variables");
 			mLastApplicationId = null;
 			mLastSessionId = null;
 			if (mReconnectStrategy.reset()) {
-				try {
-					mFlingSrvController.onConnectedWithoutApp();
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+				mFlingSrvController.onConnectedWithoutApp();
 				return;
 			} else {
-				try {
-					mFlingSrvController
-							.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+				mFlingSrvController
+						.onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
 				return;
 			}
 		}
@@ -1083,11 +994,9 @@ public final class FlingDeviceController implements FlingSocketListener {
 	public final void leaveApplicationInternal() {
 		log.d("leaveApplicationInternal()");
 		if (mApplicationMetadata == null) {
-			try {
-				mFlingSrvController.onInvalidRequest();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+
+			mFlingSrvController.onInvalidRequest();
+
 			return;
 		} else {
 			onApplicationDisconnectedInternal(0);
