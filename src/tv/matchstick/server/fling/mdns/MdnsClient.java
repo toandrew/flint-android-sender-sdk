@@ -37,8 +37,6 @@ import android.util.Log;
 abstract class MdnsClient {
     private static final LOG log = new LOG("MdnsClient");
 
-    private static final String FOUND_SERVICE_TYPE = "_MatchStick._tcp.local.";
-
     private final String mHostName;
 
     private final NetworkInterface mNetwork;
@@ -81,7 +79,7 @@ abstract class MdnsClient {
         public void serviceResolved(ServiceEvent event) {
             // TODO Auto-generated method stub
 
-            log.d("MdnsClient", "serviceResolved:" + event);
+            Log.d("MdnsClient", "serviceResolved:" + event);
 
             // get device info
             FlingDeviceInfo deviceInfo = extractDeviceInfo(event);
@@ -161,7 +159,7 @@ abstract class MdnsClient {
 
         if (mJmDNS != null) {
             try {
-                mJmDNS.removeServiceListener(FOUND_SERVICE_TYPE, mJmdnsListener);
+                mJmDNS.removeServiceListener(mHostName, mJmdnsListener);
 
                 mJmDNS.close();
             } catch (Exception e) {
@@ -213,8 +211,7 @@ abstract class MdnsClient {
                         mJmDNS = JmDNS.create(mHostName);
                     }
 
-                    mJmDNS.addServiceListener(FOUND_SERVICE_TYPE,
-                            mJmdnsListener);
+                    mJmDNS.addServiceListener(mHostName, mJmdnsListener);
 
                 } catch (IOException e) {
                     e.printStackTrace();
