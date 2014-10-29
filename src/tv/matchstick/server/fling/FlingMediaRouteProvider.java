@@ -163,7 +163,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 		mMdnsDeviceScanner = new MdnsDeviceScanner(context);
 		mMdnsDeviceScanner.addListener(mDeviceScannerListener);
 		mSsdpDeviceScanner = new SsdpDeviceScanner(context);
-        mSsdpDeviceScanner.addListener(mDeviceScannerListener);
+		mSsdpDeviceScanner.addListener(mDeviceScannerListener);
 
 		publishRoutes();
 	}
@@ -451,11 +451,12 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 					mMdnsDeviceScanner);
 			FlingDeviceService.startScanFlingDevice(super.mContext,
 					mMdnsDeviceScanner);
-			
+
 			FlingDeviceService.stopScanFlingDevice(super.mContext,
-                    mSsdpDeviceScanner);
-            FlingDeviceService.startScanFlingDevice(super.mContext,
-                    mSsdpDeviceScanner);
+					mSsdpDeviceScanner);
+			FlingDeviceService.startScanFlingDevice(super.mContext,
+					mSsdpDeviceScanner);
+
 			return;
 		}
 
@@ -464,7 +465,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 		FlingDeviceService.stopScanFlingDevice(super.mContext,
 				mMdnsDeviceScanner);
 		FlingDeviceService.stopScanFlingDevice(super.mContext,
-                mSsdpDeviceScanner);
+				mSsdpDeviceScanner);
 	}
 
 	public final RouteController getRouteController(String routeId) {

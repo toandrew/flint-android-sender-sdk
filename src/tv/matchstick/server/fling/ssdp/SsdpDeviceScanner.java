@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,463 +34,461 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import tv.matchstick.fling.FlingDevice;
+import tv.matchstick.fling.images.WebImage;
+import tv.matchstick.server.fling.mdns.DeviceScanner;
+import tv.matchstick.server.fling.mdns.IDeviceScanListener;
+import tv.matchstick.server.fling.ssdp.SSDP.ParsedDatagram;
 import android.content.Context;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
-import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.fling.images.WebImage;
-import tv.matchstick.server.fling.mdns.DeviceScanner;
-import tv.matchstick.server.fling.mdns.FlingDeviceHelper;
-import tv.matchstick.server.fling.mdns.IDeviceScanListener;
-import tv.matchstick.server.fling.ssdp.SSDP.ParsedDatagram;
 
 public class SsdpDeviceScanner extends DeviceScanner {
-    private final static String TAG = "SsdpDeviceScanner";
-    private final Map<String, ScannerPrivData> mScannerData = new HashMap<String, ScannerPrivData>();
-    private final static int NUM_OF_THREADS = 20;
-    private final static int RESCAN_INTERVAL = 10000;
-    private SSDPSocket mSSDPSocket;
-    private Thread mResponseThread;
-    private Thread mNotifyThread;
-    private Pattern uuidReg;
-    private List<String> mDiscoveredDeviceList = new ArrayList<String>();
-    private ConcurrentHashMap<String, String> mFoundDeviceMap = new ConcurrentHashMap<String, String>();
-    private Timer mDataTimer;
-    
-    private Executor mExecutor = Executors.newFixedThreadPool(NUM_OF_THREADS,
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread th = new Thread(r);
-                    th.setName("SSDP Thread");
-                    return th;
-                }
-            });
+	private final static String TAG = "SsdpDeviceScanner";
+	private final Map<String, ScannerPrivData> mScannerData = new HashMap<String, ScannerPrivData>();
+	private final static int NUM_OF_THREADS = 20;
+	private final static int RESCAN_INTERVAL = 10000;
+	private SSDPSocket mSSDPSocket;
+	private Thread mResponseThread;
+	private Thread mNotifyThread;
+	private Pattern uuidReg;
+	private List<String> mDiscoveredDeviceList = new ArrayList<String>();
+	private ConcurrentHashMap<String, String> mFoundDeviceMap = new ConcurrentHashMap<String, String>();
+	private Timer mDataTimer;
 
-    public SsdpDeviceScanner(Context context) {
-        super(context);
-        uuidReg = Pattern.compile("(?<=uuid:)(.+?)(?=(::)|$)");
-    }
+	private Executor mExecutor = Executors.newFixedThreadPool(NUM_OF_THREADS,
+			new ThreadFactory() {
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread th = new Thread(r);
+					th.setName("SSDP Thread");
+					return th;
+				}
+			});
 
-    private void openSocket() {
-        if (mSSDPSocket != null && mSSDPSocket.isConnected())
-            return;
+	public SsdpDeviceScanner(Context context) {
+		super(context);
+		uuidReg = Pattern.compile("(?<=uuid:)(.+?)(?=(::)|$)");
+	}
 
-        try {
-            InetAddress source = getIpAddress(mContext);
-            if (source == null)
-                return;
+	private void openSocket() {
+		if (mSSDPSocket != null && mSSDPSocket.isConnected())
+			return;
 
-            mSSDPSocket = new SSDPSocket(source);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+		try {
+			InetAddress source = getIpAddress(mContext);
+			if (source == null)
+				return;
 
-    private InetAddress getIpAddress(Context context)
-            throws UnknownHostException {
-        WifiManager wifiMgr = (WifiManager) context
-                .getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
-        int ip = wifiInfo.getIpAddress();
+			mSSDPSocket = new SSDPSocket(source);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-        if (ip == 0) {
-            return null;
-        } else {
-            byte[] ipAddress = convertIpAddress(ip);
-            return InetAddress.getByAddress(ipAddress);
-        }
-    }
+	private InetAddress getIpAddress(Context context)
+			throws UnknownHostException {
+		WifiManager wifiMgr = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+		int ip = wifiInfo.getIpAddress();
 
-    private byte[] convertIpAddress(int ip) {
-        return new byte[] { (byte) (ip & 0xFF), (byte) ((ip >> 8) & 0xFF),
-                (byte) ((ip >> 16) & 0xFF), (byte) ((ip >> 24) & 0xFF) };
-    }
+		if (ip == 0) {
+			return null;
+		} else {
+			byte[] ipAddress = convertIpAddress(ip);
+			return InetAddress.getByAddress(ipAddress);
+		}
+	}
 
-    public void start() {
-        stop();
-        openSocket();
+	private byte[] convertIpAddress(int ip) {
+		return new byte[] { (byte) (ip & 0xFF), (byte) ((ip >> 8) & 0xFF),
+				(byte) ((ip >> 16) & 0xFF), (byte) ((ip >> 24) & 0xFF) };
+	}
 
-        mDataTimer = new Timer();
-        mDataTimer.schedule(new TimerTask() {
+	public void start() {
+		stop();
+		openSocket();
 
-            @Override
-            public void run() {
-                List<String> removeList = new ArrayList<String>();
-                synchronized (mScannerData) {
-                    Iterator iterator = mScannerData.keySet().iterator();
-                    while(iterator.hasNext()) {
-                        String key = (String) iterator.next();
-                        ScannerPrivData value = mScannerData.get(key);
-                        if (value.mElapsedRealtime < SystemClock.elapsedRealtime() - 8000) {
-                            removeList.add(key);
-                        }
-                    }
-                }
-                for (String id : removeList) {
-                    setDeviceOffline(id);
-                }
-            }
-        }, 100, RESCAN_INTERVAL);
+		mDataTimer = new Timer();
+		mDataTimer.schedule(new TimerTask() {
 
-        mResponseThread = new Thread(mResponseHandler);
-        mNotifyThread = new Thread(mRespNotifyHandler);
+			@Override
+			public void run() {
+				List<String> removeList = new ArrayList<String>();
+				synchronized (mScannerData) {
+					Iterator iterator = mScannerData.keySet().iterator();
+					while (iterator.hasNext()) {
+						String key = (String) iterator.next();
+						ScannerPrivData value = mScannerData.get(key);
+						if (value.mElapsedRealtime < SystemClock
+								.elapsedRealtime() - 8000) {
+							removeList.add(key);
+						}
+					}
+				}
+				for (String id : removeList) {
+					setDeviceOffline(id);
+				}
+			}
+		}, 100, RESCAN_INTERVAL);
 
-        mResponseThread.start();
-        mNotifyThread.start();
-    }
+		mResponseThread = new Thread(mResponseHandler);
+		mNotifyThread = new Thread(mRespNotifyHandler);
 
-    public void stop() {
-        if (mDataTimer != null) {
-            mDataTimer.cancel();
-        }
+		mResponseThread.start();
+		mNotifyThread.start();
+	}
 
-        if (mResponseThread != null) {
-            mResponseThread.interrupt();
-        }
+	public void stop() {
+		if (mDataTimer != null) {
+			mDataTimer.cancel();
+		}
 
-        if (mNotifyThread != null) {
-            mNotifyThread.interrupt();
-        }
+		if (mResponseThread != null) {
+			mResponseThread.interrupt();
+		}
 
-        if (mSSDPSocket != null) {
-            mSSDPSocket.close();
-            mSSDPSocket = null;
-        }
-    }
+		if (mNotifyThread != null) {
+			mNotifyThread.interrupt();
+		}
 
-    private Runnable mResponseHandler = new Runnable() {
-        @Override
-        public void run() {
-            while (mSSDPSocket != null) {
-                try {
-                    handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
-                            .responseReceive()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        }
-    };
+		if (mSSDPSocket != null) {
+			mSSDPSocket.close();
+			mSSDPSocket = null;
+		}
+	}
 
-    private Runnable mRespNotifyHandler = new Runnable() {
-        @Override
-        public void run() {
-            while (mSSDPSocket != null) {
-                try {
-                    handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
-                            .notifyReceive()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        }
-    };
+	private Runnable mResponseHandler = new Runnable() {
+		@Override
+		public void run() {
+			while (mSSDPSocket != null) {
+				try {
+					handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
+							.responseReceive()));
+				} catch (IOException e) {
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+	};
 
-    private void handleDatagramPacket(final ParsedDatagram pd) {
-        String usnKey = pd.data.get(SSDP.USN);
-        if (usnKey == null || usnKey.length() == 0)
-            return;
+	private Runnable mRespNotifyHandler = new Runnable() {
+		@Override
+		public void run() {
+			while (mSSDPSocket != null) {
+				try {
+					handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
+							.notifyReceive()));
+				} catch (IOException e) {
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+	};
 
-        Matcher m = uuidReg.matcher(usnKey);
+	private void handleDatagramPacket(final ParsedDatagram pd) {
+		String usnKey = pd.data.get(SSDP.USN);
+		if (usnKey == null || usnKey.length() == 0)
+			return;
 
-        if (!m.find())
-            return;
+		Matcher m = uuidReg.matcher(usnKey);
 
-        String uuid = m.group();
+		if (!m.find())
+			return;
 
-        if (SSDP.NTS_BYEBYE.equals(pd.data.get(SSDP.NTS))) {
-            android.util.Log.d(TAG, "byebye uuid = " + uuid);
-            String deviceId = mFoundDeviceMap.get(uuid);
-            setDeviceOffline(deviceId);
-        } else {
-            String location = pd.data.get(SSDP.LOCATION);
+		String uuid = m.group();
 
-            if (location == null || location.length() == 0)
-                return;
-            if (!mDiscoveredDeviceList.contains(uuid)
-                    && mFoundDeviceMap.get(uuid) == null) {
-                mDiscoveredDeviceList.add(uuid);
-                android.util.Log.d(TAG, "location = " + location);
-                getLocationData(location, uuid);
-            } else {
-                String deviceId = mFoundDeviceMap.get(uuid);
-                if (deviceId != null) {
-                    synchronized (mScannerData) {
-                        mScannerData.get(deviceId).mElapsedRealtime = SystemClock
-                                .elapsedRealtime();
-                    }
-                }
-            }
-        }
-    }
+		if (SSDP.NTS_BYEBYE.equals(pd.data.get(SSDP.NTS))) {
+			android.util.Log.d(TAG, "byebye uuid = " + uuid);
+			String deviceId = mFoundDeviceMap.get(uuid);
+			setDeviceOffline(deviceId);
+		} else {
+			String location = pd.data.get(SSDP.LOCATION);
 
-    private void getLocationData(final String location, final String uuid) {
-        mExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                final LocationDevice device = new LocationDevice();
+			if (location == null || location.length() == 0)
+				return;
+			if (!mDiscoveredDeviceList.contains(uuid)
+					&& mFoundDeviceMap.get(uuid) == null) {
+				mDiscoveredDeviceList.add(uuid);
+				android.util.Log.d(TAG, "location = " + location);
+				getLocationData(location, uuid);
+			} else {
+				String deviceId = mFoundDeviceMap.get(uuid);
+				if (deviceId != null) {
+					synchronized (mScannerData) {
+						mScannerData.get(deviceId).mElapsedRealtime = SystemClock
+								.elapsedRealtime();
+					}
+				}
+			}
+		}
+	}
 
-                DefaultHandler dh = new DefaultHandler() {
-                    String currentValue = null;
-                    int iconPosition = 0;
+	private void getLocationData(final String location, final String uuid) {
+		mExecutor.execute(new Runnable() {
+			@Override
+			public void run() {
+				final LocationDevice device = new LocationDevice();
 
-                    @Override
-                    public void characters(char[] ch, int start, int length)
-                            throws SAXException {
-                        if (currentValue == null) {
-                            currentValue = new String(ch, start, length);
-                        } else {
-                            currentValue += new String(ch, start, length);
-                        }
-                    }
+				DefaultHandler dh = new DefaultHandler() {
+					String currentValue = null;
+					int iconPosition = 0;
 
-                    @Override
-                    public void startElement(String uri, String localName,
-                            String qName, Attributes attributes)
-                            throws SAXException {
-                        if ("iconList".equals(qName)) {
-                            device.iconImages = new ArrayList<LocationImage>();
-                        } else if ("icon".equals(qName)) {
-                            LocationImage image = new LocationImage();
-                            device.iconImages.add(image);
-                        }
-                        currentValue = null;
-                    }
+					@Override
+					public void characters(char[] ch, int start, int length)
+							throws SAXException {
+						if (currentValue == null) {
+							currentValue = new String(ch, start, length);
+						} else {
+							currentValue += new String(ch, start, length);
+						}
+					}
 
-                    @Override
-                    public void endElement(String uri, String localName,
-                            String qName) throws SAXException {
-                        if ("URLBase".equals(qName)) {
-                            device.url = currentValue;
-                        } else if ("friendlyName".equals(qName)) {
-                            device.friendlyName = currentValue;
-                        } else if ("manufacturer".equals(qName)) {
-                            device.manufacturer = currentValue;
-                        } else if ("modelName".equals(qName)) {
-                            device.modelName = currentValue;
-                        } else if ("icon".equals(qName)) {
-                            iconPosition++;
-                        } else if ("mimetype".equals(qName)) {
-                            device.iconImages.get(iconPosition).mimetype = currentValue;
-                        } else if ("width".equals(qName)) {
-                            device.iconImages.get(iconPosition).width = currentValue;
-                        } else if ("height".equals(qName)) {
-                            device.iconImages.get(iconPosition).height = currentValue;
-                        } else if ("depth".equals(qName)) {
-                            device.iconImages.get(iconPosition).depth = currentValue;
-                        } else if ("url".equals(qName)) {
-                            device.iconImages.get(iconPosition).url = currentValue;
-                        }
-                        currentValue = null;
-                    }
-                };
+					@Override
+					public void startElement(String uri, String localName,
+							String qName, Attributes attributes)
+							throws SAXException {
+						if ("iconList".equals(qName)) {
+							device.iconImages = new ArrayList<LocationImage>();
+						} else if ("icon".equals(qName)) {
+							LocationImage image = new LocationImage();
+							device.iconImages.add(image);
+						}
+						currentValue = null;
+					}
 
-                SAXParserFactory factory = SAXParserFactory.newInstance();
+					@Override
+					public void endElement(String uri, String localName,
+							String qName) throws SAXException {
+						if ("URLBase".equals(qName)) {
+							device.url = currentValue;
+						} else if ("friendlyName".equals(qName)) {
+							device.friendlyName = currentValue;
+						} else if ("manufacturer".equals(qName)) {
+							device.manufacturer = currentValue;
+						} else if ("modelName".equals(qName)) {
+							device.modelName = currentValue;
+						} else if ("icon".equals(qName)) {
+							iconPosition++;
+						} else if ("mimetype".equals(qName)) {
+							device.iconImages.get(iconPosition).mimetype = currentValue;
+						} else if ("width".equals(qName)) {
+							device.iconImages.get(iconPosition).width = currentValue;
+						} else if ("height".equals(qName)) {
+							device.iconImages.get(iconPosition).height = currentValue;
+						} else if ("depth".equals(qName)) {
+							device.iconImages.get(iconPosition).depth = currentValue;
+						} else if ("url".equals(qName)) {
+							device.iconImages.get(iconPosition).url = currentValue;
+						}
+						currentValue = null;
+					}
+				};
 
-                SAXParser parser;
-                try {
-                    URL mURL = new URL(location);
-                    URLConnection urlConnection = mURL.openConnection();
-                    InputStream in = new BufferedInputStream(urlConnection
-                            .getInputStream());
-                    try {
-                        Scanner s = new Scanner(in).useDelimiter("\\A");
-                        String xml = s.hasNext() ? s.next() : "";
+				SAXParserFactory factory = SAXParserFactory.newInstance();
 
-                        parser = factory.newSAXParser();
-                        parser.parse(new ByteArrayInputStream(xml.getBytes()),
-                                dh);
-                    } finally {
-                        in.close();
-                    }
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (ParserConfigurationException e) {
-                    e.printStackTrace();
-                } catch (SAXException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+				SAXParser parser;
+				try {
+					URL mURL = new URL(location);
+					URLConnection urlConnection = mURL.openConnection();
+					InputStream in = new BufferedInputStream(urlConnection
+							.getInputStream());
+					try {
+						Scanner s = new Scanner(in).useDelimiter("\\A");
+						String xml = s.hasNext() ? s.next() : "";
 
-                onResult(uuid, device);
-            }
-        });
-    }
-    
-    private void onResult(String uuid, LocationDevice device) {
-        try {
-            String deviceId = device.friendlyName;
-            ScannerPrivData data = null;
-            final FlingDevice flingDevice;
-            if (deviceId != null) {
-                synchronized (mScannerData) {
-                    if (device.url == null) {
-                        mScannerData.remove(deviceId);
-                        mDiscoveredDeviceList.remove(uuid);
-                        return;
-                    }
+						parser = factory.newSAXParser();
+						parser.parse(new ByteArrayInputStream(xml.getBytes()),
+								dh);
+					} finally {
+						in.close();
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (ParserConfigurationException e) {
+					e.printStackTrace();
+				} catch (SAXException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
-                    int position = device.url.lastIndexOf(":");
-                    String ip = device.url.substring(
-                            "http://".length(), position);
-                    String port = device.url.substring(position + 1,
-                            device.url.length());
+				onResult(uuid, device);
+			}
+		});
+	}
 
-                    Inet4Address address = (Inet4Address) InetAddress
-                            .getByName(ip);
-                    ArrayList<WebImage> iconList = new ArrayList<WebImage>();
-                    if (device.iconImages != null) {
-                        for (LocationImage image : device.iconImages)
-                            iconList.add(new WebImage(Uri.parse(String
-                                    .format("http://%s:8008%s",
-                                            new Object[] { ip,
-                                                    image.url }))));
-                    }
+	private void onResult(String uuid, LocationDevice device) {
+		try {
+			String deviceId = device.friendlyName;
+			ScannerPrivData data = null;
+			final FlingDevice flingDevice;
+			if (deviceId != null) {
+				synchronized (mScannerData) {
+					if (device.url == null) {
+						mScannerData.remove(deviceId);
+						mDiscoveredDeviceList.remove(uuid);
+						return;
+					}
 
-                    deviceId = deviceId + address.getHostAddress();
-                    FlingDeviceHelper helper = FlingDevice
-                            .createHelper((String) deviceId, address);
-                    FlingDevice.setFriendlyName(helper.mFlingDevice,
-                            device.friendlyName);
-                    FlingDevice.setModelName(helper.mFlingDevice,
-                            device.modelName);
-                    FlingDevice.setDeviceVersion(helper.mFlingDevice,
-                            "02");
-                    FlingDevice.setServicePort(helper.mFlingDevice,
-                            Integer.valueOf(port));
-                    FlingDevice.setIconList(helper.mFlingDevice,
-                            iconList);
-                    data = (ScannerPrivData) mScannerData.get(deviceId);
-                    if (data != null) {
-                        if (helper.mFlingDevice.equals(data.mFlingDevice)) {
-                            if (!data.d) {
-                                data.mElapsedRealtime = SystemClock
-                                        .elapsedRealtime();
-                            }
-                            mDiscoveredDeviceList.remove(uuid);
-                            return;
-                        } else {
-                            mScannerData.remove(deviceId);
-                        }
-                    }
-                    flingDevice = helper.mFlingDevice;
-                    mScannerData.put((String) deviceId,
-                            new ScannerPrivData(flingDevice, 10L, uuid));
-                    mFoundDeviceMap.put(uuid, deviceId);
-                    mDiscoveredDeviceList.remove(uuid);
-                }
+					int position = device.url.lastIndexOf(":");
+					String ip = device.url.substring("http://".length(),
+							position);
+					String port = device.url.substring(position + 1,
+							device.url.length());
 
-                if (data != null && data.mFlingDevice != null) {
-                    notifyDeviceOffline(data.mFlingDevice);
-                }
+					Inet4Address address = (Inet4Address) InetAddress
+							.getByName(ip);
+					ArrayList<WebImage> iconList = new ArrayList<WebImage>();
+					if (device.iconImages != null) {
+						for (LocationImage image : device.iconImages)
+							iconList.add(new WebImage(Uri.parse(String.format(
+									"http://%s:8008%s", new Object[] { ip,
+											image.url }))));
+					}
 
-                final List<IDeviceScanListener> listenerList = getDeviceScannerListenerList();
-                if (listenerList == null)
-                    return;
+					deviceId = deviceId + address.getHostAddress();
 
-                mHandler.post(new Runnable() {
+					flingDevice = FlingDevice.Builder.create((String) deviceId,
+							address);
+					FlingDevice.setFriendlyName(flingDevice,
+							device.friendlyName);
+					FlingDevice.setModelName(flingDevice, device.modelName);
+					FlingDevice.setDeviceVersion(flingDevice, "02");
+					FlingDevice.setServicePort(flingDevice,
+							Integer.valueOf(port));
+					FlingDevice.setIconList(flingDevice, iconList);
 
-                    @Override
-                    public void run() {
-                        for (IDeviceScanListener listener : listenerList)
-                            listener.onDeviceOnline(flingDevice);
-                    }
-                });
-            }
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-    }
+					data = (ScannerPrivData) mScannerData.get(deviceId);
+					if (data != null) {
+						if (flingDevice.equals(data.mFlingDevice)) {
+							if (!data.d) {
+								data.mElapsedRealtime = SystemClock
+										.elapsedRealtime();
+							}
+							mDiscoveredDeviceList.remove(uuid);
+							return;
+						} else {
+							mScannerData.remove(deviceId);
+						}
+					}
 
-    @Override
-    public void setDeviceOffline(String id) {
-        FlingDevice device = null;
-        synchronized (mScannerData) {
-            ScannerPrivData data = (ScannerPrivData) this.mScannerData.get(id);
-            if (data != null) {
-                data.mElapsedRealtime = SystemClock.elapsedRealtime();
-                data.d = true;
-                device = data.mFlingDevice;
-                if (device != null) {
-                    notifyDeviceOffline(device);
-                    mFoundDeviceMap.remove(data.mUuid);
-                    mScannerData.remove(id);
-                }
-            }
-        }
-    }
+					mScannerData.put((String) deviceId, new ScannerPrivData(
+							flingDevice, 10L, uuid));
+					mFoundDeviceMap.put(uuid, deviceId);
+					mDiscoveredDeviceList.remove(uuid);
+				}
 
-    @Override
-    protected void startScanInternal(List<NetworkInterface> list) {
-        start();
-    }
+				if (data != null && data.mFlingDevice != null) {
+					notifyDeviceOffline(data.mFlingDevice);
+				}
 
-    @Override
-    protected void stopScanInternal() {
-        stop();
-    }
+				final List<IDeviceScanListener> listenerList = getDeviceScannerListenerList();
+				if (listenerList == null)
+					return;
 
-    @Override
-    public void onAllDevicesOffline() {
-        synchronized (mScannerData) {
-            boolean isEmpty = mScannerData.isEmpty();
-            if (!isEmpty) {
-                mScannerData.clear();
-                mDiscoveredDeviceList.clear();
-                mFoundDeviceMap.clear();
-                final List<IDeviceScanListener> list = getDeviceScannerListenerList();
-                if (list != null) {
-                    mHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            for (IDeviceScanListener listener : list) {
-                                listener.onAllDevicesOffline();
-                            }
-                        }
-                    });
-                }
-            }
-        }
-    }
+					@Override
+					public void run() {
+						for (IDeviceScanListener listener : listenerList)
+							listener.onDeviceOnline(flingDevice);
+					}
+				});
+			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
 
-    final class ScannerPrivData {
-        FlingDevice mFlingDevice;
-        long mElapsedRealtime;
-        long mTTl;
-        boolean d;
-        String mUuid;
+	@Override
+	public void setDeviceOffline(String id) {
+		FlingDevice device = null;
+		synchronized (mScannerData) {
+			ScannerPrivData data = (ScannerPrivData) this.mScannerData.get(id);
+			if (data != null) {
+				data.mElapsedRealtime = SystemClock.elapsedRealtime();
+				data.d = true;
+				device = data.mFlingDevice;
+				if (device != null) {
+					notifyDeviceOffline(device);
+					mFoundDeviceMap.remove(data.mUuid);
+					mScannerData.remove(id);
+				}
+			}
+		}
+	}
 
-        ScannerPrivData(FlingDevice device, long ttl, String uuid) {
-            super();
-            mFlingDevice = device;
-            mTTl = ttl;
-            mElapsedRealtime = SystemClock.elapsedRealtime();
-            mUuid = uuid;
-        }
-    }
+	@Override
+	protected void startScanInternal(List<NetworkInterface> list) {
+		start();
+	}
 
-    final class LocationDevice {
-        List<LocationImage> iconImages;
-        String url;
-        String friendlyName;
-        String manufacturer;
-        String modelName;
-    }
+	@Override
+	protected void stopScanInternal() {
+		stop();
+	}
 
-    final class LocationImage {
-        String mimetype;
-        String width;
-        String height;
-        String depth;
-        String url;
-    }
+	@Override
+	public void onAllDevicesOffline() {
+		synchronized (mScannerData) {
+			boolean isEmpty = mScannerData.isEmpty();
+			if (!isEmpty) {
+				mScannerData.clear();
+				mDiscoveredDeviceList.clear();
+				mFoundDeviceMap.clear();
+				final List<IDeviceScanListener> list = getDeviceScannerListenerList();
+				if (list != null) {
+					mHandler.post(new Runnable() {
+
+						@Override
+						public void run() {
+							for (IDeviceScanListener listener : list) {
+								listener.onAllDevicesOffline();
+							}
+						}
+					});
+				}
+			}
+		}
+	}
+
+	final class ScannerPrivData {
+		FlingDevice mFlingDevice;
+		long mElapsedRealtime;
+		long mTTl;
+		boolean d;
+		String mUuid;
+
+		ScannerPrivData(FlingDevice device, long ttl, String uuid) {
+			super();
+			mFlingDevice = device;
+			mTTl = ttl;
+			mElapsedRealtime = SystemClock.elapsedRealtime();
+			mUuid = uuid;
+		}
+	}
+
+	final class LocationDevice {
+		List<LocationImage> iconImages;
+		String url;
+		String friendlyName;
+		String manufacturer;
+		String modelName;
+	}
+
+	final class LocationImage {
+		String mimetype;
+		String width;
+		String height;
+		String depth;
+		String url;
+	}
 }

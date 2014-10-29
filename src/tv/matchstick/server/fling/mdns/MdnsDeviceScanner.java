@@ -29,7 +29,6 @@ import java.util.Map.Entry;
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.images.WebImage;
-import tv.matchstick.server.fling.mdns.FlingDeviceInfoContainer.FlingDeviceInfo;
 import android.content.Context;
 import android.net.Uri;
 import android.os.SystemClock;
@@ -104,6 +103,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
 				mMdnsClientList.add(mdnsClient);
 			} catch (Exception e) {
+				e.printStackTrace();
 				log.w("Couldn't start MDNS client for %s", network);
 			}
 		}
@@ -210,7 +210,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
 			log.d("service host: %s", info.mHost);
 
-			log.d("service proto: %d", info.mProto);
+			log.d("service proto: %d", info.mProtocol);
 
 			log.d("service port: %d", info.mPort);
 
@@ -289,17 +289,13 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
 				deviceId = deviceId + v4Address.getHostAddress();
 
-				FlingDeviceHelper helper = FlingDevice.createHelper(
-						(String) deviceId, v4Address);
-
-				FlingDevice.setFriendlyName(helper.mFlingDevice,
-						info.mFriendlyName);
-				FlingDevice.setModelName(helper.mFlingDevice, deviceName);
-				FlingDevice.setDeviceVersion(helper.mFlingDevice,
-						(String) deviceVersion);
-				FlingDevice.setServicePort(helper.mFlingDevice, info.mPort);
-				FlingDevice.setIconList(helper.mFlingDevice, iconList);
-				device = helper.mFlingDevice;
+				device = FlingDevice.Builder.create((String) deviceId,
+						v4Address);
+				FlingDevice.setFriendlyName(device, info.mFriendlyName);
+				FlingDevice.setModelName(device, deviceName);
+				FlingDevice.setDeviceVersion(device, (String) deviceVersion);
+				FlingDevice.setServicePort(device, info.mPort);
+				FlingDevice.setIconList(device, iconList);
 
 				scannerDeviceData = (ScannerDeviceData) mFoundDevices
 						.get(deviceId);
@@ -417,4 +413,26 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 			mScannedTime = SystemClock.elapsedRealtime();
 		}
 	}
+
+	protected static final class FlingDeviceInfo {
+		String mFQDN;
+		List<Inet4Address> mIpV4AddrList;
+		List<Inet6Address> mIpV6AddrList;
+		String mName;
+		String mFriendlyName;
+		String mHost;
+		int mProtocol; // 1:tcp, 2: udp
+		int mPort;
+		int mPriority;
+		int mWeight;
+		List<String> mTextStringList;
+		long mTTL;
+
+		public FlingDeviceInfo(String fqdn) {
+			this.mFQDN = fqdn;
+			this.mProtocol = 0;
+			this.mTTL = -1L;
+		}
+	}
+
 }

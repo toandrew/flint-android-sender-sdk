@@ -29,7 +29,6 @@ import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.fling.images.WebImage;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
 import tv.matchstick.server.common.exception.FlingRuntimeException;
-import tv.matchstick.server.fling.mdns.FlingDeviceHelper;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -216,22 +215,6 @@ public class FlingDevice implements SafeParcelable {
 	public static int setServicePort(FlingDevice device, int port) {
 		device.mServicePort = port;
 		return port;
-	}
-
-	/**
-	 * Create fling device's container.
-	 *
-	 * @param deviceId
-	 *            device Id
-	 * @param inet4address
-	 *            device address
-	 * @return fling device's container
-	 */
-	public static FlingDeviceHelper createHelper(String deviceId,
-			Inet4Address inet4address) {
-		FlingDevice flingdevice = new FlingDevice();
-		flingdevice.getClass();
-		return new FlingDeviceHelper(flingdevice, deviceId, inet4address);
 	}
 
 	/**
@@ -582,4 +565,31 @@ public class FlingDevice implements SafeParcelable {
 		ParcelWrite.writeEnd(out, position);
 	}
 
+	/**
+	 * This is used to create fling device with some device info.
+	 */
+	public static final class Builder {
+		/**
+		 * Create fling device's container.
+		 *
+		 * @param deviceId
+		 *            device Id
+		 * @param inet4address
+		 *            device address
+		 * @return created fling device
+		 */
+		public static FlingDevice create(String deviceId,
+				Inet4Address inet4address) {
+
+			FlingDevice device = new FlingDevice();
+
+			device.mDeviceId = deviceId;
+			device.mHost = inet4address;
+			if (inet4address != null) {
+				device.mHostAddress = inet4address.getHostAddress();
+			}
+
+			return device;
+		}
+	}
 }
