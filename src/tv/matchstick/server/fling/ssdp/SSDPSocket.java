@@ -35,12 +35,12 @@ public class SSDPSocket {
 
     DatagramSocket wildSocket;
     MulticastSocket mLocalSocket;
-    
+
     NetworkInterface mNetIf;
     InetAddress localInAddress;
 
     int timeout = 0;
-    
+
     public SSDPSocket(InetAddress source) throws IOException {
         localInAddress = source;
 
@@ -50,19 +50,20 @@ public class SSDPSocket {
 
         mNetIf = NetworkInterface.getByInetAddress(localInAddress);
         mLocalSocket.joinGroup(mSSDPMulticastGroup, mNetIf);
-        
-    	wildSocket = new DatagramSocket(null);
-    	wildSocket.setReuseAddress(true);
-    	wildSocket.bind(new InetSocketAddress(localInAddress, SSDP.SOURCE_PORT));
+
+        wildSocket = new DatagramSocket(null);
+        wildSocket.setReuseAddress(true);
+        wildSocket
+                .bind(new InetSocketAddress(localInAddress, SSDP.SOURCE_PORT));
     }
 
     /** Used to send SSDP packet */
     public void send(String data) throws IOException {
-        DatagramPacket dp = new DatagramPacket(data.getBytes(), data.length(), mSSDPMulticastGroup);
+        DatagramPacket dp = new DatagramPacket(data.getBytes(), data.length(),
+                mSSDPMulticastGroup);
 
         wildSocket.send(dp);
     }
-
 
     /** Used to receive SSDP Response packet */
     public DatagramPacket responseReceive() throws IOException {
@@ -73,7 +74,7 @@ public class SSDPSocket {
 
         return dp;
     }
-    
+
     /** Used to receive SSDP Notify packet */
     public DatagramPacket notifyReceive() throws IOException {
         byte[] buf = new byte[1024];
@@ -85,7 +86,8 @@ public class SSDPSocket {
     }
 
     public boolean isConnected() {
-    	return wildSocket != null && mLocalSocket != null && wildSocket.isConnected() && mLocalSocket.isConnected();
+        return wildSocket != null && mLocalSocket != null
+                && wildSocket.isConnected() && mLocalSocket.isConnected();
     }
 
     /** Close the socket */
@@ -98,15 +100,15 @@ public class SSDPSocket {
             }
             mLocalSocket.close();
         }
-        
+
         if (wildSocket != null) {
             wildSocket.disconnect();
             wildSocket.close();
         }
     }
-    
+
     public void setTimeout(int timeout) throws SocketException {
-    	this.timeout = timeout;
-    	wildSocket.setSoTimeout(this.timeout);
+        this.timeout = timeout;
+        wildSocket.setSoTimeout(this.timeout);
     }
 }

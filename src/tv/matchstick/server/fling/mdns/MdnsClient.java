@@ -35,192 +35,192 @@ import tv.matchstick.server.fling.mdns.MdnsDeviceScanner.FlingDeviceInfo;
 import android.util.Log;
 
 abstract class MdnsClient {
-	private static final LOG log = new LOG("MdnsClient");
+    private static final LOG log = new LOG("MdnsClient");
 
-	private static final String FOUND_SERVICE_TYPE = "_MatchStick._tcp.local.";
+    private static final String FOUND_SERVICE_TYPE = "_MatchStick._tcp.local.";
 
-	private final String mHostName;
+    private final String mHostName;
 
-	private final NetworkInterface mNetwork;
+    private final NetworkInterface mNetwork;
 
-	private Inet4Address mAddress;
+    private Inet4Address mAddress;
 
-	private JmDNS mJmDNS;
+    private JmDNS mJmDNS;
 
-	private Timer mDataTimer;
+    private Timer mDataTimer;
 
-	private final static int RESCAN_INTERVAL = 10000;
+    private final static int RESCAN_INTERVAL = 10000;
 
-	public MdnsClient(String hostName, NetworkInterface network) {
-		mHostName = hostName;
-		mNetwork = network;
+    public MdnsClient(String hostName, NetworkInterface network) {
+        mHostName = hostName;
+        mNetwork = network;
 
-		mAddress = getAddress(mNetwork);
-	}
+        mAddress = getAddress(mNetwork);
+    }
 
-	ServiceListener mJmdnsListener = new ServiceListener() {
+    ServiceListener mJmdnsListener = new ServiceListener() {
 
-		@Override
-		public void serviceAdded(ServiceEvent event) {
-			// TODO Auto-generated method stub
+        @Override
+        public void serviceAdded(ServiceEvent event) {
+            // TODO Auto-generated method stub
 
-			log.d("serviceAdded:" + event);
+            log.d("serviceAdded:" + event);
 
-			// Required to force serviceResolved to be called again
-			// (after the first search)
-			mJmDNS.requestServiceInfo(event.getType(), event.getName(), 1);
-		}
+            // Required to force serviceResolved to be called again
+            // (after the first search)
+            mJmDNS.requestServiceInfo(event.getType(), event.getName(), 1);
+        }
 
-		@Override
-		public void serviceRemoved(ServiceEvent event) {
-			// TODO Auto-generated method stub
+        @Override
+        public void serviceRemoved(ServiceEvent event) {
+            // TODO Auto-generated method stub
 
-		}
+        }
 
-		@Override
-		public void serviceResolved(ServiceEvent event) {
-			// TODO Auto-generated method stub
+        @Override
+        public void serviceResolved(ServiceEvent event) {
+            // TODO Auto-generated method stub
 
-			log.d("MdnsClient", "serviceResolved:" + event);
+            log.d("MdnsClient", "serviceResolved:" + event);
 
-			// get device info
-			FlingDeviceInfo deviceInfo = extractDeviceInfo(event);
+            // get device info
+            FlingDeviceInfo deviceInfo = extractDeviceInfo(event);
 
-			// notify device scan result: online or offline
-			onScanResults(deviceInfo);
-		}
+            // notify device scan result: online or offline
+            onScanResults(deviceInfo);
+        }
 
-		private FlingDeviceInfo extractDeviceInfo(ServiceEvent event) {
-			FlingDeviceInfo deviceInfo = new FlingDeviceInfo(event.getType());
+        private FlingDeviceInfo extractDeviceInfo(ServiceEvent event) {
+            FlingDeviceInfo deviceInfo = new FlingDeviceInfo(event.getType());
 
-			deviceInfo.mName = event.getInfo().getApplication();
-			deviceInfo.mFriendlyName = event.getInfo().getName();
+            deviceInfo.mName = event.getInfo().getApplication();
+            deviceInfo.mFriendlyName = event.getInfo().getName();
 
-			deviceInfo.mHost = event.getInfo().getServer();
-			deviceInfo.mPort = event.getInfo().getPort();
-			deviceInfo.mPriority = event.getInfo().getPriority();
+            deviceInfo.mHost = event.getInfo().getServer();
+            deviceInfo.mPort = event.getInfo().getPort();
+            deviceInfo.mPriority = event.getInfo().getPriority();
 
-			String protocol = event.getInfo().getProtocol();
-			if (protocol.equalsIgnoreCase("tcp")) {
-				deviceInfo.mProtocol = 1;
-			} else {
-				deviceInfo.mProtocol = 0;
-			}
+            String protocol = event.getInfo().getProtocol();
+            if (protocol.equalsIgnoreCase("tcp")) {
+                deviceInfo.mProtocol = 1;
+            } else {
+                deviceInfo.mProtocol = 0;
+            }
 
-			deviceInfo.mWeight = event.getInfo().getWeight();
-			deviceInfo.mTTL = 10; // ???
+            deviceInfo.mWeight = event.getInfo().getWeight();
+            deviceInfo.mTTL = 10; // ???
 
-			java.util.Enumeration<String> names = event.getInfo()
-					.getPropertyNames();
+            java.util.Enumeration<String> names = event.getInfo()
+                    .getPropertyNames();
 
-			deviceInfo.mTextStringList = new ArrayList<String>();
+            deviceInfo.mTextStringList = new ArrayList<String>();
 
-			while (names.hasMoreElements()) {
-				String name = (String) names.nextElement();
-				String element = name + "="
-						+ event.getInfo().getPropertyString(name);
-				deviceInfo.mTextStringList.add(element);
-			}
+            while (names.hasMoreElements()) {
+                String name = (String) names.nextElement();
+                String element = name + "="
+                        + event.getInfo().getPropertyString(name);
+                deviceInfo.mTextStringList.add(element);
+            }
 
-			deviceInfo.mIpV4AddrList = Arrays.asList(event.getInfo()
-					.getInet4Addresses());
-			deviceInfo.mIpV6AddrList = Arrays.asList(event.getInfo()
-					.getInet6Addresses());
+            deviceInfo.mIpV4AddrList = Arrays.asList(event.getInfo()
+                    .getInet4Addresses());
+            deviceInfo.mIpV6AddrList = Arrays.asList(event.getInfo()
+                    .getInet6Addresses());
 
-			return deviceInfo;
-		}
+            return deviceInfo;
+        }
 
-	};
+    };
 
-	/**
-	 * Called when device scanning finished.
-	 * 
-	 * @param deviceInfo
-	 */
-	protected abstract void onScanResults(FlingDeviceInfo deviceInfo);
+    /**
+     * Called when device scanning finished.
+     * 
+     * @param deviceInfo
+     */
+    protected abstract void onScanResults(FlingDeviceInfo deviceInfo);
 
-	/**
-	 * Start device scan
-	 */
-	public final synchronized void startScan() {
-		stopScan();
+    /**
+     * Start device scan
+     */
+    public final synchronized void startScan() {
+        stopScan();
 
-		mDataTimer = new Timer();
-		MDNSSearchTask sendSearch = new MDNSSearchTask();
-		mDataTimer.schedule(sendSearch, 100, RESCAN_INTERVAL);
+        mDataTimer = new Timer();
+        MDNSSearchTask sendSearch = new MDNSSearchTask();
+        mDataTimer.schedule(sendSearch, 100, RESCAN_INTERVAL);
 
-	}
+    }
 
-	/**
-	 * Stop device scan
-	 */
-	public final synchronized void stopScan() {
-		if (mDataTimer != null) {
-			mDataTimer.cancel();
-		}
+    /**
+     * Stop device scan
+     */
+    public final synchronized void stopScan() {
+        if (mDataTimer != null) {
+            mDataTimer.cancel();
+        }
 
-		if (mJmDNS != null) {
-			try {
-				mJmDNS.removeServiceListener(FOUND_SERVICE_TYPE, mJmdnsListener);
+        if (mJmDNS != null) {
+            try {
+                mJmDNS.removeServiceListener(FOUND_SERVICE_TYPE, mJmdnsListener);
 
-				mJmDNS.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
+                mJmDNS.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-	private Inet4Address getAddress(final NetworkInterface networkInterface) {
+    private Inet4Address getAddress(final NetworkInterface networkInterface) {
 
-		try {
-			for (Enumeration<NetworkInterface> e = NetworkInterface
-					.getNetworkInterfaces(); e.hasMoreElements();) {
-				NetworkInterface item = e.nextElement();
+        try {
+            for (Enumeration<NetworkInterface> e = NetworkInterface
+                    .getNetworkInterfaces(); e.hasMoreElements();) {
+                NetworkInterface item = e.nextElement();
 
-				for (InterfaceAddress address : item.getInterfaceAddresses()) {
-					if (address.getAddress() instanceof Inet4Address) {
-						Inet4Address inet4Address = (Inet4Address) address
-								.getAddress();
-						if (!inet4Address.isLoopbackAddress()) {
-							return inet4Address;
-						}
-					}
-				}
-			}
-		} catch (IOException ex) {
+                for (InterfaceAddress address : item.getInterfaceAddresses()) {
+                    if (address.getAddress() instanceof Inet4Address) {
+                        Inet4Address inet4Address = (Inet4Address) address
+                                .getAddress();
+                        if (!inet4Address.isLoopbackAddress()) {
+                            return inet4Address;
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
 
-		}
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	private class MDNSSearchTask extends TimerTask {
+    private class MDNSSearchTask extends TimerTask {
 
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			if (mNetwork != null) {
-				try {
-					if (mJmDNS != null) {
-						mJmDNS.close();
-					}
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            if (mNetwork != null) {
+                try {
+                    if (mJmDNS != null) {
+                        mJmDNS.close();
+                    }
 
-					if (mAddress != null) {
-						Log.e("MdnsClient", "address:" + mAddress);
-						mJmDNS = JmDNS.create(mAddress, mHostName);
-					} else {
-						Log.e("MdnsClient", "address is null??!!!");
-						mJmDNS = JmDNS.create(mHostName);
-					}
+                    if (mAddress != null) {
+                        Log.e("MdnsClient", "address:" + mAddress);
+                        mJmDNS = JmDNS.create(mAddress, mHostName);
+                    } else {
+                        Log.e("MdnsClient", "address is null??!!!");
+                        mJmDNS = JmDNS.create(mHostName);
+                    }
 
-					mJmDNS.addServiceListener(FOUND_SERVICE_TYPE,
-							mJmdnsListener);
+                    mJmDNS.addServiceListener(FOUND_SERVICE_TYPE,
+                            mJmdnsListener);
 
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-	}
+    }
 }

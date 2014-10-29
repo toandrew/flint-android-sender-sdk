@@ -21,11 +21,12 @@ import javax.jmdns.NetworkTopologyDiscovery;
  * @author Pierre Frisch
  */
 public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
-    private final static Logger logger = Logger.getLogger(NetworkTopologyDiscoveryImpl.class.getName());
+    private final static Logger logger = Logger
+            .getLogger(NetworkTopologyDiscoveryImpl.class.getName());
 
-    private final Method        _isUp;
+    private final Method _isUp;
 
-    private final Method        _supportsMulticast;
+    private final Method _supportsMulticast;
 
     /**
      *
@@ -42,7 +43,8 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
         _isUp = isUp;
         Method supportsMulticast;
         try {
-            supportsMulticast = NetworkInterface.class.getMethod("supportsMulticast", (Class<?>[]) null);
+            supportsMulticast = NetworkInterface.class.getMethod(
+                    "supportsMulticast", (Class<?>[]) null);
         } catch (Exception exception) {
             // We do not want to throw anything if the method does not exist.
             supportsMulticast = null;
@@ -52,6 +54,7 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.JmmDNS.NetworkTopologyDiscovery#getInetAddresses()
      */
     @Override
@@ -59,12 +62,15 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
         Set<InetAddress> result = new HashSet<InetAddress>();
         try {
 
-            for (Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces(); nifs.hasMoreElements();) {
+            for (Enumeration<NetworkInterface> nifs = NetworkInterface
+                    .getNetworkInterfaces(); nifs.hasMoreElements();) {
                 NetworkInterface nif = nifs.nextElement();
-                for (Enumeration<InetAddress> iaenum = nif.getInetAddresses(); iaenum.hasMoreElements();) {
+                for (Enumeration<InetAddress> iaenum = nif.getInetAddresses(); iaenum
+                        .hasMoreElements();) {
                     InetAddress interfaceAddress = iaenum.nextElement();
                     if (logger.isLoggable(Level.FINEST)) {
-                        logger.finest("Found NetworkInterface/InetAddress: " + nif + " -- " + interfaceAddress);
+                        logger.finest("Found NetworkInterface/InetAddress: "
+                                + nif + " -- " + interfaceAddress);
                     }
                     if (this.useInetAddress(nif, interfaceAddress)) {
                         result.add(interfaceAddress);
@@ -72,21 +78,26 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
                 }
             }
         } catch (SocketException se) {
-            logger.warning("Error while fetching network interfaces addresses: " + se);
+            logger.warning("Error while fetching network interfaces addresses: "
+                    + se);
         }
         return result.toArray(new InetAddress[result.size()]);
     }
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.JmmDNS.NetworkTopologyDiscovery#useInetAddress(java.net.NetworkInterface, java.net.InetAddress)
+     * 
+     * @see javax.jmdns.JmmDNS.NetworkTopologyDiscovery#useInetAddress(java.net.
+     * NetworkInterface, java.net.InetAddress)
      */
     @Override
-    public boolean useInetAddress(NetworkInterface networkInterface, InetAddress interfaceAddress) {
+    public boolean useInetAddress(NetworkInterface networkInterface,
+            InetAddress interfaceAddress) {
         try {
             if (_isUp != null) {
                 try {
-                    if (!((Boolean) _isUp.invoke(networkInterface, (Object[]) null)).booleanValue()) {
+                    if (!((Boolean) _isUp.invoke(networkInterface,
+                            (Object[]) null)).booleanValue()) {
                         return false;
                     }
                 } catch (Exception exception) {
@@ -95,7 +106,8 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
             }
             if (_supportsMulticast != null) {
                 try {
-                    if (!((Boolean) _supportsMulticast.invoke(networkInterface, (Object[]) null)).booleanValue()) {
+                    if (!((Boolean) _supportsMulticast.invoke(networkInterface,
+                            (Object[]) null)).booleanValue()) {
                         return false;
                     }
                 } catch (Exception exception) {
@@ -113,7 +125,10 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.NetworkTopologyDiscovery#lockInetAddress(java.net.InetAddress)
+     * 
+     * @see
+     * javax.jmdns.NetworkTopologyDiscovery#lockInetAddress(java.net.InetAddress
+     * )
      */
     @Override
     public void lockInetAddress(InetAddress interfaceAddress) {
@@ -122,7 +137,10 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.NetworkTopologyDiscovery#unlockInetAddress(java.net.InetAddress)
+     * 
+     * @see
+     * javax.jmdns.NetworkTopologyDiscovery#unlockInetAddress(java.net.InetAddress
+     * )
      */
     @Override
     public void unlockInetAddress(InetAddress interfaceAddress) {

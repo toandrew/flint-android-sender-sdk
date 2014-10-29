@@ -17,24 +17,26 @@ import javax.jmdns.impl.constants.DNSState;
 import javax.jmdns.impl.tasks.DNSTask;
 
 /**
- * This is the root class for all state tasks. These tasks work with objects that implements the {@link javax.jmdns.impl.DNSStatefulObject} interface and therefore participate in the state machine.
+ * This is the root class for all state tasks. These tasks work with objects
+ * that implements the {@link javax.jmdns.impl.DNSStatefulObject} interface and
+ * therefore participate in the state machine.
  * 
  * @author Pierre Frisch
  */
 public abstract class DNSStateTask extends DNSTask {
-    static Logger      logger1     = Logger.getLogger(DNSStateTask.class.getName());
+    static Logger logger1 = Logger.getLogger(DNSStateTask.class.getName());
 
     /**
      * By setting a 0 ttl we effectively expire the record.
      */
-    private final int  _ttl;
+    private final int _ttl;
 
     private static int _defaultTTL = DNSConstants.DNS_TTL;
 
     /**
      * The state of the task.
      */
-    private DNSState   _taskState  = null;
+    private DNSState _taskState = null;
 
     public abstract String getTaskDescription();
 
@@ -68,7 +70,8 @@ public abstract class DNSStateTask extends DNSTask {
     }
 
     /**
-     * Associate the DNS host and the service infos with this task if not already associated and in the same state.
+     * Associate the DNS host and the service infos with this task if not
+     * already associated and in the same state.
      * 
      * @param state
      *            target state
@@ -108,8 +111,11 @@ public abstract class DNSStateTask extends DNSTask {
             List<DNSStatefulObject> stateObjects = new ArrayList<DNSStatefulObject>();
             // send probes for JmDNS itself
             synchronized (this.getDns()) {
-                if (this.getDns().isAssociatedWithTask(this, this.getTaskState())) {
-                    logger1.finer(this.getName() + ".run() JmDNS " + this.getTaskDescription() + " " + this.getDns().getName());
+                if (this.getDns().isAssociatedWithTask(this,
+                        this.getTaskState())) {
+                    logger1.finer(this.getName() + ".run() JmDNS "
+                            + this.getTaskDescription() + " "
+                            + this.getDns().getName());
                     stateObjects.add(this.getDns());
                     out = this.buildOutgoingForDNS(out);
                 }
@@ -120,14 +126,18 @@ public abstract class DNSStateTask extends DNSTask {
 
                 synchronized (info) {
                     if (info.isAssociatedWithTask(this, this.getTaskState())) {
-                        logger1.fine(this.getName() + ".run() JmDNS " + this.getTaskDescription() + " " + info.getQualifiedName());
+                        logger1.fine(this.getName() + ".run() JmDNS "
+                                + this.getTaskDescription() + " "
+                                + info.getQualifiedName());
                         stateObjects.add(info);
                         out = this.buildOutgoingForInfo(info, out);
                     }
                 }
             }
             if (!out.isEmpty()) {
-                logger1.finer(this.getName() + ".run() JmDNS " + this.getTaskDescription() + " #" + this.getTaskState());
+                logger1.finer(this.getName() + ".run() JmDNS "
+                        + this.getTaskDescription() + " #"
+                        + this.getTaskState());
                 this.getDns().send(out);
 
                 // Advance the state of objects.
@@ -136,7 +146,8 @@ public abstract class DNSStateTask extends DNSTask {
                 // Advance the state of objects.
                 this.advanceObjectsState(stateObjects);
 
-                // If we have nothing to send, another timer taskState ahead of us has done the job for us. We can cancel.
+                // If we have nothing to send, another timer taskState ahead of
+                // us has done the job for us. We can cancel.
                 cancel();
                 return;
             }
@@ -150,9 +161,11 @@ public abstract class DNSStateTask extends DNSTask {
 
     protected abstract boolean checkRunCondition();
 
-    protected abstract DNSOutgoing buildOutgoingForDNS(DNSOutgoing out) throws IOException;
+    protected abstract DNSOutgoing buildOutgoingForDNS(DNSOutgoing out)
+            throws IOException;
 
-    protected abstract DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info, DNSOutgoing out) throws IOException;
+    protected abstract DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info,
+            DNSOutgoing out) throws IOException;
 
     protected abstract DNSOutgoing createOugoing();
 

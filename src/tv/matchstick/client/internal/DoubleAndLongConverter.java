@@ -18,16 +18,16 @@ package tv.matchstick.client.internal;
 
 public class DoubleAndLongConverter {
 
-	public static <T> boolean compare(T one, T other) {
-		return (((one == null) && (other == null)) || ((one != null)
-				&& (other != null) && (one.equals(other))));
-	}
+    public static <T> boolean compare(T one, T other) {
+        return (((one == null) && (other == null)) || ((one != null)
+                && (other != null) && (one.equals(other))));
+    }
 
-	public static double long2double(long l) {
-		return (l / 1000.0D);
-	}
+    public static double long2double(long l) {
+        return (l / 1000.0D);
+    }
 
-	public static long double2long(double d) {
-		return (long) (d * 1000.0D);
-	}
+    public static long double2long(double d) {
+        return (long) (d * 1000.0D);
+    }
 }

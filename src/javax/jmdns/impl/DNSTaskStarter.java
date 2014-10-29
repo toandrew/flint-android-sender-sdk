@@ -21,9 +21,12 @@ import javax.jmdns.impl.tasks.state.Prober;
 import javax.jmdns.impl.tasks.state.Renewer;
 
 /**
- * This class is used by JmDNS to start the various task required to run the DNS discovery. This interface is only there in order to support MANET modifications.
+ * This class is used by JmDNS to start the various task required to run the DNS
+ * discovery. This interface is only there in order to support MANET
+ * modifications.
  * <p>
- * <b>Note: </b> This is not considered as part of the general public API of JmDNS.
+ * <b>Note: </b> This is not considered as part of the general public API of
+ * JmDNS.
  * </p>
  *
  * @author Pierre Frisch
@@ -31,20 +34,23 @@ import javax.jmdns.impl.tasks.state.Renewer;
 public interface DNSTaskStarter {
 
     /**
-     * DNSTaskStarter.Factory enable the creation of new instance of DNSTaskStarter.
+     * DNSTaskStarter.Factory enable the creation of new instance of
+     * DNSTaskStarter.
      */
     public static final class Factory {
 
-        private static volatile Factory                        _instance;
+        private static volatile Factory _instance;
         private final ConcurrentMap<JmDNSImpl, DNSTaskStarter> _instances;
 
         /**
-         * This interface defines a delegate to the DNSTaskStarter class to enable subclassing.
+         * This interface defines a delegate to the DNSTaskStarter class to
+         * enable subclassing.
          */
         public static interface ClassDelegate {
 
             /**
-             * Allows the delegate the opportunity to construct and return a different DNSTaskStarter.
+             * Allows the delegate the opportunity to construct and return a
+             * different DNSTaskStarter.
              *
              * @param jmDNSImpl
              *            jmDNS instance
@@ -63,7 +69,8 @@ public interface DNSTaskStarter {
         }
 
         /**
-         * Assigns <code>delegate</code> as DNSTaskStarter's class delegate. The class delegate is optional.
+         * Assigns <code>delegate</code> as DNSTaskStarter's class delegate. The
+         * class delegate is optional.
          *
          * @param delegate
          *            The object to set as DNSTaskStarter's class delegate.
@@ -86,7 +93,8 @@ public interface DNSTaskStarter {
         }
 
         /**
-         * Returns a new instance of DNSTaskStarter using the class delegate if it exists.
+         * Returns a new instance of DNSTaskStarter using the class delegate if
+         * it exists.
          *
          * @param jmDNSImpl
          *            jmDNS instance
@@ -98,7 +106,8 @@ public interface DNSTaskStarter {
             if (delegate != null) {
                 instance = delegate.newDNSTaskStarter(jmDNSImpl);
             }
-            return (instance != null ? instance : new DNSTaskStarterImpl(jmDNSImpl));
+            return (instance != null ? instance : new DNSTaskStarterImpl(
+                    jmDNSImpl));
         }
 
         /**
@@ -140,18 +149,21 @@ public interface DNSTaskStarter {
         private final JmDNSImpl _jmDNSImpl;
 
         /**
-         * The timer is used to dispatch all outgoing messages of JmDNS. It is also used to dispatch maintenance tasks for the DNS cache.
+         * The timer is used to dispatch all outgoing messages of JmDNS. It is
+         * also used to dispatch maintenance tasks for the DNS cache.
          */
-        private final Timer     _timer;
+        private final Timer _timer;
 
         /**
          * The timer is used to dispatch maintenance tasks for the DNS cache.
          */
-        private final Timer     _stateTimer;
+        private final Timer _stateTimer;
 
         public static class StarterTimer extends Timer {
 
-            // This is needed because in some case we cancel the timers before all the task have finished running and in some case they will try to reschedule
+            // This is needed because in some case we cancel the timers before
+            // all the task have finished running and in some case they will try
+            // to reschedule
             private volatile boolean _cancelled;
 
             /**
@@ -189,72 +201,94 @@ public interface DNSTaskStarter {
 
             /*
              * (non-Javadoc)
+             * 
              * @see java.util.Timer#cancel()
              */
             @Override
             public synchronized void cancel() {
-                if (_cancelled) return;
+                if (_cancelled)
+                    return;
                 _cancelled = true;
                 super.cancel();
             }
 
             /*
              * (non-Javadoc)
+             * 
              * @see java.util.Timer#schedule(java.util.TimerTask, long)
              */
             @Override
             public synchronized void schedule(TimerTask task, long delay) {
-                if (_cancelled) return;
+                if (_cancelled)
+                    return;
                 super.schedule(task, delay);
             }
 
             /*
              * (non-Javadoc)
-             * @see java.util.Timer#schedule(java.util.TimerTask, java.util.Date)
+             * 
+             * @see java.util.Timer#schedule(java.util.TimerTask,
+             * java.util.Date)
              */
             @Override
             public synchronized void schedule(TimerTask task, Date time) {
-                if (_cancelled) return;
+                if (_cancelled)
+                    return;
                 super.schedule(task, time);
             }
 
             /*
              * (non-Javadoc)
+             * 
              * @see java.util.Timer#schedule(java.util.TimerTask, long, long)
              */
             @Override
-            public synchronized void schedule(TimerTask task, long delay, long period) {
-                if (_cancelled) return;
+            public synchronized void schedule(TimerTask task, long delay,
+                    long period) {
+                if (_cancelled)
+                    return;
                 super.schedule(task, delay, period);
             }
 
             /*
              * (non-Javadoc)
-             * @see java.util.Timer#schedule(java.util.TimerTask, java.util.Date, long)
+             * 
+             * @see java.util.Timer#schedule(java.util.TimerTask,
+             * java.util.Date, long)
              */
             @Override
-            public synchronized void schedule(TimerTask task, Date firstTime, long period) {
-                if (_cancelled) return;
+            public synchronized void schedule(TimerTask task, Date firstTime,
+                    long period) {
+                if (_cancelled)
+                    return;
                 super.schedule(task, firstTime, period);
             }
 
             /*
              * (non-Javadoc)
-             * @see java.util.Timer#scheduleAtFixedRate(java.util.TimerTask, long, long)
+             * 
+             * @see java.util.Timer#scheduleAtFixedRate(java.util.TimerTask,
+             * long, long)
              */
             @Override
-            public synchronized void scheduleAtFixedRate(TimerTask task, long delay, long period) {
-                if (_cancelled) return;
+            public synchronized void scheduleAtFixedRate(TimerTask task,
+                    long delay, long period) {
+                if (_cancelled)
+                    return;
                 super.scheduleAtFixedRate(task, delay, period);
             }
 
             /*
              * (non-Javadoc)
-             * @see java.util.Timer#scheduleAtFixedRate(java.util.TimerTask, java.util.Date, long)
+             * 
+             * @see java.util.Timer#scheduleAtFixedRate(java.util.TimerTask,
+             * java.util.Date, long)
              */
             @Override
-            public synchronized void scheduleAtFixedRate(TimerTask task, Date firstTime, long period) {
-                if (_cancelled) return;
+            public synchronized void scheduleAtFixedRate(TimerTask task,
+                    Date firstTime, long period) {
+                if (_cancelled)
+                    return;
                 super.scheduleAtFixedRate(task, firstTime, period);
             }
 
@@ -263,12 +297,15 @@ public interface DNSTaskStarter {
         public DNSTaskStarterImpl(JmDNSImpl jmDNSImpl) {
             super();
             _jmDNSImpl = jmDNSImpl;
-            _timer = new StarterTimer("JmDNS(" + _jmDNSImpl.getName() + ").Timer", true);
-            _stateTimer = new StarterTimer("JmDNS(" + _jmDNSImpl.getName() + ").State.Timer", false);
+            _timer = new StarterTimer("JmDNS(" + _jmDNSImpl.getName()
+                    + ").Timer", true);
+            _stateTimer = new StarterTimer("JmDNS(" + _jmDNSImpl.getName()
+                    + ").State.Timer", false);
         }
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#purgeTimer()
          */
         @Override
@@ -278,6 +315,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#purgeStateTimer()
          */
         @Override
@@ -287,6 +325,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#cancelTimer()
          */
         @Override
@@ -296,6 +335,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#cancelStateTimer()
          */
         @Override
@@ -305,6 +345,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#startProber()
          */
         @Override
@@ -314,6 +355,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#startAnnouncer()
          */
         @Override
@@ -323,6 +365,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#startRenewer()
          */
         @Override
@@ -332,6 +375,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#startCanceler()
          */
         @Override
@@ -341,6 +385,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#startReaper()
          */
         @Override
@@ -350,7 +395,10 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.DNSTaskStarter#startServiceInfoResolver(javax.jmdns.impl.ServiceInfoImpl)
+         * 
+         * @see
+         * javax.jmdns.impl.DNSTaskStarter#startServiceInfoResolver(javax.jmdns
+         * .impl.ServiceInfoImpl)
          */
         @Override
         public void startServiceInfoResolver(ServiceInfoImpl info) {
@@ -359,6 +407,7 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
+         * 
          * @see javax.jmdns.impl.DNSTaskStarter#startTypeResolver()
          */
         @Override
@@ -368,7 +417,10 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.DNSTaskStarter#startServiceResolver(java.lang.String)
+         * 
+         * @see
+         * javax.jmdns.impl.DNSTaskStarter#startServiceResolver(java.lang.String
+         * )
          */
         @Override
         public void startServiceResolver(String type) {
@@ -377,7 +429,9 @@ public interface DNSTaskStarter {
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.DNSTaskStarter#startResponder(javax.jmdns.impl.DNSIncoming, int)
+         * 
+         * @see javax.jmdns.impl.DNSTaskStarter#startResponder(javax.jmdns.impl.
+         * DNSIncoming, int)
          */
         @Override
         public void startResponder(DNSIncoming in, int port) {
@@ -426,7 +480,8 @@ public interface DNSTaskStarter {
     public void startCanceler();
 
     /**
-     * Start a new reaper task. There is only supposed to be one reaper running at a time.
+     * Start a new reaper task. There is only supposed to be one reaper running
+     * at a time.
      */
     public void startReaper();
 

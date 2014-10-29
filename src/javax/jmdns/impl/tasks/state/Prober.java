@@ -19,10 +19,14 @@ import javax.jmdns.impl.constants.DNSRecordType;
 import javax.jmdns.impl.constants.DNSState;
 
 /**
- * The Prober sends three consecutive probes for all service infos that needs probing as well as for the host name. The state of each service info of the host name is advanced, when a probe has been sent for it. When the prober has run three times,
- * it launches an Announcer.
+ * The Prober sends three consecutive probes for all service infos that needs
+ * probing as well as for the host name. The state of each service info of the
+ * host name is advanced, when a probe has been sent for it. When the prober has
+ * run three times, it launches an Announcer.
  * <p/>
- * If a conflict during probes occurs, the affected service infos (and affected host name) are taken away from the prober. This eventually causes the prober to cancel itself.
+ * If a conflict during probes occurs, the affected service infos (and affected
+ * host name) are taken away from the prober. This eventually causes the prober
+ * to cancel itself.
  */
 public class Prober extends DNSStateTask {
     static Logger logger = Logger.getLogger(Prober.class.getName());
@@ -36,15 +40,18 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#getName()
      */
     @Override
     public String getName() {
-        return "Prober(" + (this.getDns() != null ? this.getDns().getName() : "") + ")";
+        return "Prober("
+                + (this.getDns() != null ? this.getDns().getName() : "") + ")";
     }
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -54,6 +61,7 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#start(java.util.Timer)
      */
     @Override
@@ -66,10 +74,16 @@ public class Prober extends DNSStateTask {
         }
         this.getDns().setLastThrottleIncrement(now);
 
-        if (this.getDns().isAnnounced() && this.getDns().getThrottle() < DNSConstants.PROBE_THROTTLE_COUNT) {
-            timer.schedule(this, JmDNSImpl.getRandom().nextInt(1 + DNSConstants.PROBE_WAIT_INTERVAL), DNSConstants.PROBE_WAIT_INTERVAL);
+        if (this.getDns().isAnnounced()
+                && this.getDns().getThrottle() < DNSConstants.PROBE_THROTTLE_COUNT) {
+            timer.schedule(
+                    this,
+                    JmDNSImpl.getRandom().nextInt(
+                            1 + DNSConstants.PROBE_WAIT_INTERVAL),
+                    DNSConstants.PROBE_WAIT_INTERVAL);
         } else if (!this.getDns().isCanceling() && !this.getDns().isCanceled()) {
-            timer.schedule(this, DNSConstants.PROBE_CONFLICT_INTERVAL, DNSConstants.PROBE_CONFLICT_INTERVAL);
+            timer.schedule(this, DNSConstants.PROBE_CONFLICT_INTERVAL,
+                    DNSConstants.PROBE_CONFLICT_INTERVAL);
         }
     }
 
@@ -82,6 +96,7 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#getTaskDescription()
      */
     @Override
@@ -91,6 +106,7 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#checkRunCondition()
      */
     @Override
@@ -100,6 +116,7 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#createOugoing()
      */
     @Override
@@ -109,13 +126,20 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForDNS(javax.jmdns.impl.DNSOutgoing)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForDNS(javax.jmdns
+     * .impl.DNSOutgoing)
      */
     @Override
-    protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out) throws IOException {
+    protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out)
+            throws IOException {
         DNSOutgoing newOut = out;
-        newOut.addQuestion(DNSQuestion.newQuestion(this.getDns().getLocalHost().getName(), DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
-        for (DNSRecord answer : this.getDns().getLocalHost().answers(DNSRecordClass.NOT_UNIQUE, this.getTTL())) {
+        newOut.addQuestion(DNSQuestion.newQuestion(this.getDns().getLocalHost()
+                .getName(), DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN,
+                DNSRecordClass.NOT_UNIQUE));
+        for (DNSRecord answer : this.getDns().getLocalHost()
+                .answers(DNSRecordClass.NOT_UNIQUE, this.getTTL())) {
             newOut = this.addAuthoritativeAnswer(newOut, answer);
         }
         return newOut;
@@ -123,21 +147,39 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForInfo(javax.jmdns.impl.ServiceInfoImpl, javax.jmdns.impl.DNSOutgoing)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForInfo(javax.
+     * jmdns.impl.ServiceInfoImpl, javax.jmdns.impl.DNSOutgoing)
      */
     @Override
-    protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info, DNSOutgoing out) throws IOException {
+    protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info,
+            DNSOutgoing out) throws IOException {
         DNSOutgoing newOut = out;
-        newOut = this.addQuestion(newOut, DNSQuestion.newQuestion(info.getQualifiedName(), DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
-        // the "unique" flag should be not set here because these answers haven't been proven unique yet this means the record will not exactly match the announcement record
-        newOut = this.addAuthoritativeAnswer(newOut, new DNSRecord.Service(info.getQualifiedName(), DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE, this.getTTL(), info.getPriority(), info.getWeight(), info.getPort(), this.getDns().getLocalHost()
-                .getName()));
+        newOut = this.addQuestion(newOut, DNSQuestion.newQuestion(
+                info.getQualifiedName(), DNSRecordType.TYPE_ANY,
+                DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE));
+        // the "unique" flag should be not set here because these answers
+        // haven't been proven unique yet this means the record will not exactly
+        // match the announcement record
+        newOut = this
+                .addAuthoritativeAnswer(
+                        newOut,
+                        new DNSRecord.Service(info.getQualifiedName(),
+                                DNSRecordClass.CLASS_IN,
+                                DNSRecordClass.NOT_UNIQUE, this.getTTL(), info
+                                        .getPriority(), info.getWeight(), info
+                                        .getPort(), this.getDns()
+                                        .getLocalHost().getName()));
         return newOut;
     }
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#recoverTask(java.lang.Throwable)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#recoverTask(java.lang.Throwable
+     * )
      */
     @Override
     protected void recoverTask(Throwable e) {
@@ -146,6 +188,7 @@ public class Prober extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#advanceTask()
      */
     @Override

@@ -20,8 +20,8 @@ package tv.matchstick.server.common.checker;
  * Check whether two objects are equal.
  */
 public final class ObjEqualChecker {
-	public static boolean isEquals(Object one, Object other) {
-		return one == null && other == null || one != null && other != null
-				&& one.equals(other);
-	}
+    public static boolean isEquals(Object one, Object other) {
+        return one == null && other == null || one != null && other != null
+                && one.equals(other);
+    }
 }

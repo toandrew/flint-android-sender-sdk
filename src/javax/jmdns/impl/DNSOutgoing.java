@@ -22,10 +22,11 @@ public final class DNSOutgoing extends DNSMessage {
     public static class MessageOutputStream extends ByteArrayOutputStream {
         private final DNSOutgoing _out;
 
-        private final int         _offset;
+        private final int _offset;
 
         /**
-         * Creates a new message stream, with a buffer capacity of the specified size, in bytes.
+         * Creates a new message stream, with a buffer capacity of the specified
+         * size, in bytes.
          * 
          * @param size
          *            the initial size.
@@ -133,7 +134,8 @@ public final class DNSOutgoing extends DNSMessage {
                         writeByte(val & 0xFF);
                         return;
                     }
-                    _out._names.put(aName, Integer.valueOf(this.size() + _offset));
+                    _out._names.put(aName,
+                            Integer.valueOf(this.size() + _offset));
                     writeUTF(label, 0, label.length());
                 } else {
                     writeUTF(label, 0, label.length());
@@ -154,11 +156,14 @@ public final class DNSOutgoing extends DNSMessage {
         void writeRecord(DNSRecord rec, long now) {
             writeName(rec.getName());
             writeShort(rec.getRecordType().indexValue());
-            writeShort(rec.getRecordClass().indexValue() | ((rec.isUnique() && _out.isMulticast()) ? DNSRecordClass.CLASS_UNIQUE : 0));
+            writeShort(rec.getRecordClass().indexValue()
+                    | ((rec.isUnique() && _out.isMulticast()) ? DNSRecordClass.CLASS_UNIQUE
+                            : 0));
             writeInt((now == 0) ? rec.getTTL() : rec.getRemainingTTL(now));
 
             // We need to take into account the 2 size bytes
-            MessageOutputStream record = new MessageOutputStream(512, _out, _offset + this.size() + 2);
+            MessageOutputStream record = new MessageOutputStream(512, _out,
+                    _offset + this.size() + 2);
             rec.write(record);
             byte[] byteArray = record.toByteArray();
 
@@ -169,13 +174,14 @@ public final class DNSOutgoing extends DNSMessage {
     }
 
     /**
-     * This can be used to turn off domain name compression. This was helpful for tracking problems interacting with other mdns implementations.
+     * This can be used to turn off domain name compression. This was helpful
+     * for tracking problems interacting with other mdns implementations.
      */
-    public static boolean             USE_DOMAIN_NAME_COMPRESSION = true;
+    public static boolean USE_DOMAIN_NAME_COMPRESSION = true;
 
-    Map<String, Integer>              _names;
+    Map<String, Integer> _names;
 
-    private int                       _maxUDPPayload;
+    private int _maxUDPPayload;
 
     private final MessageOutputStream _questionsBytes;
 
@@ -185,7 +191,7 @@ public final class DNSOutgoing extends DNSMessage {
 
     private final MessageOutputStream _additionalsAnswersBytes;
 
-    private final static int          HEADER_SIZE                 = 12;
+    private final static int HEADER_SIZE = 12;
 
     /**
      * Create an outgoing multicast query or response.
@@ -212,16 +218,21 @@ public final class DNSOutgoing extends DNSMessage {
      * @param flags
      * @param multicast
      * @param senderUDPPayload
-     *            The sender's UDP payload size is the number of bytes of the largest UDP payload that can be reassembled and delivered in the sender's network stack.
+     *            The sender's UDP payload size is the number of bytes of the
+     *            largest UDP payload that can be reassembled and delivered in
+     *            the sender's network stack.
      */
     public DNSOutgoing(int flags, boolean multicast, int senderUDPPayload) {
         super(flags, 0, multicast);
         _names = new HashMap<String, Integer>();
-        _maxUDPPayload = (senderUDPPayload > 0 ? senderUDPPayload : DNSConstants.MAX_MSG_TYPICAL);
+        _maxUDPPayload = (senderUDPPayload > 0 ? senderUDPPayload
+                : DNSConstants.MAX_MSG_TYPICAL);
         _questionsBytes = new MessageOutputStream(senderUDPPayload, this);
         _answersBytes = new MessageOutputStream(senderUDPPayload, this);
-        _authoritativeAnswersBytes = new MessageOutputStream(senderUDPPayload, this);
-        _additionalsAnswersBytes = new MessageOutputStream(senderUDPPayload, this);
+        _authoritativeAnswersBytes = new MessageOutputStream(senderUDPPayload,
+                this);
+        _additionalsAnswersBytes = new MessageOutputStream(senderUDPPayload,
+                this);
     }
 
     /**
@@ -230,7 +241,9 @@ public final class DNSOutgoing extends DNSMessage {
      * @return available space
      */
     public int availableSpace() {
-        return _maxUDPPayload - HEADER_SIZE - _questionsBytes.size() - _answersBytes.size() - _authoritativeAnswersBytes.size() - _additionalsAnswersBytes.size();
+        return _maxUDPPayload - HEADER_SIZE - _questionsBytes.size()
+                - _answersBytes.size() - _authoritativeAnswersBytes.size()
+                - _additionalsAnswersBytes.size();
     }
 
     /**
@@ -312,7 +325,8 @@ public final class DNSOutgoing extends DNSMessage {
      * @param rec
      * @exception IOException
      */
-    public void addAdditionalAnswer(DNSIncoming in, DNSRecord rec) throws IOException {
+    public void addAdditionalAnswer(DNSIncoming in, DNSRecord rec)
+            throws IOException {
         MessageOutputStream record = new MessageOutputStream(512, this);
         record.writeRecord(rec, 0);
         byte[] byteArray = record.toByteArray();
@@ -333,7 +347,8 @@ public final class DNSOutgoing extends DNSMessage {
         long now = System.currentTimeMillis(); // System.currentTimeMillis()
         _names.clear();
 
-        MessageOutputStream message = new MessageOutputStream(_maxUDPPayload, this);
+        MessageOutputStream message = new MessageOutputStream(_maxUDPPayload,
+                this);
         message.writeShort(_multicast ? 0 : this.getId());
         message.writeShort(this.getFlags());
         message.writeShort(this.getNumberOfQuestions());

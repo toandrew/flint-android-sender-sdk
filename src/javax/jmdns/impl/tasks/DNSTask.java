@@ -58,6 +58,7 @@ public abstract class DNSTask extends TimerTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -75,7 +76,8 @@ public abstract class DNSTask extends TimerTask {
      * @return outgoing message for the next question
      * @exception IOException
      */
-    public DNSOutgoing addQuestion(DNSOutgoing out, DNSQuestion rec) throws IOException {
+    public DNSOutgoing addQuestion(DNSOutgoing out, DNSQuestion rec)
+            throws IOException {
         DNSOutgoing newOut = out;
         try {
             newOut.addQuestion(rec);
@@ -107,7 +109,8 @@ public abstract class DNSTask extends TimerTask {
      * @return outgoing message for the next answer
      * @exception IOException
      */
-    public DNSOutgoing addAnswer(DNSOutgoing out, DNSIncoming in, DNSRecord rec) throws IOException {
+    public DNSOutgoing addAnswer(DNSOutgoing out, DNSIncoming in, DNSRecord rec)
+            throws IOException {
         DNSOutgoing newOut = out;
         try {
             newOut.addAnswer(in, rec);
@@ -138,7 +141,8 @@ public abstract class DNSTask extends TimerTask {
      * @return outgoing message for the next answer
      * @exception IOException
      */
-    public DNSOutgoing addAnswer(DNSOutgoing out, DNSRecord rec, long now) throws IOException {
+    public DNSOutgoing addAnswer(DNSOutgoing out, DNSRecord rec, long now)
+            throws IOException {
         DNSOutgoing newOut = out;
         try {
             newOut.addAnswer(rec, now);
@@ -168,7 +172,8 @@ public abstract class DNSTask extends TimerTask {
      * @return outgoing message for the next answer
      * @exception IOException
      */
-    public DNSOutgoing addAuthoritativeAnswer(DNSOutgoing out, DNSRecord rec) throws IOException {
+    public DNSOutgoing addAuthoritativeAnswer(DNSOutgoing out, DNSRecord rec)
+            throws IOException {
         DNSOutgoing newOut = out;
         try {
             newOut.addAuthorativeAnswer(rec);
@@ -200,7 +205,8 @@ public abstract class DNSTask extends TimerTask {
      * @return outgoing message for the next answer
      * @exception IOException
      */
-    public DNSOutgoing addAdditionalAnswer(DNSOutgoing out, DNSIncoming in, DNSRecord rec) throws IOException {
+    public DNSOutgoing addAdditionalAnswer(DNSOutgoing out, DNSIncoming in,
+            DNSRecord rec) throws IOException {
         DNSOutgoing newOut = out;
         try {
             newOut.addAdditionalAnswer(in, rec);

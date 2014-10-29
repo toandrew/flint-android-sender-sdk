@@ -21,31 +21,31 @@ public abstract class DNSMessage {
     /**
      *
      */
-    public static final boolean       MULTICAST = true;
+    public static final boolean MULTICAST = true;
 
     /**
      *
      */
-    public static final boolean       UNICAST   = false;
+    public static final boolean UNICAST = false;
 
     // protected DatagramPacket _packet;
     // protected int _off;
     // protected int _len;
     // protected byte[] _data;
 
-    private int                       _id;
+    private int _id;
 
-    boolean                           _multicast;
+    boolean _multicast;
 
-    private int                       _flags;
+    private int _flags;
 
     protected final List<DNSQuestion> _questions;
 
-    protected final List<DNSRecord>   _answers;
+    protected final List<DNSRecord> _answers;
 
-    protected final List<DNSRecord>   _authoritativeAnswers;
+    protected final List<DNSRecord> _authoritativeAnswers;
 
-    protected final List<DNSRecord>   _additionals;
+    protected final List<DNSRecord> _additionals;
 
     /**
      * @param flags
@@ -57,10 +57,13 @@ public abstract class DNSMessage {
         _flags = flags;
         _id = id;
         _multicast = multicast;
-        _questions = Collections.synchronizedList(new LinkedList<DNSQuestion>());
+        _questions = Collections
+                .synchronizedList(new LinkedList<DNSQuestion>());
         _answers = Collections.synchronizedList(new LinkedList<DNSRecord>());
-        _authoritativeAnswers = Collections.synchronizedList(new LinkedList<DNSRecord>());
-        _additionals = Collections.synchronizedList(new LinkedList<DNSRecord>());
+        _authoritativeAnswers = Collections
+                .synchronizedList(new LinkedList<DNSRecord>());
+        _additionals = Collections
+                .synchronizedList(new LinkedList<DNSRecord>());
     }
 
     // public DatagramPacket getPacket() {
@@ -132,7 +135,8 @@ public abstract class DNSMessage {
     }
 
     public Collection<? extends DNSRecord> getAllAnswers() {
-        List<DNSRecord> aList = new ArrayList<DNSRecord>(_answers.size() + _authoritativeAnswers.size() + _additionals.size());
+        List<DNSRecord> aList = new ArrayList<DNSRecord>(_answers.size()
+                + _authoritativeAnswers.size() + _additionals.size());
         aList.addAll(_answers);
         aList.addAll(_authoritativeAnswers);
         aList.addAll(_additionals);
@@ -214,7 +218,8 @@ public abstract class DNSMessage {
      * @return true is the message is empty
      */
     public boolean isEmpty() {
-        return (this.getNumberOfQuestions() + this.getNumberOfAnswers() + this.getNumberOfAuthorities() + this.getNumberOfAdditionals()) == 0;
+        return (this.getNumberOfQuestions() + this.getNumberOfAnswers()
+                + this.getNumberOfAuthorities() + this.getNumberOfAdditionals()) == 0;
     }
 
     /**

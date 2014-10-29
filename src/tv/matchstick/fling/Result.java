@@ -22,10 +22,10 @@ package tv.matchstick.fling;
  * Represents the final result of invoking an API method in Fling Service.
  */
 public interface Result {
-	/**
-	 * Get result status
-	 * 
-	 * @return result status
-	 */
-	public abstract Status getStatus();
+    /**
+     * Get result status
+     * 
+     * @return result status
+     */
+    public abstract Status getStatus();
 }

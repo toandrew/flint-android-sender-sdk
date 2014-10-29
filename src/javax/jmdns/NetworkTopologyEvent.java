@@ -29,7 +29,8 @@ public abstract class NetworkTopologyEvent extends EventObject {
     }
 
     /**
-     * Returns the JmDNS instance associated with the event or null if it is a generic event.
+     * Returns the JmDNS instance associated with the event or null if it is a
+     * generic event.
      * 
      * @return JmDNS instance
      */

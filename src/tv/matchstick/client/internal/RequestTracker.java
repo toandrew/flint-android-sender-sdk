@@ -21,104 +21,104 @@ import org.json.JSONObject;
 import android.os.SystemClock;
 
 public final class RequestTracker {
-	private long mTimeout;
-	private long mRequestId;
-	private long mCurrentTime;
-	private RequestTrackerCallback mCallback;
-	private static final LOG log = new LOG("RequestTracker");
-	public static final Object mLock = new Object();
+    private long mTimeout;
+    private long mRequestId;
+    private long mCurrentTime;
+    private RequestTrackerCallback mCallback;
+    private static final LOG log = new LOG("RequestTracker");
+    public static final Object mLock = new Object();
 
-	public RequestTracker(long timeOut) {
-		this.mTimeout = timeOut;
-		this.mRequestId = -1L;
-		this.mCurrentTime = 0L;
-	}
+    public RequestTracker(long timeOut) {
+        this.mTimeout = timeOut;
+        this.mRequestId = -1L;
+        this.mCurrentTime = 0L;
+    }
 
-	public void startTrack(long requestId, RequestTrackerCallback cb) {
-		RequestTrackerCallback callback = null;
-		long reqId = -1L;
-		synchronized (mLock) {
-			callback = this.mCallback;
-			reqId = this.mRequestId;
-			this.mRequestId = requestId;
-			this.mCallback = cb;
-			this.mCurrentTime = SystemClock.elapsedRealtime();
-		}
-		if (callback == null) {
-			return;
-		}
-		callback.onSignInRequired(reqId);
-	}
+    public void startTrack(long requestId, RequestTrackerCallback cb) {
+        RequestTrackerCallback callback = null;
+        long reqId = -1L;
+        synchronized (mLock) {
+            callback = this.mCallback;
+            reqId = this.mRequestId;
+            this.mRequestId = requestId;
+            this.mCallback = cb;
+            this.mCurrentTime = SystemClock.elapsedRealtime();
+        }
+        if (callback == null) {
+            return;
+        }
+        callback.onSignInRequired(reqId);
+    }
 
-	public void clear() {
-		synchronized (mLock) {
-			if (this.mRequestId != -1L)
-				doClear();
-		}
-	}
+    public void clear() {
+        synchronized (mLock) {
+            if (this.mRequestId != -1L)
+                doClear();
+        }
+    }
 
-	private void doClear() {
-		this.mRequestId = -1L;
-		this.mCallback = null;
-		this.mCurrentTime = 0L;
-	}
+    private void doClear() {
+        this.mRequestId = -1L;
+        this.mCallback = null;
+        this.mCurrentTime = 0L;
+    }
 
-	// isRunning
-	public boolean isRequestIdAvailable() {
-		synchronized (mLock) {
-			return (this.mRequestId != -1L);
-		}
-	}
+    // isRunning
+    public boolean isRequestIdAvailable() {
+        synchronized (mLock) {
+            return (this.mRequestId != -1L);
+        }
+    }
 
-	public boolean isCurrentRequestId(long requestId) {
-		synchronized (mLock) {
-			return ((this.mRequestId != -1L) && (this.mRequestId == requestId));
-		}
-	}
+    public boolean isCurrentRequestId(long requestId) {
+        synchronized (mLock) {
+            return ((this.mRequestId != -1L) && (this.mRequestId == requestId));
+        }
+    }
 
-	public boolean trackRequest(long reqeustId, int statusCode) {
-		return trackRequest(reqeustId, statusCode, null);
-	}
+    public boolean trackRequest(long reqeustId, int statusCode) {
+        return trackRequest(reqeustId, statusCode, null);
+    }
 
-	public boolean trackRequest(long requestId, int statusCode,
-			JSONObject customData) {
-		boolean i = false;
-		RequestTrackerCallback callback = null;
-		synchronized (mLock) {
-			if ((this.mRequestId != -1L) && (this.mRequestId == requestId)) {
-				log.d("request %d completed", this.mRequestId);
-				callback = this.mCallback;
-				doClear();
-				i = true;
-			}
-		}
-		if (callback != null) {
-			callback.onTrackRequest(requestId, statusCode, customData);
-		}
-		return i;
-	}
+    public boolean trackRequest(long requestId, int statusCode,
+            JSONObject customData) {
+        boolean i = false;
+        RequestTrackerCallback callback = null;
+        synchronized (mLock) {
+            if ((this.mRequestId != -1L) && (this.mRequestId == requestId)) {
+                log.d("request %d completed", this.mRequestId);
+                callback = this.mCallback;
+                doClear();
+                i = true;
+            }
+        }
+        if (callback != null) {
+            callback.onTrackRequest(requestId, statusCode, customData);
+        }
+        return i;
+    }
 
-	/*
-	 * checkTimeout
-	 */
-	public boolean trackRequestTimeout(long timeOut, int statusCode) {
-		boolean i = false;
-		RequestTrackerCallback callback = null;
-		long requestId = 0L;
-		synchronized (mLock) {
-			if ((this.mRequestId != -1L)
-					&& (timeOut - this.mCurrentTime >= this.mTimeout)) {
-				log.d("request %d timed out", this.mRequestId);
-				requestId = this.mRequestId;
-				callback = this.mCallback;
-				doClear();
-				i = true;
-			}
-		}
-		if (callback != null) {
-			callback.onTrackRequest(requestId, statusCode, null);
-		}
-		return i;
-	}
+    /*
+     * checkTimeout
+     */
+    public boolean trackRequestTimeout(long timeOut, int statusCode) {
+        boolean i = false;
+        RequestTrackerCallback callback = null;
+        long requestId = 0L;
+        synchronized (mLock) {
+            if ((this.mRequestId != -1L)
+                    && (timeOut - this.mCurrentTime >= this.mTimeout)) {
+                log.d("request %d timed out", this.mRequestId);
+                requestId = this.mRequestId;
+                callback = this.mCallback;
+                doClear();
+                i = true;
+            }
+        }
+        if (callback != null) {
+            callback.onTrackRequest(requestId, statusCode, null);
+        }
+        return i;
+    }
 
 }

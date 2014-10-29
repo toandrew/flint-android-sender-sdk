@@ -32,343 +32,343 @@ import android.os.RemoteException;
  * device,etc)
  */
 public final class FlingConnectedClient implements IFlingSrvController {
-	final FlingService mFlingService;
-	private FlingDeviceControllerStubImpl mStubImpl;
-	private final IFlingDeviceControllerListener mFlingDeviceControllerListener;
-	private final DeathRecipient mFlingCallbackDeathHandler;
-	private final DeathRecipient mListenerDeathHandler;
-	private final FlingDevice mFlingDevice;
-	private String mLastAppId;
-	private String mLastSessionId;
-	private FlingDeviceController mFlingDeviceController;
-	private final IFlingCallbacks mFlingCallbacks;
-	private final String mPackageName;
-	private final long mFlags;
+    final FlingService mFlingService;
+    private FlingDeviceControllerStubImpl mStubImpl;
+    private final IFlingDeviceControllerListener mFlingDeviceControllerListener;
+    private final DeathRecipient mFlingCallbackDeathHandler;
+    private final DeathRecipient mListenerDeathHandler;
+    private final FlingDevice mFlingDevice;
+    private String mLastAppId;
+    private String mLastSessionId;
+    private FlingDeviceController mFlingDeviceController;
+    private final IFlingCallbacks mFlingCallbacks;
+    private final String mPackageName;
+    private final long mFlags;
 
-	/**
-	 * Fling Client which will be interacted with app side to do all media
-	 * control works
-	 * 
-	 * @param service
-	 * @param callbacks
-	 * @param device
-	 * @param lastApplicationId
-	 * @param lastSessionId
-	 * @param listener
-	 * @param packageName
-	 * @param flags
-	 */
-	public FlingConnectedClient(FlingService service,
-			IFlingCallbacks callbacks, FlingDevice device,
-			String lastApplicationId, String lastSessionId,
-			IFlingDeviceControllerListener listener, String packageName,
-			long flags) {
-		super();
+    /**
+     * Fling Client which will be interacted with app side to do all media
+     * control works
+     * 
+     * @param service
+     * @param callbacks
+     * @param device
+     * @param lastApplicationId
+     * @param lastSessionId
+     * @param listener
+     * @param packageName
+     * @param flags
+     */
+    public FlingConnectedClient(FlingService service,
+            IFlingCallbacks callbacks, FlingDevice device,
+            String lastApplicationId, String lastSessionId,
+            IFlingDeviceControllerListener listener, String packageName,
+            long flags) {
+        super();
 
-		mFlingService = service;
+        mFlingService = service;
 
-		mFlingCallbacks = (IFlingCallbacks) ValueChecker
-				.checkNullPointer(callbacks);
+        mFlingCallbacks = (IFlingCallbacks) ValueChecker
+                .checkNullPointer(callbacks);
 
-		mFlingDevice = device;
-		mLastAppId = lastApplicationId;
-		mLastSessionId = lastSessionId;
-		mFlingDeviceControllerListener = listener;
-		mStubImpl = null;
-		mPackageName = packageName;
-		mFlags = flags;
+        mFlingDevice = device;
+        mLastAppId = lastApplicationId;
+        mLastSessionId = lastSessionId;
+        mFlingDeviceControllerListener = listener;
+        mStubImpl = null;
+        mPackageName = packageName;
+        mFlags = flags;
 
-		mFlingCallbackDeathHandler = new DeathRecipient() {
+        mFlingCallbackDeathHandler = new DeathRecipient() {
 
-			@Override
-			public void binderDied() {
-				handleBinderDeath(FlingConnectedClient.this);
-			}
+            @Override
+            public void binderDied() {
+                handleBinderDeath(FlingConnectedClient.this);
+            }
 
-		};
+        };
 
-		mListenerDeathHandler = new DeathRecipient() {
+        mListenerDeathHandler = new DeathRecipient() {
 
-			@Override
-			public void binderDied() {
-				handleBinderDeath(FlingConnectedClient.this);
-			}
+            @Override
+            public void binderDied() {
+                handleBinderDeath(FlingConnectedClient.this);
+            }
 
-		};
+        };
 
-		/**
-		 * In case the device controller's listener(in app side) is dead
-		 */
-		try {
-			mFlingDeviceControllerListener.asBinder().linkToDeath(
-					mListenerDeathHandler, 0);
-		} catch (RemoteException e) {
-			FlingService.log().e("client disconnected before listener was set");
-			if (!mFlingDeviceController.isDisposed())
-				mFlingDeviceController.releaseReference();
-		}
+        /**
+         * In case the device controller's listener(in app side) is dead
+         */
+        try {
+            mFlingDeviceControllerListener.asBinder().linkToDeath(
+                    mListenerDeathHandler, 0);
+        } catch (RemoteException e) {
+            FlingService.log().e("client disconnected before listener was set");
+            if (!mFlingDeviceController.isDisposed())
+                mFlingDeviceController.releaseReference();
+        }
 
-		FlingService.log().d("acquireDeviceController by %s", mPackageName);
+        FlingService.log().d("acquireDeviceController by %s", mPackageName);
 
-		FlingService.log().d("Create one fling device controller!");
-		mFlingDeviceController = FlingDeviceController.create(mFlingService,
-				FlingService.getHandler(mFlingService), mPackageName,
-				mFlingDevice, mFlags, this);
+        FlingService.log().d("Create one fling device controller!");
+        mFlingDeviceController = FlingDeviceController.create(mFlingService,
+                FlingService.getHandler(mFlingService), mPackageName,
+                mFlingDevice, mFlags, this);
 
-		mStubImpl = new FlingDeviceControllerStubImpl(mFlingService,
-				mFlingDeviceController);
+        mStubImpl = new FlingDeviceControllerStubImpl(mFlingService,
+                mFlingDeviceController);
 
-		/**
-		 * already connected?
-		 */
-		if (mFlingDeviceController.isConnected()) {
-			try {
-				mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
-						mStubImpl.asBinder(), null);
-			} catch (RemoteException e) {
-				FlingService.log().d("client died while brokering service");
-			}
-			return;
-		}
+        /**
+         * already connected?
+         */
+        if (mFlingDeviceController.isConnected()) {
+            try {
+                mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
+                        mStubImpl.asBinder(), null);
+            } catch (RemoteException e) {
+                FlingService.log().d("client died while brokering service");
+            }
+            return;
+        }
 
-		/**
-		 * is not busy on connecting to device?
-		 */
-		if (!mFlingDeviceController.isConnecting()) {
-			FlingService
-					.log()
-					.d("reconnecting to device with applicationId=%s, sessionId=%s",
-							mLastAppId, mLastSessionId);
-			if (mLastAppId != null)
-				mFlingDeviceController.reconnectToDevice(mLastAppId,
-						mLastSessionId);
-			else
-				mFlingDeviceController.connectDevice();
-		}
+        /**
+         * is not busy on connecting to device?
+         */
+        if (!mFlingDeviceController.isConnecting()) {
+            FlingService
+                    .log()
+                    .d("reconnecting to device with applicationId=%s, sessionId=%s",
+                            mLastAppId, mLastSessionId);
+            if (mLastAppId != null)
+                mFlingDeviceController.reconnectToDevice(mLastAppId,
+                        mLastSessionId);
+            else
+                mFlingDeviceController.connectDevice();
+        }
 
-		/**
-		 * in case, the flingcallback binder in app side is dead.
-		 */
-		try {
-			mFlingCallbacks.asBinder().linkToDeath(mFlingCallbackDeathHandler,
-					0);
-		} catch (RemoteException e) {
-			FlingService.log().w("Unable to link listener reaper");
-		}
-	}
+        /**
+         * in case, the flingcallback binder in app side is dead.
+         */
+        try {
+            mFlingCallbacks.asBinder().linkToDeath(mFlingCallbackDeathHandler,
+                    0);
+        } catch (RemoteException e) {
+            FlingService.log().w("Unable to link listener reaper");
+        }
+    }
 
-	/**
-	 * Do some cleanup work when the app is dead
-	 * 
-	 * @param client
-	 */
-	static void handleBinderDeath(FlingConnectedClient client) {
-		if (client.mFlingDeviceController != null
-				&& !client.mFlingDeviceController.isDisposed()) {
-			FlingService.log().w(
-					"calling releaseReference from handleBinderDeath()");
-			client.mFlingDeviceController.releaseReference();
-			FlingService.log().d("Released controller.");
-		}
-		FlingService.log().d("Removing ConnectedClient.");
+    /**
+     * Do some cleanup work when the app is dead
+     * 
+     * @param client
+     */
+    static void handleBinderDeath(FlingConnectedClient client) {
+        if (client.mFlingDeviceController != null
+                && !client.mFlingDeviceController.isDisposed()) {
+            FlingService.log().w(
+                    "calling releaseReference from handleBinderDeath()");
+            client.mFlingDeviceController.releaseReference();
+            FlingService.log().d("Released controller.");
+        }
+        FlingService.log().d("Removing ConnectedClient.");
 
-		// remove connected client in fling service
-		FlingService.removeFlingClient(client.mFlingService, client);
-	}
+        // remove connected client in fling service
+        FlingService.removeFlingClient(client.mFlingService, client);
+    }
 
-	/**
-	 * Invoked when connected with fling device. The app side will be notified
-	 * the current connected status(0)
-	 * 
-	 */
-	@Override
-	public final void onConnected() {
-		try {
-			mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
-					mStubImpl.asBinder(), null);
-			FlingService.log().d("Connected to device.");
-		} catch (RemoteException remoteexception) {
-			FlingService.log().w(remoteexception,
-					"client died while brokering service");
-		}
-	}
+    /**
+     * Invoked when connected with fling device. The app side will be notified
+     * the current connected status(0)
+     * 
+     */
+    @Override
+    public final void onConnected() {
+        try {
+            mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
+                    mStubImpl.asBinder(), null);
+            FlingService.log().d("Connected to device.");
+        } catch (RemoteException remoteexception) {
+            FlingService.log().w(remoteexception,
+                    "client died while brokering service");
+        }
+    }
 
-	/**
-	 * Invoked when disconnected with fling device. The app side will be
-	 * notified the current disconnected status(0)
-	 * 
-	 * @status the disconnected reason
-	 */
-	@Override
-	public final void onDisconnected(int status) {
-		FlingService.log().d("onDisconnected: status=%d", status);
-		try {
-			mFlingDeviceControllerListener.onDisconnected(status);
-		} catch (RemoteException e) {
-			FlingService.log().d(e.toString(),
-					"client died while brokering service");
-		}
+    /**
+     * Invoked when disconnected with fling device. The app side will be
+     * notified the current disconnected status(0)
+     * 
+     * @status the disconnected reason
+     */
+    @Override
+    public final void onDisconnected(int status) {
+        FlingService.log().d("onDisconnected: status=%d", status);
+        try {
+            mFlingDeviceControllerListener.onDisconnected(status);
+        } catch (RemoteException e) {
+            FlingService.log().d(e.toString(),
+                    "client died while brokering service");
+        }
 
-		/**
-		 * release resources in controller instance
-		 */
-		if (!mFlingDeviceController.isDisposed()) {
-			FlingService
-					.log()
-					.w("calling releaseReference from ConnectedClient.onDisconnected");
-			mFlingDeviceController.releaseReference();
-		}
-	}
+        /**
+         * release resources in controller instance
+         */
+        if (!mFlingDeviceController.isDisposed()) {
+            FlingService
+                    .log()
+                    .w("calling releaseReference from ConnectedClient.onDisconnected");
+            mFlingDeviceController.releaseReference();
+        }
+    }
 
-	/**
-	 * Called when disconnected with application
-	 */
-	@Override
-	public final void onApplicationConnected(
-			ApplicationMetadata applicationmetadata, String statusText,
-			String sessionId, boolean relaunched) {
-		mLastAppId = applicationmetadata.getApplicationId();
-		mLastSessionId = sessionId;
-		try {
-			mFlingDeviceControllerListener.onApplicationConnected(
-					applicationmetadata, statusText, sessionId, relaunched);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * Called when disconnected with application
+     */
+    @Override
+    public final void onApplicationConnected(
+            ApplicationMetadata applicationmetadata, String statusText,
+            String sessionId, boolean relaunched) {
+        mLastAppId = applicationmetadata.getApplicationId();
+        mLastSessionId = sessionId;
+        try {
+            mFlingDeviceControllerListener.onApplicationConnected(
+                    applicationmetadata, statusText, sessionId, relaunched);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * Called when fling device's volume changed
-	 */
-	@Override
-	public final void onVolumeChanged(String status, double volume,
-			boolean muteState) {
-		try {
-			mFlingDeviceControllerListener
-					.notifyApplicationStatusOrVolumeChanged(status, volume,
-							muteState);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * Called when fling device's volume changed
+     */
+    @Override
+    public final void onVolumeChanged(String status, double volume,
+            boolean muteState) {
+        try {
+            mFlingDeviceControllerListener
+                    .notifyApplicationStatusOrVolumeChanged(status, volume,
+                            muteState);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * called for request callback
-	 */
-	@Override
-	public final void onRequestCallback(String namespace, long requestId,
-			int result) {
-		try {
-			mFlingDeviceControllerListener.requestCallback(namespace,
-					requestId, result);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * called for request callback
+     */
+    @Override
+    public final void onRequestCallback(String namespace, long requestId,
+            int result) {
+        try {
+            mFlingDeviceControllerListener.requestCallback(namespace,
+                    requestId, result);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * notified app when message received
-	 */
-	@Override
-	public final void notifyOnMessageReceived(String namespace, String message) {
-		try {
-			mFlingDeviceControllerListener
-					.onMessageReceived(namespace, message);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * notified app when message received
+     */
+    @Override
+    public final void notifyOnMessageReceived(String namespace, String message) {
+        try {
+            mFlingDeviceControllerListener
+                    .onMessageReceived(namespace, message);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * notified app when binary message is received
-	 */
-	@Override
-	public final void onReceiveBinary(String namespace, byte message[]) {
-		try {
-			mFlingDeviceControllerListener.onReceiveBinary(namespace, message);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * notified app when binary message is received
+     */
+    @Override
+    public final void onReceiveBinary(String namespace, byte message[]) {
+        try {
+            mFlingDeviceControllerListener.onReceiveBinary(namespace, message);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * notify app when connected to device without app
-	 */
-	@Override
-	public final void onConnectedWithoutApp() {
-		try {
-			mFlingCallbacks
-					.onPostInitComplete(1001, mStubImpl.asBinder(), null);
-			FlingService.log().d("Connected to device without app.");
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			FlingService.log().d(e.toString(),
-					"client died while brokering service");
-		}
-	}
+    /**
+     * notify app when connected to device without app
+     */
+    @Override
+    public final void onConnectedWithoutApp() {
+        try {
+            mFlingCallbacks
+                    .onPostInitComplete(1001, mStubImpl.asBinder(), null);
+            FlingService.log().d("Connected to device without app.");
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            FlingService.log().d(e.toString(),
+                    "client died while brokering service");
+        }
+    }
 
-	/**
-	 * notify app when failed connected with application
-	 */
-	@Override
-	public final void onApplicationConnectionFailed(int reason) {
-		try {
-			mFlingDeviceControllerListener
-					.postApplicationConnectionResult(reason);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * notify app when failed connected with application
+     */
+    @Override
+    public final void onApplicationConnectionFailed(int reason) {
+        try {
+            mFlingDeviceControllerListener
+                    .postApplicationConnectionResult(reason);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * notify app when failed to connect to device
-	 */
-	@Override
-	public final void onConnectionFailed() {
-		try {
-			mFlingCallbacks.onPostInitComplete(FlingStatusCodes.NETWORK_ERROR,
-					null, null);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			FlingService.log().d(e.toString(),
-					"client died while brokering service");
-		}
-	}
+    /**
+     * notify app when failed to connect to device
+     */
+    @Override
+    public final void onConnectionFailed() {
+        try {
+            mFlingCallbacks.onPostInitComplete(FlingStatusCodes.NETWORK_ERROR,
+                    null, null);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            FlingService.log().d(e.toString(),
+                    "client died while brokering service");
+        }
+    }
 
-	/**
-	 * notify app the current request status
-	 */
-	@Override
-	public final void onRequestStatus(int result) {
-		try {
-			mFlingDeviceControllerListener.onRequestStatus(result);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * notify app the current request status
+     */
+    @Override
+    public final void onRequestStatus(int result) {
+        try {
+            mFlingDeviceControllerListener.onRequestStatus(result);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * notify app that the request is invalid
-	 */
-	@Override
-	public final void onInvalidRequest() {
-		try {
-			mFlingDeviceControllerListener
-					.onRequestResult(FlingStatusCodes.INVALID_REQUEST); // 2001
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * notify app that the request is invalid
+     */
+    @Override
+    public final void onInvalidRequest() {
+        try {
+            mFlingDeviceControllerListener
+                    .onRequestResult(FlingStatusCodes.INVALID_REQUEST); // 2001
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * notify app that application is disconnected for some reason
-	 */
-	@Override
-	public final void onApplicationDisconnected(int reason) {
-		try {
-			mFlingDeviceControllerListener.onApplicationDisconnected(reason);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * notify app that application is disconnected for some reason
+     */
+    @Override
+    public final void onApplicationDisconnected(int reason) {
+        try {
+            mFlingDeviceControllerListener.onApplicationDisconnected(reason);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 }

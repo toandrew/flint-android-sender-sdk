@@ -17,7 +17,9 @@ import javax.jmdns.impl.constants.DNSRecordClass;
 import javax.jmdns.impl.constants.DNSState;
 
 /**
- * The Announcer sends an accumulated query of all announces, and advances the state of all serviceInfos, for which it has sent an announce. The Announcer also sends announcements and advances the state of JmDNS itself.
+ * The Announcer sends an accumulated query of all announces, and advances the
+ * state of all serviceInfos, for which it has sent an announce. The Announcer
+ * also sends announcements and advances the state of JmDNS itself.
  * <p/>
  * When the announcer has run two times, it finishes.
  */
@@ -33,15 +35,18 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#getName()
      */
     @Override
     public String getName() {
-        return "Announcer(" + (this.getDns() != null ? this.getDns().getName() : "") + ")";
+        return "Announcer("
+                + (this.getDns() != null ? this.getDns().getName() : "") + ")";
     }
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -51,12 +56,14 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#start(java.util.Timer)
      */
     @Override
     public void start(Timer timer) {
         if (!this.getDns().isCanceling() && !this.getDns().isCanceled()) {
-            timer.schedule(this, DNSConstants.ANNOUNCE_WAIT_INTERVAL, DNSConstants.ANNOUNCE_WAIT_INTERVAL);
+            timer.schedule(this, DNSConstants.ANNOUNCE_WAIT_INTERVAL,
+                    DNSConstants.ANNOUNCE_WAIT_INTERVAL);
         }
     }
 
@@ -69,6 +76,7 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#getTaskDescription()
      */
     @Override
@@ -78,6 +86,7 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#checkRunCondition()
      */
     @Override
@@ -87,21 +96,28 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#createOugoing()
      */
     @Override
     protected DNSOutgoing createOugoing() {
-        return new DNSOutgoing(DNSConstants.FLAGS_QR_RESPONSE | DNSConstants.FLAGS_AA);
+        return new DNSOutgoing(DNSConstants.FLAGS_QR_RESPONSE
+                | DNSConstants.FLAGS_AA);
     }
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForDNS(javax.jmdns.impl.DNSOutgoing)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForDNS(javax.jmdns
+     * .impl.DNSOutgoing)
      */
     @Override
-    protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out) throws IOException {
+    protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out)
+            throws IOException {
         DNSOutgoing newOut = out;
-        for (DNSRecord answer : this.getDns().getLocalHost().answers(DNSRecordClass.UNIQUE, this.getTTL())) {
+        for (DNSRecord answer : this.getDns().getLocalHost()
+                .answers(DNSRecordClass.UNIQUE, this.getTTL())) {
             newOut = this.addAnswer(newOut, null, answer);
         }
         return newOut;
@@ -109,12 +125,17 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForInfo(javax.jmdns.impl.ServiceInfoImpl, javax.jmdns.impl.DNSOutgoing)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForInfo(javax.
+     * jmdns.impl.ServiceInfoImpl, javax.jmdns.impl.DNSOutgoing)
      */
     @Override
-    protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info, DNSOutgoing out) throws IOException {
+    protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info,
+            DNSOutgoing out) throws IOException {
         DNSOutgoing newOut = out;
-        for (DNSRecord answer : info.answers(DNSRecordClass.UNIQUE, this.getTTL(), this.getDns().getLocalHost())) {
+        for (DNSRecord answer : info.answers(DNSRecordClass.UNIQUE,
+                this.getTTL(), this.getDns().getLocalHost())) {
             newOut = this.addAnswer(newOut, null, answer);
         }
         return newOut;
@@ -122,7 +143,10 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#recoverTask(java.lang.Throwable)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#recoverTask(java.lang.Throwable
+     * )
      */
     @Override
     protected void recoverTask(Throwable e) {
@@ -131,6 +155,7 @@ public class Announcer extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#advanceTask()
      */
     @Override

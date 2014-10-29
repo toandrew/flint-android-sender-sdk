@@ -22,11 +22,11 @@ import java.io.IOException;
  * Message too large exception.
  */
 public final class FlingMessageTooLargeException extends IOException {
-	/**
-	 * auto gen version uid.
-	 */
-	private static final long serialVersionUID = 879854749912478568L;
+    /**
+     * auto gen version uid.
+     */
+    private static final long serialVersionUID = 879854749912478568L;
 
-	public FlingMessageTooLargeException() {
-	}
+    public FlingMessageTooLargeException() {
+    }
 }

@@ -64,9 +64,10 @@ public enum DNSState {
         probing, announcing, announced, canceling, canceled, closing, closed
     }
 
-    // private static Logger logger = Logger.getLogger(DNSState.class.getName());
+    // private static Logger logger =
+    // Logger.getLogger(DNSState.class.getName());
 
-    private final String     _name;
+    private final String _name;
 
     private final StateClass _state;
 
@@ -82,70 +83,75 @@ public enum DNSState {
 
     /**
      * Returns the next advanced state.<br/>
-     * In general, this advances one step in the following sequence: PROBING_1, PROBING_2, PROBING_3, ANNOUNCING_1, ANNOUNCING_2, ANNOUNCED.<br/>
-     * or CANCELING_1, CANCELING_2, CANCELING_3, CANCELED Does not advance for ANNOUNCED and CANCELED state.
+     * In general, this advances one step in the following sequence: PROBING_1,
+     * PROBING_2, PROBING_3, ANNOUNCING_1, ANNOUNCING_2, ANNOUNCED.<br/>
+     * or CANCELING_1, CANCELING_2, CANCELING_3, CANCELED Does not advance for
+     * ANNOUNCED and CANCELED state.
      *
      * @return next state
      */
     public final DNSState advance() {
         switch (this) {
-            case PROBING_1:
-                return PROBING_2;
-            case PROBING_2:
-                return PROBING_3;
-            case PROBING_3:
-                return ANNOUNCING_1;
-            case ANNOUNCING_1:
-                return ANNOUNCING_2;
-            case ANNOUNCING_2:
-                return ANNOUNCED;
-            case ANNOUNCED:
-                return ANNOUNCED;
-            case CANCELING_1:
-                return CANCELING_2;
-            case CANCELING_2:
-                return CANCELING_3;
-            case CANCELING_3:
-                return CANCELED;
-            case CANCELED:
-                return CANCELED;
-            case CLOSING:
-                return CLOSED;
-            case CLOSED:
-                return CLOSED;
-            default:
-                // This is just to keep the compiler happy as we have covered all cases before.
-                return this;
+        case PROBING_1:
+            return PROBING_2;
+        case PROBING_2:
+            return PROBING_3;
+        case PROBING_3:
+            return ANNOUNCING_1;
+        case ANNOUNCING_1:
+            return ANNOUNCING_2;
+        case ANNOUNCING_2:
+            return ANNOUNCED;
+        case ANNOUNCED:
+            return ANNOUNCED;
+        case CANCELING_1:
+            return CANCELING_2;
+        case CANCELING_2:
+            return CANCELING_3;
+        case CANCELING_3:
+            return CANCELED;
+        case CANCELED:
+            return CANCELED;
+        case CLOSING:
+            return CLOSED;
+        case CLOSED:
+            return CLOSED;
+        default:
+            // This is just to keep the compiler happy as we have covered all
+            // cases before.
+            return this;
         }
     }
 
     /**
-     * Returns to the next reverted state. All states except CANCELED revert to PROBING_1. Status CANCELED does not revert.
+     * Returns to the next reverted state. All states except CANCELED revert to
+     * PROBING_1. Status CANCELED does not revert.
      *
      * @return reverted state
      */
     public final DNSState revert() {
         switch (this) {
-            case PROBING_1:
-            case PROBING_2:
-            case PROBING_3:
-            case ANNOUNCING_1:
-            case ANNOUNCING_2:
-            case ANNOUNCED:
-                return PROBING_1;
-            case CANCELING_1:
-            case CANCELING_2:
-            case CANCELING_3:
-                return CANCELING_1;
-            case CANCELED:
-                return CANCELED;
-            case CLOSING:
-                return CLOSING;
-            case CLOSED:
-                return CLOSED;
-            default:
-                // This is just to keep the compiler happy as we have covered all cases before.
-                return this;
+        case PROBING_1:
+        case PROBING_2:
+        case PROBING_3:
+        case ANNOUNCING_1:
+        case ANNOUNCING_2:
+        case ANNOUNCED:
+            return PROBING_1;
+        case CANCELING_1:
+        case CANCELING_2:
+        case CANCELING_3:
+            return CANCELING_1;
+        case CANCELED:
+            return CANCELED;
+        case CLOSING:
+            return CLOSING;
+        case CLOSED:
+            return CLOSED;
+        default:
+            // This is just to keep the compiler happy as we have covered all
+            // cases before.
+            return this;
         }
     }
 
@@ -161,7 +167,8 @@ public enum DNSState {
     /**
      * Returns true, if this is an announcing state.
      *
-     * @return <code>true</code> if announcing state, <code>false</code> otherwise
+     * @return <code>true</code> if announcing state, <code>false</code>
+     *         otherwise
      */
     public final boolean isAnnouncing() {
         return _state == StateClass.announcing;
@@ -170,7 +177,8 @@ public enum DNSState {
     /**
      * Returns true, if this is an announced state.
      *
-     * @return <code>true</code> if announced state, <code>false</code> otherwise
+     * @return <code>true</code> if announced state, <code>false</code>
+     *         otherwise
      */
     public final boolean isAnnounced() {
         return _state == StateClass.announced;
@@ -179,7 +187,8 @@ public enum DNSState {
     /**
      * Returns true, if this is a canceling state.
      *
-     * @return <code>true</code> if canceling state, <code>false</code> otherwise
+     * @return <code>true</code> if canceling state, <code>false</code>
+     *         otherwise
      */
     public final boolean isCanceling() {
         return _state == StateClass.canceling;

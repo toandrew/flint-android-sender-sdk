@@ -26,21 +26,25 @@ public class RecordReaper extends DNSTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#getName()
      */
     @Override
     public String getName() {
-        return "RecordReaper(" + (this.getDns() != null ? this.getDns().getName() : "") + ")";
+        return "RecordReaper("
+                + (this.getDns() != null ? this.getDns().getName() : "") + ")";
     }
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#start(java.util.Timer)
      */
     @Override
     public void start(Timer timer) {
         if (!this.getDns().isCanceling() && !this.getDns().isCanceled()) {
-            timer.schedule(this, DNSConstants.RECORD_REAPER_INTERVAL, DNSConstants.RECORD_REAPER_INTERVAL);
+            timer.schedule(this, DNSConstants.RECORD_REAPER_INTERVAL,
+                    DNSConstants.RECORD_REAPER_INTERVAL);
         }
     }
 

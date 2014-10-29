@@ -40,110 +40,110 @@ import android.os.RemoteException;
  *
  */
 public class FlingService extends Service {
-	private static final LOG log = new LOG("FlingService");
+    private static final LOG log = new LOG("FlingService");
 
-	private static final String DEVICE_CONTROL_ACTION = "tv.matchstick.fling.service.FLING";
+    private static final String DEVICE_CONTROL_ACTION = "tv.matchstick.fling.service.FLING";
 
-	private Handler mHandler;
+    private Handler mHandler;
 
-	/**
-	 * Contained all connect fling client.
-	 */
-	private List<FlingConnectedClient> mFlingClients;
+    /**
+     * Contained all connect fling client.
+     */
+    private List<FlingConnectedClient> mFlingClients;
 
-	public static LOG log() {
-		return log;
-	}
+    public static LOG log() {
+        return log;
+    }
 
-	private synchronized void removeFlingClient(FlingConnectedClient client) {
-		mFlingClients.remove(client);
-	}
+    private synchronized void removeFlingClient(FlingConnectedClient client) {
+        mFlingClients.remove(client);
+    }
 
-	/**
-	 * Remove client from connected fling client list
-	 * 
-	 * @param client
-	 *            client which will be removed
-	 */
-	public static void removeFlingClient(FlingService flingservice,
-			FlingConnectedClient client) {
-		flingservice.removeFlingClient(client);
-	}
+    /**
+     * Remove client from connected fling client list
+     * 
+     * @param client
+     *            client which will be removed
+     */
+    public static void removeFlingClient(FlingService flingservice,
+            FlingConnectedClient client) {
+        flingservice.removeFlingClient(client);
+    }
 
-	/**
-	 * Get Client main Handler
-	 * 
-	 * @param flingservice
-	 * @return service handler
-	 */
-	public static Handler getHandler(FlingService flingservice) {
-		return flingservice.mHandler;
-	}
+    /**
+     * Get Client main Handler
+     * 
+     * @param flingservice
+     * @return service handler
+     */
+    public static Handler getHandler(FlingService flingservice) {
+        return flingservice.mHandler;
+    }
 
-	@Override
-	public IBinder onBind(Intent intent) {
-		if (!DEVICE_CONTROL_ACTION.equals(intent.getAction())) {
-			return null;
-		}
+    @Override
+    public IBinder onBind(Intent intent) {
+        if (!DEVICE_CONTROL_ACTION.equals(intent.getAction())) {
+            return null;
+        }
 
-		log.d("onBind!!!!");
+        log.d("onBind!!!!");
 
-		return mBinder.asBinder();
-	}
+        return mBinder.asBinder();
+    }
 
-	@Override
-	public void onCreate() {
-		mFlingClients = new ArrayList<FlingConnectedClient>();
-		mHandler = new Handler(Looper.getMainLooper());
-	}
+    @Override
+    public void onCreate() {
+        mFlingClients = new ArrayList<FlingConnectedClient>();
+        mHandler = new Handler(Looper.getMainLooper());
+    }
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		return Service.START_STICKY;
-	}
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return Service.START_STICKY;
+    }
 
-	private final IFlingServiceBroker.Stub mBinder = new IFlingServiceBroker.Stub() {
+    private final IFlingServiceBroker.Stub mBinder = new IFlingServiceBroker.Stub() {
 
-		@Override
-		public void init(IFlingCallbacks callbacks, int version,
-				String packageName, IBinder binder, Bundle bundle)
-				throws RemoteException {
-			// TODO Auto-generated method stub
+        @Override
+        public void init(IFlingCallbacks callbacks, int version,
+                String packageName, IBinder binder, Bundle bundle)
+                throws RemoteException {
+            // TODO Auto-generated method stub
 
-			log.d("begin init fling service binder!");
+            log.d("begin init fling service binder!");
 
-			try {
-				FlingDevice flingdevice = FlingDevice.getFromBundle(bundle);
-				String lastApplicationId = bundle
-						.getString("last_application_id");
-				String lastSessionId = bundle.getString("last_session_id");
-				long flags = bundle.getLong(
-						"tv.matchstick.fling.EXTRA_FLING_FLAGS", 0L);
+            try {
+                FlingDevice flingdevice = FlingDevice.getFromBundle(bundle);
+                String lastApplicationId = bundle
+                        .getString("last_application_id");
+                String lastSessionId = bundle.getString("last_session_id");
+                long flags = bundle.getLong(
+                        "tv.matchstick.fling.EXTRA_FLING_FLAGS", 0L);
 
-				log.d("connecting to device with lastApplicationId=%s, lastSessionId=%s",
-						lastApplicationId, lastSessionId);
+                log.d("connecting to device with lastApplicationId=%s, lastSessionId=%s",
+                        lastApplicationId, lastSessionId);
 
-				IFlingDeviceControllerListener listener = IFlingDeviceControllerListener.Stub
-						.asInterface(binder);
+                IFlingDeviceControllerListener listener = IFlingDeviceControllerListener.Stub
+                        .asInterface(binder);
 
-				/**
-				 * Add one fling client to fling service's client list
-				 */
-				mFlingClients.add(new FlingConnectedClient(FlingService.this,
-						callbacks, flingdevice, lastApplicationId,
-						lastSessionId, listener, packageName, flags));
+                /**
+                 * Add one fling client to fling service's client list
+                 */
+                mFlingClients.add(new FlingConnectedClient(FlingService.this,
+                        callbacks, flingdevice, lastApplicationId,
+                        lastSessionId, listener, packageName, flags));
 
-				log.d("end init fling service binder!");
-			} catch (Exception e) {
-				log.e(e, "Failed to init fling service binder!");
+                log.d("end init fling service binder!");
+            } catch (Exception e) {
+                log.e(e, "Failed to init fling service binder!");
 
-				try {
-					callbacks.onPostInitComplete(10, null, null);
-				} catch (RemoteException re) {
-					log.d("client died while brokering service");
-				}
-			}
-		}
+                try {
+                    callbacks.onPostInitComplete(10, null, null);
+                } catch (RemoteException re) {
+                    log.d("client died while brokering service");
+                }
+            }
+        }
 
-	};
+    };
 }

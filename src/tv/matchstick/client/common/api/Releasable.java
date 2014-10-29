@@ -17,5 +17,5 @@
 package tv.matchstick.client.common.api;
 
 public interface Releasable {
-	public void release();
+    public void release();
 }

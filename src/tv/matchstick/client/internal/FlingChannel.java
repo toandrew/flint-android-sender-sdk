@@ -23,102 +23,102 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Fling Channel
  */
 public abstract class FlingChannel {
-	private static final AtomicInteger idGen = new AtomicInteger(0);
+    private static final AtomicInteger idGen = new AtomicInteger(0);
 
-	protected final LOG log;
+    protected final LOG log;
 
-	private final String mNamespace;
+    private final String mNamespace;
 
-	private MessageSender mMessageSender;
+    private MessageSender mMessageSender;
 
-	protected FlingChannel(String namespace, String tag) {
-		mNamespace = namespace;
+    protected FlingChannel(String namespace, String tag) {
+        mNamespace = namespace;
 
-		log = new LOG(tag);
-		log.setPrefixMsg(String.format("instance-%d", idGen.incrementAndGet()));
-	}
+        log = new LOG(tag);
+        log.setPrefixMsg(String.format("instance-%d", idGen.incrementAndGet()));
+    }
 
-	/**
-	 * Get namespace of this channel
-	 * 
-	 * @return this channel's namespace
-	 */
-	public final String getNamespace() {
-		return mNamespace;
-	}
+    /**
+     * Get namespace of this channel
+     * 
+     * @return this channel's namespace
+     */
+    public final String getNamespace() {
+        return mNamespace;
+    }
 
-	/**
-	 * set message sender
-	 * 
-	 * @param sender
-	 */
-	public final void setMessageSender(MessageSender sender) {
-		mMessageSender = sender;
+    /**
+     * set message sender
+     * 
+     * @param sender
+     */
+    public final void setMessageSender(MessageSender sender) {
+        mMessageSender = sender;
 
-		if (mMessageSender != null) {
-			return;
-		}
+        if (mMessageSender != null) {
+            return;
+        }
 
-		clean();
-	}
+        clean();
+    }
 
-	/**
-	 * Send text message
-	 * 
-	 * @param message
-	 *            message to send
-	 * @param requestId
-	 *            request's Id
-	 * @param targetId
-	 *            target's Id
-	 * @throws IOException
-	 */
-	protected final void sendTextMessage(String message, long requestId,
-			String targetId) throws IOException {
-		log.v("Sending text message: %s to: %s", new Object[] { message,
-				targetId });
+    /**
+     * Send text message
+     * 
+     * @param message
+     *            message to send
+     * @param requestId
+     *            request's Id
+     * @param targetId
+     *            target's Id
+     * @throws IOException
+     */
+    protected final void sendTextMessage(String message, long requestId,
+            String targetId) throws IOException {
+        log.v("Sending text message: %s to: %s", new Object[] { message,
+                targetId });
 
-		mMessageSender
-				.sendTextMessage(mNamespace, message, requestId, targetId);
-	}
+        mMessageSender
+                .sendTextMessage(mNamespace, message, requestId, targetId);
+    }
 
-	/**
-	 * Called when string message received
-	 * 
-	 * @param message
-	 */
-	public void onMessageReceived(String message) {
-	}
+    /**
+     * Called when string message received
+     * 
+     * @param message
+     */
+    public void onMessageReceived(String message) {
+    }
 
-	/**
-	 * Called when bytes message received
-	 * 
-	 * @param abyte0
-	 */
-	public void onMessageReceived(byte message[]) {
-	}
+    /**
+     * Called when bytes message received
+     * 
+     * @param abyte0
+     */
+    public void onMessageReceived(byte message[]) {
+    }
 
-	/**
-	 * Track un-success request
-	 * 
-	 * @param requestId
-	 * @param statusCode
-	 */
-	public void trackFailedRequests(long requestId, int statusCode) {
-	}
+    /**
+     * Track un-success request
+     * 
+     * @param requestId
+     * @param statusCode
+     */
+    public void trackFailedRequests(long requestId, int statusCode) {
+    }
 
-	/**
-	 * Get current request Id
-	 * 
-	 * @return
-	 */
-	protected final long getRequestId() {
-		return mMessageSender.getRequestId();
-	}
+    /**
+     * Get current request Id
+     * 
+     * @return
+     */
+    protected final long getRequestId() {
+        return mMessageSender.getRequestId();
+    }
 
-	/**
-	 * Do some clean work
-	 */
-	public void clean() {
-	}
+    /**
+     * Do some clean work
+     */
+    public void clean() {
+    }
 }

@@ -12,7 +12,8 @@ import javax.jmdns.NetworkTopologyListener;
 /**
  * @author C&eacute;drik Lime, Pierre Frisch
  */
-public class NetworkTopologyEventImpl extends NetworkTopologyEvent implements Cloneable {
+public class NetworkTopologyEventImpl extends NetworkTopologyEvent implements
+        Cloneable {
 
     /**
      *
@@ -34,13 +35,15 @@ public class NetworkTopologyEventImpl extends NetworkTopologyEvent implements Cl
         this._inetAddress = inetAddress;
     }
 
-    NetworkTopologyEventImpl(NetworkTopologyListener jmmDNS, InetAddress inetAddress) {
+    NetworkTopologyEventImpl(NetworkTopologyListener jmmDNS,
+            InetAddress inetAddress) {
         super(jmmDNS);
         this._inetAddress = inetAddress;
     }
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.NetworkTopologyEvent#getDNS()
      */
     @Override
@@ -50,6 +53,7 @@ public class NetworkTopologyEventImpl extends NetworkTopologyEvent implements Cl
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.NetworkTopologyEvent#getInetAddress()
      */
     @Override
@@ -60,7 +64,8 @@ public class NetworkTopologyEventImpl extends NetworkTopologyEvent implements Cl
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append("[" + this.getClass().getSimpleName() + "@" + System.identityHashCode(this) + " ");
+        buf.append("[" + this.getClass().getSimpleName() + "@"
+                + System.identityHashCode(this) + " ");
         buf.append("\n\tinetAddress: '");
         buf.append(this.getInetAddress());
         buf.append("']");
@@ -72,6 +77,7 @@ public class NetworkTopologyEventImpl extends NetworkTopologyEvent implements Cl
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#clone()
      */
     @Override

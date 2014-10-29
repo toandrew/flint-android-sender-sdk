@@ -22,11 +22,11 @@ import android.os.Looper;
  * Check whether current looper is main loop.
  */
 public final class MainThreadChecker {
-	public static void isOnAppMainThread() {
-		if (Looper.myLooper() != Looper.getMainLooper()) {
-			throw new IllegalStateException(
-					"The media router service must only be accessed on the application's main thread.");
-		}
-	}
+    public static void isOnAppMainThread() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            throw new IllegalStateException(
+                    "The media router service must only be accessed on the application's main thread.");
+        }
+    }
 
 }

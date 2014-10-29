@@ -39,31 +39,33 @@ import javax.jmdns.impl.tasks.DNSTask;
  *
  * @author Arthur van Hoff, Jeff Sonstein, Werner Randelshofer
  */
-public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStatefulObject {
-    private static Logger           logger = Logger.getLogger(ServiceInfoImpl.class.getName());
+public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
+        DNSStatefulObject {
+    private static Logger logger = Logger.getLogger(ServiceInfoImpl.class
+            .getName());
 
-    private String                  _domain;
-    private String                  _protocol;
-    private String                  _application;
-    private String                  _name;
-    private String                  _subtype;
-    private String                  _server;
-    private int                     _port;
-    private int                     _weight;
-    private int                     _priority;
-    private byte                    _text[];
-    private Map<String, byte[]>     _props;
+    private String _domain;
+    private String _protocol;
+    private String _application;
+    private String _name;
+    private String _subtype;
+    private String _server;
+    private int _port;
+    private int _weight;
+    private int _priority;
+    private byte _text[];
+    private Map<String, byte[]> _props;
     private final Set<Inet4Address> _ipv4Addresses;
     private final Set<Inet6Address> _ipv6Addresses;
 
-    private transient String        _key;
+    private transient String _key;
 
-    private boolean                 _persistent;
-    private boolean                 _needTextAnnouncing;
+    private boolean _persistent;
+    private boolean _needTextAnnouncing;
 
-    private final ServiceInfoState  _state;
+    private final ServiceInfoState _state;
 
-    private Delegate                _delegate;
+    private Delegate _delegate;
 
     public static interface Delegate {
 
@@ -71,9 +73,10 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     }
 
-    private final static class ServiceInfoState extends DNSStatefulObject.DefaultImplementation {
+    private final static class ServiceInfoState extends
+            DNSStatefulObject.DefaultImplementation {
 
-        private static final long     serialVersionUID = 1104131034952196820L;
+        private static final long serialVersionUID = 1104131034952196820L;
 
         private final ServiceInfoImpl _info;
 
@@ -122,10 +125,13 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
      * @param priority
      * @param persistent
      * @param text
-     * @see javax.jmdns.ServiceInfo#create(String, String, int, int, int, String)
+     * @see javax.jmdns.ServiceInfo#create(String, String, int, int, int,
+     *      String)
      */
-    public ServiceInfoImpl(String type, String name, String subtype, int port, int weight, int priority, boolean persistent, String text) {
-        this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port, weight, priority, persistent, (byte[]) null);
+    public ServiceInfoImpl(String type, String name, String subtype, int port,
+            int weight, int priority, boolean persistent, String text) {
+        this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port,
+                weight, priority, persistent, (byte[]) null);
         _server = text;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream(text.length());
@@ -147,8 +153,10 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
      * @param props
      * @see javax.jmdns.ServiceInfo#create(String, String, int, int, int, Map)
      */
-    public ServiceInfoImpl(String type, String name, String subtype, int port, int weight, int priority, boolean persistent, Map<String, ?> props) {
-        this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port, weight, priority, persistent, textFromProperties(props));
+    public ServiceInfoImpl(String type, String name, String subtype, int port,
+            int weight, int priority, boolean persistent, Map<String, ?> props) {
+        this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port,
+                weight, priority, persistent, textFromProperties(props));
     }
 
     /**
@@ -160,18 +168,25 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
      * @param priority
      * @param persistent
      * @param text
-     * @see javax.jmdns.ServiceInfo#create(String, String, int, int, int, byte[])
+     * @see javax.jmdns.ServiceInfo#create(String, String, int, int, int,
+     *      byte[])
      */
-    public ServiceInfoImpl(String type, String name, String subtype, int port, int weight, int priority, boolean persistent, byte text[]) {
-        this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port, weight, priority, persistent, text);
+    public ServiceInfoImpl(String type, String name, String subtype, int port,
+            int weight, int priority, boolean persistent, byte text[]) {
+        this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port,
+                weight, priority, persistent, text);
     }
 
-    public ServiceInfoImpl(Map<Fields, String> qualifiedNameMap, int port, int weight, int priority, boolean persistent, Map<String, ?> props) {
-        this(qualifiedNameMap, port, weight, priority, persistent, textFromProperties(props));
+    public ServiceInfoImpl(Map<Fields, String> qualifiedNameMap, int port,
+            int weight, int priority, boolean persistent, Map<String, ?> props) {
+        this(qualifiedNameMap, port, weight, priority, persistent,
+                textFromProperties(props));
     }
 
-    ServiceInfoImpl(Map<Fields, String> qualifiedNameMap, int port, int weight, int priority, boolean persistent, String text) {
-        this(qualifiedNameMap, port, weight, priority, persistent, (byte[]) null);
+    ServiceInfoImpl(Map<Fields, String> qualifiedNameMap, int port, int weight,
+            int priority, boolean persistent, String text) {
+        this(qualifiedNameMap, port, weight, priority, persistent,
+                (byte[]) null);
         _server = text;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream(text.length());
@@ -182,8 +197,10 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         }
     }
 
-    ServiceInfoImpl(Map<Fields, String> qualifiedNameMap, int port, int weight, int priority, boolean persistent, byte text[]) {
-        Map<Fields, String> map = ServiceInfoImpl.checkQualifiedNameMap(qualifiedNameMap);
+    ServiceInfoImpl(Map<Fields, String> qualifiedNameMap, int port, int weight,
+            int priority, boolean persistent, byte text[]) {
+        Map<Fields, String> map = ServiceInfoImpl
+                .checkQualifiedNameMap(qualifiedNameMap);
 
         this._domain = map.get(Fields.Domain);
         this._protocol = map.get(Fields.Protocol);
@@ -198,8 +215,10 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         this.setNeedTextAnnouncing(false);
         this._state = new ServiceInfoState(this);
         this._persistent = persistent;
-        this._ipv4Addresses = Collections.synchronizedSet(new LinkedHashSet<Inet4Address>());
-        this._ipv6Addresses = Collections.synchronizedSet(new LinkedHashSet<Inet6Address>());
+        this._ipv4Addresses = Collections
+                .synchronizedSet(new LinkedHashSet<Inet4Address>());
+        this._ipv6Addresses = Collections
+                .synchronizedSet(new LinkedHashSet<Inet6Address>());
     }
 
     /**
@@ -208,8 +227,10 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
      * @param info
      */
     ServiceInfoImpl(ServiceInfo info) {
-        this._ipv4Addresses = Collections.synchronizedSet(new LinkedHashSet<Inet4Address>());
-        this._ipv6Addresses = Collections.synchronizedSet(new LinkedHashSet<Inet6Address>());
+        this._ipv4Addresses = Collections
+                .synchronizedSet(new LinkedHashSet<Inet4Address>());
+        this._ipv6Addresses = Collections
+                .synchronizedSet(new LinkedHashSet<Inet6Address>());
         if (info != null) {
             this._domain = info.getDomain();
             this._protocol = info.getProtocol();
@@ -233,7 +254,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         this._state = new ServiceInfoState(this);
     }
 
-    public static Map<Fields, String> decodeQualifiedNameMap(String type, String name, String subtype) {
+    public static Map<Fields, String> decodeQualifiedNameMap(String type,
+            String name, String subtype) {
         Map<Fields, String> qualifiedNameMap = decodeQualifiedNameMapForType(type);
 
         qualifiedNameMap.put(Fields.Instance, name);
@@ -255,7 +277,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         String domain = "";
 
         if (aType.contains("in-addr.arpa") || aType.contains("ip6.arpa")) {
-            index = (aType.contains("in-addr.arpa") ? aType.indexOf("in-addr.arpa") : aType.indexOf("ip6.arpa"));
+            index = (aType.contains("in-addr.arpa") ? aType
+                    .indexOf("in-addr.arpa") : aType.indexOf("ip6.arpa"));
             name = removeSeparators(casePreservedType.substring(0, index));
             domain = casePreservedType.substring(index);
             application = "";
@@ -273,7 +296,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
                     name = casePreservedType.substring(0, index);
                     if (index + 1 < aType.length()) {
                         aType = aType.substring(index + 1);
-                        casePreservedType = casePreservedType.substring(index + 1);
+                        casePreservedType = casePreservedType
+                                .substring(index + 1);
                     }
                 }
             }
@@ -299,7 +323,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             }
         }
 
-        final Map<Fields, String> qualifiedNameMap = new HashMap<Fields, String>(5);
+        final Map<Fields, String> qualifiedNameMap = new HashMap<Fields, String>(
+                5);
         qualifiedNameMap.put(Fields.Domain, removeSeparators(domain));
         qualifiedNameMap.put(Fields.Protocol, protocol);
         qualifiedNameMap.put(Fields.Application, removeSeparators(application));
@@ -309,40 +334,48 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         return qualifiedNameMap;
     }
 
-    protected static Map<Fields, String> checkQualifiedNameMap(Map<Fields, String> qualifiedNameMap) {
-        Map<Fields, String> checkedQualifiedNameMap = new HashMap<Fields, String>(5);
+    protected static Map<Fields, String> checkQualifiedNameMap(
+            Map<Fields, String> qualifiedNameMap) {
+        Map<Fields, String> checkedQualifiedNameMap = new HashMap<Fields, String>(
+                5);
 
         // Optional domain
-        String domain = (qualifiedNameMap.containsKey(Fields.Domain) ? qualifiedNameMap.get(Fields.Domain) : "local");
+        String domain = (qualifiedNameMap.containsKey(Fields.Domain) ? qualifiedNameMap
+                .get(Fields.Domain) : "local");
         if ((domain == null) || (domain.length() == 0)) {
             domain = "local";
         }
         domain = removeSeparators(domain);
         checkedQualifiedNameMap.put(Fields.Domain, domain);
         // Optional protocol
-        String protocol = (qualifiedNameMap.containsKey(Fields.Protocol) ? qualifiedNameMap.get(Fields.Protocol) : "tcp");
+        String protocol = (qualifiedNameMap.containsKey(Fields.Protocol) ? qualifiedNameMap
+                .get(Fields.Protocol) : "tcp");
         if ((protocol == null) || (protocol.length() == 0)) {
             protocol = "tcp";
         }
         protocol = removeSeparators(protocol);
         checkedQualifiedNameMap.put(Fields.Protocol, protocol);
         // Application
-        String application = (qualifiedNameMap.containsKey(Fields.Application) ? qualifiedNameMap.get(Fields.Application) : "");
+        String application = (qualifiedNameMap.containsKey(Fields.Application) ? qualifiedNameMap
+                .get(Fields.Application) : "");
         if ((application == null) || (application.length() == 0)) {
             application = "";
         }
         application = removeSeparators(application);
         checkedQualifiedNameMap.put(Fields.Application, application);
         // Instance
-        String instance = (qualifiedNameMap.containsKey(Fields.Instance) ? qualifiedNameMap.get(Fields.Instance) : "");
+        String instance = (qualifiedNameMap.containsKey(Fields.Instance) ? qualifiedNameMap
+                .get(Fields.Instance) : "");
         if ((instance == null) || (instance.length() == 0)) {
             instance = "";
-            // throw new IllegalArgumentException("The instance name component of a fully qualified service cannot be empty.");
+            // throw new
+            // IllegalArgumentException("The instance name component of a fully qualified service cannot be empty.");
         }
         instance = removeSeparators(instance);
         checkedQualifiedNameMap.put(Fields.Instance, instance);
         // Optional Subtype
-        String subtype = (qualifiedNameMap.containsKey(Fields.Subtype) ? qualifiedNameMap.get(Fields.Subtype) : "");
+        String subtype = (qualifiedNameMap.containsKey(Fields.Subtype) ? qualifiedNameMap
+                .get(Fields.Subtype) : "");
         if ((subtype == null) || (subtype.length() == 0)) {
             subtype = "";
         }
@@ -377,7 +410,9 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         String domain = this.getDomain();
         String protocol = this.getProtocol();
         String application = this.getApplication();
-        return (application.length() > 0 ? "_" + application + "." : "") + (protocol.length() > 0 ? "_" + protocol + "." : "") + domain + ".";
+        return (application.length() > 0 ? "_" + application + "." : "")
+                + (protocol.length() > 0 ? "_" + protocol + "." : "") + domain
+                + ".";
     }
 
     /**
@@ -386,7 +421,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
     @Override
     public String getTypeWithSubtype() {
         String subtype = this.getSubtype();
-        return (subtype.length() > 0 ? "_" + subtype.toLowerCase() + "._sub." : "") + this.getType();
+        return (subtype.length() > 0 ? "_" + subtype.toLowerCase() + "._sub."
+                : "") + this.getType();
     }
 
     /**
@@ -429,9 +465,15 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         String application = this.getApplication();
         String instance = this.getName();
         // String subtype = this.getSubtype();
-        // return (instance.length() > 0 ? instance + "." : "") + (application.length() > 0 ? "_" + application + "." : "") + (protocol.length() > 0 ? "_" + protocol + (subtype.length() > 0 ? ",_" + subtype.toLowerCase() + "." : ".") : "") + domain
+        // return (instance.length() > 0 ? instance + "." : "") +
+        // (application.length() > 0 ? "_" + application + "." : "") +
+        // (protocol.length() > 0 ? "_" + protocol + (subtype.length() > 0 ?
+        // ",_" + subtype.toLowerCase() + "." : ".") : "") + domain
         // + ".";
-        return (instance.length() > 0 ? instance + "." : "") + (application.length() > 0 ? "_" + application + "." : "") + (protocol.length() > 0 ? "_" + protocol + "." : "") + domain + ".";
+        return (instance.length() > 0 ? instance + "." : "")
+                + (application.length() > 0 ? "_" + application + "." : "")
+                + (protocol.length() > 0 ? "_" + protocol + "." : "") + domain
+                + ".";
     }
 
     /**
@@ -472,7 +514,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             names[i] = ip4Aaddresses[i].getHostAddress();
         }
         for (int i = 0; i < ip6Aaddresses.length; i++) {
-            names[i + ip4Aaddresses.length] = "[" + ip6Aaddresses[i].getHostAddress() + "]";
+            names[i + ip4Aaddresses.length] = "["
+                    + ip6Aaddresses[i].getHostAddress() + "]";
         }
         return names;
     }
@@ -534,11 +577,13 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getInetAddresses()
      */
     @Override
     public InetAddress[] getInetAddresses() {
-        List<InetAddress> aList = new ArrayList<InetAddress>(_ipv4Addresses.size() + _ipv6Addresses.size());
+        List<InetAddress> aList = new ArrayList<InetAddress>(
+                _ipv4Addresses.size() + _ipv6Addresses.size());
         aList.addAll(_ipv4Addresses);
         aList.addAll(_ipv6Addresses);
         return aList.toArray(new InetAddress[aList.size()]);
@@ -546,6 +591,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getInet4Addresses()
      */
     @Override
@@ -555,6 +601,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getInet6Addresses()
      */
     @Override
@@ -591,7 +638,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
      */
     @Override
     public byte[] getTextBytes() {
-        return (this._text != null && this._text.length > 0 ? this._text : DNSRecord.EMPTY_TXT);
+        return (this._text != null && this._text.length > 0 ? this._text
+                : DNSRecord.EMPTY_TXT);
     }
 
     /**
@@ -613,6 +661,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getURL()
      */
     @Deprecated
@@ -623,6 +672,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getURLs()
      */
     @Override
@@ -632,6 +682,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getURL(java.lang.String)
      */
     @Deprecated
@@ -643,6 +694,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#getURLs(java.lang.String)
      */
     @Override
@@ -650,7 +702,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         InetAddress[] addresses = this.getInetAddresses();
         String[] urls = new String[addresses.length];
         for (int i = 0; i < addresses.length; i++) {
-            String url = protocol + "://" + addresses[i].getHostAddress() + ":" + getPort();
+            String url = protocol + "://" + addresses[i].getHostAddress() + ":"
+                    + getPort();
             String path = getPropertyString("path");
             if (path != null) {
                 if (path.indexOf("://") >= 0) {
@@ -693,7 +746,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
     @Override
     public Enumeration<String> getPropertyNames() {
         Map<String, byte[]> properties = this.getProperties();
-        Collection<String> names = (properties != null ? properties.keySet() : Collections.<String> emptySet());
+        Collection<String> names = (properties != null ? properties.keySet()
+                : Collections.<String> emptySet());
         return new Vector<String>(names).elements();
     }
 
@@ -774,38 +828,39 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         for (int end = offset + len; offset < end;) {
             int ch = data[offset++] & 0xFF;
             switch (ch >> 4) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    // 0xxxxxxx
-                    break;
-                case 12:
-                case 13:
-                    if (offset >= len) {
-                        return null;
-                    }
-                    // 110x xxxx 10xx xxxx
-                    ch = ((ch & 0x1F) << 6) | (data[offset++] & 0x3F);
-                    break;
-                case 14:
-                    if (offset + 2 >= len) {
-                        return null;
-                    }
-                    // 1110 xxxx 10xx xxxx 10xx xxxx
-                    ch = ((ch & 0x0f) << 12) | ((data[offset++] & 0x3F) << 6) | (data[offset++] & 0x3F);
-                    break;
-                default:
-                    if (offset + 1 >= len) {
-                        return null;
-                    }
-                    // 10xx xxxx, 1111 xxxx
-                    ch = ((ch & 0x3F) << 4) | (data[offset++] & 0x0f);
-                    break;
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                // 0xxxxxxx
+                break;
+            case 12:
+            case 13:
+                if (offset >= len) {
+                    return null;
+                }
+                // 110x xxxx 10xx xxxx
+                ch = ((ch & 0x1F) << 6) | (data[offset++] & 0x3F);
+                break;
+            case 14:
+                if (offset + 2 >= len) {
+                    return null;
+                }
+                // 1110 xxxx 10xx xxxx 10xx xxxx
+                ch = ((ch & 0x0f) << 12) | ((data[offset++] & 0x3F) << 6)
+                        | (data[offset++] & 0x3F);
+                break;
+            default:
+                if (offset + 1 >= len) {
+                    return null;
+                }
+                // 10xx xxxx, 1111 xxxx
+                ch = ((ch & 0x3F) << 4) | (data[offset++] & 0x0f);
+                break;
             }
             buf.append((char) ch);
         }
@@ -840,7 +895,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
                         properties.put(name, NO_VALUE);
                     } else {
                         byte value[] = new byte[len - ++i];
-                        System.arraycopy(getTextBytes(), off + i, value, 0, len - i);
+                        System.arraycopy(getTextBytes(), off + i, value, 0, len
+                                - i);
                         properties.put(name, value);
                         off += len;
                     }
@@ -851,7 +907,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             }
             this._props = properties;
         }
-        return (_props != null ? _props : Collections.<String, byte[]> emptyMap());
+        return (_props != null ? _props : Collections
+                .<String, byte[]> emptyMap());
     }
 
     /**
@@ -866,66 +923,76 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         if ((rec instanceof DNSRecord) && !rec.isExpired(now)) {
             boolean serviceUpdated = false;
             switch (rec.getRecordType()) {
-                case TYPE_A: // IPv4
-                    if (rec.getName().equalsIgnoreCase(this.getServer())) {
-                        _ipv4Addresses.add((Inet4Address) ((DNSRecord.Address) rec).getAddress());
-                        serviceUpdated = true;
-                    }
-                    break;
-                case TYPE_AAAA: // IPv6
-                    if (rec.getName().equalsIgnoreCase(this.getServer())) {
-                        _ipv6Addresses.add((Inet6Address) ((DNSRecord.Address) rec).getAddress());
-                        serviceUpdated = true;
-                    }
-                    break;
-                case TYPE_SRV:
-                    if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
-                        DNSRecord.Service srv = (DNSRecord.Service) rec;
-                        boolean serverChanged = (_server == null) || !_server.equalsIgnoreCase(srv.getServer());
-                        _server = srv.getServer();
-                        _port = srv.getPort();
-                        _weight = srv.getWeight();
-                        _priority = srv.getPriority();
-                        if (serverChanged) {
-                            _ipv4Addresses.clear();
-                            _ipv6Addresses.clear();
-                            for (DNSEntry entry : dnsCache.getDNSEntryList(_server, DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN)) {
-                                this.updateRecord(dnsCache, now, entry);
-                            }
-                            for (DNSEntry entry : dnsCache.getDNSEntryList(_server, DNSRecordType.TYPE_AAAA, DNSRecordClass.CLASS_IN)) {
-                                this.updateRecord(dnsCache, now, entry);
-                            }
-                            // We do not want to trigger the listener in this case as it will be triggered if the address resolves.
-                        } else {
-                            serviceUpdated = true;
+            case TYPE_A: // IPv4
+                if (rec.getName().equalsIgnoreCase(this.getServer())) {
+                    _ipv4Addresses.add((Inet4Address) ((DNSRecord.Address) rec)
+                            .getAddress());
+                    serviceUpdated = true;
+                }
+                break;
+            case TYPE_AAAA: // IPv6
+                if (rec.getName().equalsIgnoreCase(this.getServer())) {
+                    _ipv6Addresses.add((Inet6Address) ((DNSRecord.Address) rec)
+                            .getAddress());
+                    serviceUpdated = true;
+                }
+                break;
+            case TYPE_SRV:
+                if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
+                    DNSRecord.Service srv = (DNSRecord.Service) rec;
+                    boolean serverChanged = (_server == null)
+                            || !_server.equalsIgnoreCase(srv.getServer());
+                    _server = srv.getServer();
+                    _port = srv.getPort();
+                    _weight = srv.getWeight();
+                    _priority = srv.getPriority();
+                    if (serverChanged) {
+                        _ipv4Addresses.clear();
+                        _ipv6Addresses.clear();
+                        for (DNSEntry entry : dnsCache.getDNSEntryList(_server,
+                                DNSRecordType.TYPE_A, DNSRecordClass.CLASS_IN)) {
+                            this.updateRecord(dnsCache, now, entry);
                         }
-                    }
-                    break;
-                case TYPE_TXT:
-                    if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
-                        DNSRecord.Text txt = (DNSRecord.Text) rec;
-                        _text = txt.getText();
+                        for (DNSEntry entry : dnsCache.getDNSEntryList(_server,
+                                DNSRecordType.TYPE_AAAA,
+                                DNSRecordClass.CLASS_IN)) {
+                            this.updateRecord(dnsCache, now, entry);
+                        }
+                        // We do not want to trigger the listener in this case
+                        // as it will be triggered if the address resolves.
+                    } else {
                         serviceUpdated = true;
                     }
-                    break;
-                case TYPE_PTR:
-                    if ((this.getSubtype().length() == 0) && (rec.getSubtype().length() != 0)) {
-                        _subtype = rec.getSubtype();
-                        serviceUpdated = true;
-                    }
-                    break;
-                default:
-                    break;
+                }
+                break;
+            case TYPE_TXT:
+                if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
+                    DNSRecord.Text txt = (DNSRecord.Text) rec;
+                    _text = txt.getText();
+                    serviceUpdated = true;
+                }
+                break;
+            case TYPE_PTR:
+                if ((this.getSubtype().length() == 0)
+                        && (rec.getSubtype().length() != 0)) {
+                    _subtype = rec.getSubtype();
+                    serviceUpdated = true;
+                }
+                break;
+            default:
+                break;
             }
             if (serviceUpdated && this.hasData()) {
                 JmDNSImpl dns = this.getDns();
                 if (dns != null) {
                     ServiceEvent event = ((DNSRecord) rec).getServiceEvent(dns);
-                    event = new ServiceEventImpl(dns, event.getType(), event.getName(), this);
+                    event = new ServiceEventImpl(dns, event.getType(),
+                            event.getName(), this);
                     dns.handleServiceResolved(event);
                 }
             }
-            // This is done, to notify the wait loop in method JmDNS.waitForInfoData(ServiceInfo info, int timeout);
+            // This is done, to notify the wait loop in method
+            // JmDNS.waitForInfoData(ServiceInfo info, int timeout);
             synchronized (this) {
                 this.notifyAll();
             }
@@ -935,12 +1002,16 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
     /**
      * Returns true if the service info is filled with data.
      *
-     * @return <code>true</code> if the service info has data, <code>false</code> otherwise.
+     * @return <code>true</code> if the service info has data,
+     *         <code>false</code> otherwise.
      */
     @Override
     public synchronized boolean hasData() {
-        return this.getServer() != null && this.hasInetAddress() && this.getTextBytes() != null && this.getTextBytes().length > 0;
-        // return this.getServer() != null && (this.getAddress() != null || (this.getTextBytes() != null && this.getTextBytes().length > 0));
+        return this.getServer() != null && this.hasInetAddress()
+                && this.getTextBytes() != null
+                && this.getTextBytes().length > 0;
+        // return this.getServer() != null && (this.getAddress() != null ||
+        // (this.getTextBytes() != null && this.getTextBytes().length > 0));
     }
 
     private final boolean hasInetAddress() {
@@ -1098,7 +1169,9 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof ServiceInfoImpl) && getQualifiedName().equals(((ServiceInfoImpl) obj).getQualifiedName());
+        return (obj instanceof ServiceInfoImpl)
+                && getQualifiedName().equals(
+                        ((ServiceInfoImpl) obj).getQualifiedName());
     }
 
     /**
@@ -1125,11 +1198,14 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.ServiceInfo#clone()
      */
     @Override
     public ServiceInfoImpl clone() {
-        ServiceInfoImpl serviceInfo = new ServiceInfoImpl(this.getQualifiedNameMap(), _port, _weight, _priority, _persistent, _text);
+        ServiceInfoImpl serviceInfo = new ServiceInfoImpl(
+                this.getQualifiedNameMap(), _port, _weight, _priority,
+                _persistent, _text);
         Inet6Address[] ipv6Addresses = this.getInet6Addresses();
         for (Inet6Address address : ipv6Addresses) {
             serviceInfo._ipv6Addresses.add(address);
@@ -1147,9 +1223,11 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append("[" + this.getClass().getSimpleName() + "@" + System.identityHashCode(this) + " ");
+        buf.append("[" + this.getClass().getSimpleName() + "@"
+                + System.identityHashCode(this) + " ");
         buf.append("name: '");
-        buf.append((this.getName().length() > 0 ? this.getName() + "." : "") + this.getTypeWithSubtype());
+        buf.append((this.getName().length() > 0 ? this.getName() + "." : "")
+                + this.getTypeWithSubtype());
         buf.append("' address: '");
         InetAddress[] addresses = this.getInetAddresses();
         if (addresses.length > 0) {
@@ -1176,7 +1254,8 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
             if (!properties.isEmpty()) {
                 buf.append("\n");
                 for (String key : properties.keySet()) {
-                    buf.append("\t" + key + ": " + new String(properties.get(key)) + "\n");
+                    buf.append("\t" + key + ": "
+                            + new String(properties.get(key)) + "\n");
                 }
             } else {
                 buf.append(" empty");
@@ -1186,14 +1265,20 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
         return buf.toString();
     }
 
-    public Collection<DNSRecord> answers(boolean unique, int ttl, HostInfo localHost) {
+    public Collection<DNSRecord> answers(boolean unique, int ttl,
+            HostInfo localHost) {
         List<DNSRecord> list = new ArrayList<DNSRecord>();
         if (this.getSubtype().length() > 0) {
-            list.add(new Pointer(this.getTypeWithSubtype(), DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE, ttl, this.getQualifiedName()));
+            list.add(new Pointer(this.getTypeWithSubtype(),
+                    DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE, ttl,
+                    this.getQualifiedName()));
         }
-        list.add(new Pointer(this.getType(), DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE, ttl, this.getQualifiedName()));
-        list.add(new Service(this.getQualifiedName(), DNSRecordClass.CLASS_IN, unique, ttl, _priority, _weight, _port, localHost.getName()));
-        list.add(new Text(this.getQualifiedName(), DNSRecordClass.CLASS_IN, unique, ttl, this.getTextBytes()));
+        list.add(new Pointer(this.getType(), DNSRecordClass.CLASS_IN,
+                DNSRecordClass.NOT_UNIQUE, ttl, this.getQualifiedName()));
+        list.add(new Service(this.getQualifiedName(), DNSRecordClass.CLASS_IN,
+                unique, ttl, _priority, _weight, _port, localHost.getName()));
+        list.add(new Text(this.getQualifiedName(), DNSRecordClass.CLASS_IN,
+                unique, ttl, this.getTextBytes()));
         return list;
     }
 
@@ -1250,11 +1335,14 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener, DNSStat
                             val = null;
                         }
                     } else {
-                        throw new IllegalArgumentException("invalid property value: " + val);
+                        throw new IllegalArgumentException(
+                                "invalid property value: " + val);
                     }
                     byte data[] = out2.toByteArray();
                     if (data.length > 255) {
-                        throw new IOException("Cannot have individual values larger that 255 chars. Offending value: " + key + (val != null ? "" : "=" + val));
+                        throw new IOException(
+                                "Cannot have individual values larger that 255 chars. Offending value: "
+                                        + key + (val != null ? "" : "=" + val));
                     }
                     out.write((byte) data.length);
                     out.write(data, 0, data.length);

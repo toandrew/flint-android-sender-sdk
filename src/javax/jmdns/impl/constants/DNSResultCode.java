@@ -6,7 +6,8 @@ package javax.jmdns.impl.constants;
 /**
  * DNS result code.
  * 
- * @author Arthur van Hoff, Jeff Sonstein, Werner Randelshofer, Pierre Frisch, Rick Blair
+ * @author Arthur van Hoff, Jeff Sonstein, Werner Randelshofer, Pierre Frisch,
+ *         Rick Blair
  */
 public enum DNSResultCode {
     /**
@@ -88,15 +89,15 @@ public enum DNSResultCode {
     /**
      * DNS Result Code types are encoded on the last 4 bits
      */
-    final static int     RCode_MASK         = 0x0F;
+    final static int RCode_MASK = 0x0F;
     /**
      * DNS Extended Result Code types are encoded on the first 8 bits
      */
-    final static int     ExtendedRCode_MASK = 0xFF;
+    final static int ExtendedRCode_MASK = 0xFF;
 
     private final String _externalName;
 
-    private final int    _index;
+    private final int _index;
 
     DNSResultCode(String name, int index) {
         _externalName = name;
@@ -128,15 +129,18 @@ public enum DNSResultCode {
     public static DNSResultCode resultCodeForFlags(int flags) {
         int maskedIndex = flags & RCode_MASK;
         for (DNSResultCode aCode : DNSResultCode.values()) {
-            if (aCode._index == maskedIndex) return aCode;
+            if (aCode._index == maskedIndex)
+                return aCode;
         }
         return Unknown;
     }
 
     public static DNSResultCode resultCodeForFlags(int flags, int extendedRCode) {
-        int maskedIndex = ((extendedRCode >> 28) & ExtendedRCode_MASK) | (flags & RCode_MASK);
+        int maskedIndex = ((extendedRCode >> 28) & ExtendedRCode_MASK)
+                | (flags & RCode_MASK);
         for (DNSResultCode aCode : DNSResultCode.values()) {
-            if (aCode._index == maskedIndex) return aCode;
+            if (aCode._index == maskedIndex)
+                return aCode;
         }
         return Unknown;
     }

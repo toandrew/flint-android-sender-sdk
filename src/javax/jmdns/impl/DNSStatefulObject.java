@@ -15,24 +15,29 @@ import javax.jmdns.impl.tasks.DNSTask;
 
 /**
  * Sets of methods to manage the state machine.<br/>
- * <b>Implementation note:</b> This interface is accessed from multiple threads. The implementation must be thread safe.
+ * <b>Implementation note:</b> This interface is accessed from multiple threads.
+ * The implementation must be thread safe.
  *
  * @author Pierre Frisch
  */
 public interface DNSStatefulObject {
 
     /**
-     * This class define a semaphore. On this multiple threads can wait the arrival of one event. Thread wait for a maximum defined by the timeout.
+     * This class define a semaphore. On this multiple threads can wait the
+     * arrival of one event. Thread wait for a maximum defined by the timeout.
      * <p>
-     * Implementation note: this class is based on {@link java.util.concurrent.Semaphore} so that they can be released by the timeout timer.
+     * Implementation note: this class is based on
+     * {@link java.util.concurrent.Semaphore} so that they can be released by
+     * the timeout timer.
      * </p>
      *
      * @author Pierre Frisch
      */
     public static final class DNSStatefulObjectSemaphore {
-        private static Logger                          logger = Logger.getLogger(DNSStatefulObjectSemaphore.class.getName());
+        private static Logger logger = Logger
+                .getLogger(DNSStatefulObjectSemaphore.class.getName());
 
-        private final String                           _name;
+        private final String _name;
 
         private final ConcurrentMap<Thread, Semaphore> _semaphores;
 
@@ -47,7 +52,8 @@ public interface DNSStatefulObject {
         }
 
         /**
-         * Blocks the current thread until the event arrives or the timeout expires.
+         * Blocks the current thread until the event arrives or the timeout
+         * expires.
          *
          * @param timeout
          *            wait period for the event
@@ -101,16 +107,18 @@ public interface DNSStatefulObject {
 
     }
 
-    public static class DefaultImplementation extends ReentrantLock implements DNSStatefulObject {
-        private static Logger                    logger           = Logger.getLogger(DefaultImplementation.class.getName());
+    public static class DefaultImplementation extends ReentrantLock implements
+            DNSStatefulObject {
+        private static Logger logger = Logger
+                .getLogger(DefaultImplementation.class.getName());
 
-        private static final long                serialVersionUID = -3264781576883412227L;
+        private static final long serialVersionUID = -3264781576883412227L;
 
-        private volatile JmDNSImpl               _dns;
+        private volatile JmDNSImpl _dns;
 
-        protected volatile DNSTask               _task;
+        protected volatile DNSTask _task;
 
-        protected volatile DNSState              _state;
+        protected volatile DNSState _state;
 
         private final DNSStatefulObjectSemaphore _announcing;
 
@@ -221,7 +229,8 @@ public interface DNSStatefulObject {
                     if (this._task == task) {
                         this.setState(this._state.advance());
                     } else {
-                        logger.warning("Trying to advance state whhen not the owner. owner: " + this._task + " perpetrator: " + task);
+                        logger.warning("Trying to advance state whhen not the owner. owner: "
+                                + this._task + " perpetrator: " + task);
                     }
                 } finally {
                     this.unlock();
@@ -409,7 +418,8 @@ public interface DNSStatefulObject {
          */
         @Override
         public String toString() {
-            return (_dns != null ? "DNS: " + _dns.getName() : "NO DNS") + " state: " + _state + " task: " + _task;
+            return (_dns != null ? "DNS: " + _dns.getName() : "NO DNS")
+                    + " state: " + _state + " task: " + _task;
         }
 
     }
@@ -446,7 +456,8 @@ public interface DNSStatefulObject {
      *            associated task
      * @param state
      *            state of the task
-     * @return <code>true</code> is the task is associated with this object, <code>false</code> otherwise.
+     * @return <code>true</code> is the task is associated with this object,
+     *         <code>false</code> otherwise.
      */
     public boolean isAssociatedWithTask(DNSTask task, DNSState state);
 
@@ -455,7 +466,8 @@ public interface DNSStatefulObject {
      *
      * @param task
      *            associated task
-     * @return <code>true</code if the state was changed by this thread, <code>false</code> otherwise.
+     * @return <code>true</code if the state was changed by this thread,
+     *         <code>false</code> otherwise.
      * @see DNSState#advance()
      */
     public boolean advanceState(DNSTask task);
@@ -463,7 +475,8 @@ public interface DNSStatefulObject {
     /**
      * Sets the state and notifies all objects that wait on the ServiceInfo.
      *
-     * @return <code>true</code if the state was changed by this thread, <code>false</code> otherwise.
+     * @return <code>true</code if the state was changed by this thread,
+     *         <code>false</code> otherwise.
      * @see DNSState#revert()
      */
     public boolean revertState();
@@ -471,21 +484,24 @@ public interface DNSStatefulObject {
     /**
      * Sets the state and notifies all objects that wait on the ServiceInfo.
      *
-     * @return <code>true</code if the state was changed by this thread, <code>false</code> otherwise.
+     * @return <code>true</code if the state was changed by this thread,
+     *         <code>false</code> otherwise.
      */
     public boolean cancelState();
 
     /**
      * Sets the state and notifies all objects that wait on the ServiceInfo.
      *
-     * @return <code>true</code if the state was changed by this thread, <code>false</code> otherwise.
+     * @return <code>true</code if the state was changed by this thread,
+     *         <code>false</code> otherwise.
      */
     public boolean closeState();
 
     /**
      * Sets the state and notifies all objects that wait on the ServiceInfo.
      *
-     * @return <code>true</code if the state was changed by this thread, <code>false</code> otherwise.
+     * @return <code>true</code if the state was changed by this thread,
+     *         <code>false</code> otherwise.
      */
     public boolean recoverState();
 
@@ -499,21 +515,24 @@ public interface DNSStatefulObject {
     /**
      * Returns true, if this is an announcing state.
      *
-     * @return <code>true</code> if announcing state, <code>false</code> otherwise
+     * @return <code>true</code> if announcing state, <code>false</code>
+     *         otherwise
      */
     public boolean isAnnouncing();
 
     /**
      * Returns true, if this is an announced state.
      *
-     * @return <code>true</code> if announced state, <code>false</code> otherwise
+     * @return <code>true</code> if announced state, <code>false</code>
+     *         otherwise
      */
     public boolean isAnnounced();
 
     /**
      * Returns true, if this is a canceling state.
      *
-     * @return <code>true</code> if canceling state, <code>false</code> otherwise
+     * @return <code>true</code> if canceling state, <code>false</code>
+     *         otherwise
      */
     public boolean isCanceling();
 
@@ -543,7 +562,8 @@ public interface DNSStatefulObject {
      *
      * @param timeout
      *            the maximum time to wait in milliseconds.
-     * @return <code>true</code> if the object is announced, <code>false</code> otherwise
+     * @return <code>true</code> if the object is announced, <code>false</code>
+     *         otherwise
      */
     public boolean waitForAnnounced(long timeout);
 
@@ -552,7 +572,8 @@ public interface DNSStatefulObject {
      *
      * @param timeout
      *            the maximum time to wait in milliseconds.
-     * @return <code>true</code> if the object is canceled, <code>false</code> otherwise
+     * @return <code>true</code> if the object is canceled, <code>false</code>
+     *         otherwise
      */
     public boolean waitForCanceled(long timeout);
 

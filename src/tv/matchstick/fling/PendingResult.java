@@ -35,45 +35,45 @@ import java.util.concurrent.TimeUnit;
  * @param <R>
  */
 public interface PendingResult<R extends Result> {
-	/**
-	 * Block wait.
-	 *
-	 * Blocks until the task is completed.
-	 *
-	 * @return
-	 */
-	public R await();
+    /**
+     * Block wait.
+     *
+     * Blocks until the task is completed.
+     *
+     * @return
+     */
+    public R await();
 
-	/**
-	 * Blocks until the task is completed or has timed out waiting for the
-	 * result.
-	 *
-	 * @param time
-	 * @param timeUnit
-	 * @return
-	 */
-	public R await(long time, TimeUnit timeUnit);
+    /**
+     * Blocks until the task is completed or has timed out waiting for the
+     * result.
+     *
+     * @param time
+     * @param timeUnit
+     * @return
+     */
+    public R await(long time, TimeUnit timeUnit);
 
-	/**
-	 * Set the callback here if you want the result to be delivered via a
-	 * callback when the result is ready or has timed out waiting for the
-	 * result.
-	 *
-	 * @param resultCb
-	 */
-	public void setResultCallback(ResultCallback<R> resultCb);
+    /**
+     * Set the callback here if you want the result to be delivered via a
+     * callback when the result is ready or has timed out waiting for the
+     * result.
+     *
+     * @param resultCb
+     */
+    public void setResultCallback(ResultCallback<R> resultCb);
 
-	/**
-	 * Set the callback here if you want the result to be delivered via a
-	 * callback when the result is ready.
-	 *
-	 * The returned result object can have an additional failure mode of
-	 * TIMEOUT.
-	 * 
-	 * @param resultCb
-	 * @param time
-	 * @param timeUnit
-	 */
-	public void setResultCallback(ResultCallback<R> resultCb, long time,
-			TimeUnit timeUnit);
+    /**
+     * Set the callback here if you want the result to be delivered via a
+     * callback when the result is ready.
+     *
+     * The returned result object can have an additional failure mode of
+     * TIMEOUT.
+     * 
+     * @param resultCb
+     * @param time
+     * @param timeUnit
+     */
+    public void setResultCallback(ResultCallback<R> resultCb, long time,
+            TimeUnit timeUnit);
 }

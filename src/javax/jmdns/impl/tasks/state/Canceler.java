@@ -31,15 +31,18 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#getName()
      */
     @Override
     public String getName() {
-        return "Canceler(" + (this.getDns() != null ? this.getDns().getName() : "") + ")";
+        return "Canceler("
+                + (this.getDns() != null ? this.getDns().getName() : "") + ")";
     }
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -49,6 +52,7 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.DNSTask#start(java.util.Timer)
      */
     @Override
@@ -58,6 +62,7 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.util.TimerTask#cancel()
      */
     @Override
@@ -69,6 +74,7 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#getTaskDescription()
      */
     @Override
@@ -78,6 +84,7 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#checkRunCondition()
      */
     @Override
@@ -87,21 +94,28 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#createOugoing()
      */
     @Override
     protected DNSOutgoing createOugoing() {
-        return new DNSOutgoing(DNSConstants.FLAGS_QR_RESPONSE | DNSConstants.FLAGS_AA);
+        return new DNSOutgoing(DNSConstants.FLAGS_QR_RESPONSE
+                | DNSConstants.FLAGS_AA);
     }
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForDNS(javax.jmdns.impl.DNSOutgoing)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForDNS(javax.jmdns
+     * .impl.DNSOutgoing)
      */
     @Override
-    protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out) throws IOException {
+    protected DNSOutgoing buildOutgoingForDNS(DNSOutgoing out)
+            throws IOException {
         DNSOutgoing newOut = out;
-        for (DNSRecord answer : this.getDns().getLocalHost().answers(DNSRecordClass.UNIQUE, this.getTTL())) {
+        for (DNSRecord answer : this.getDns().getLocalHost()
+                .answers(DNSRecordClass.UNIQUE, this.getTTL())) {
             newOut = this.addAnswer(newOut, null, answer);
         }
         return newOut;
@@ -109,12 +123,17 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForInfo(javax.jmdns.impl.ServiceInfoImpl, javax.jmdns.impl.DNSOutgoing)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#buildOutgoingForInfo(javax.
+     * jmdns.impl.ServiceInfoImpl, javax.jmdns.impl.DNSOutgoing)
      */
     @Override
-    protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info, DNSOutgoing out) throws IOException {
+    protected DNSOutgoing buildOutgoingForInfo(ServiceInfoImpl info,
+            DNSOutgoing out) throws IOException {
         DNSOutgoing newOut = out;
-        for (DNSRecord answer : info.answers(DNSRecordClass.UNIQUE, this.getTTL(), this.getDns().getLocalHost())) {
+        for (DNSRecord answer : info.answers(DNSRecordClass.UNIQUE,
+                this.getTTL(), this.getDns().getLocalHost())) {
             newOut = this.addAnswer(newOut, null, answer);
         }
         return newOut;
@@ -122,7 +141,10 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
-     * @see javax.jmdns.impl.tasks.state.DNSStateTask#recoverTask(java.lang.Throwable)
+     * 
+     * @see
+     * javax.jmdns.impl.tasks.state.DNSStateTask#recoverTask(java.lang.Throwable
+     * )
      */
     @Override
     protected void recoverTask(Throwable e) {
@@ -131,6 +153,7 @@ public class Canceler extends DNSStateTask {
 
     /*
      * (non-Javadoc)
+     * 
      * @see javax.jmdns.impl.tasks.state.DNSStateTask#advanceTask()
      */
     @Override

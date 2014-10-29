@@ -43,14 +43,17 @@ public abstract class ServiceEvent extends EventObject implements Cloneable {
     public abstract String getType();
 
     /**
-     * Returns the instance name of the service. Always returns null, if the event is sent to a service type listener.
+     * Returns the instance name of the service. Always returns null, if the
+     * event is sent to a service type listener.
      * 
      * @return name of the service
      */
     public abstract String getName();
 
     /**
-     * Returns the service info record, or null if the service could not be resolved. Always returns null, if the event is sent to a service type listener.
+     * Returns the service info record, or null if the service could not be
+     * resolved. Always returns null, if the event is sent to a service type
+     * listener.
      * 
      * @return service info record
      * @see javax.jmdns.ServiceEvent#getInfo()
@@ -59,6 +62,7 @@ public abstract class ServiceEvent extends EventObject implements Cloneable {
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#clone()
      */
     @Override

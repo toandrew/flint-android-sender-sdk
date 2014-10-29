@@ -24,50 +24,50 @@ import org.json.JSONObject;
 
 public class JsonComparer {
 
-	public static boolean compare(Object one, Object other) {
-		if ((one instanceof JSONObject) && (other instanceof JSONObject)) {
-			JSONObject jsonOne = (JSONObject) one;
-			JSONObject jsonOther = (JSONObject) other;
-			if (jsonOne.length() != jsonOther.length()) {
-				return false;
-			}
-			Iterator jsonOneKeys = jsonOne.keys();
-			while (jsonOneKeys.hasNext()) {
-				String key = (String) jsonOneKeys.next();
-				if (!(jsonOther.has(key))) {
-					return false;
-				}
-				try {
-					Object value = jsonOne.get(key);
-					Object other_value = jsonOther.get(key);
-					if (!compare(value, other_value)) {
-						return false;
-					}
-				} catch (JSONException e) {
-					return false;
-				}
-			}
-			return true;
-		}
-		if ((one instanceof JSONArray) && (other instanceof JSONArray)) {
-			JSONArray jArrOne = (JSONArray) one;
-			JSONArray jArrOther = (JSONArray) other;
-			if (jArrOne.length() != jArrOther.length()) {
-				return false;
-			}
-			for (int i = 0; i < jArrOne.length(); ++i) {
-				try {
-					Object value = jArrOne.get(i);
-					Object value_other = jArrOther.get(i);
-					if (!compare(value, value_other)) {
-						return false;
-					}
-				} catch (JSONException e) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return one.equals(other);
-	}
+    public static boolean compare(Object one, Object other) {
+        if ((one instanceof JSONObject) && (other instanceof JSONObject)) {
+            JSONObject jsonOne = (JSONObject) one;
+            JSONObject jsonOther = (JSONObject) other;
+            if (jsonOne.length() != jsonOther.length()) {
+                return false;
+            }
+            Iterator jsonOneKeys = jsonOne.keys();
+            while (jsonOneKeys.hasNext()) {
+                String key = (String) jsonOneKeys.next();
+                if (!(jsonOther.has(key))) {
+                    return false;
+                }
+                try {
+                    Object value = jsonOne.get(key);
+                    Object other_value = jsonOther.get(key);
+                    if (!compare(value, other_value)) {
+                        return false;
+                    }
+                } catch (JSONException e) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if ((one instanceof JSONArray) && (other instanceof JSONArray)) {
+            JSONArray jArrOne = (JSONArray) one;
+            JSONArray jArrOther = (JSONArray) other;
+            if (jArrOne.length() != jArrOther.length()) {
+                return false;
+            }
+            for (int i = 0; i < jArrOne.length(); ++i) {
+                try {
+                    Object value = jArrOne.get(i);
+                    Object value_other = jArrOther.get(i);
+                    if (!compare(value, value_other)) {
+                        return false;
+                    }
+                } catch (JSONException e) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return one.equals(other);
+    }
 }

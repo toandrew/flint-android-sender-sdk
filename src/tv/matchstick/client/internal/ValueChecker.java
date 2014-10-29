@@ -18,30 +18,30 @@ package tv.matchstick.client.internal;
 
 public class ValueChecker {
 
-	public static <T> T checkNullPointer(T obj) {
-		if (obj == null)
-			throw new NullPointerException("null reference");
-		return obj;
-	}
+    public static <T> T checkNullPointer(T obj) {
+        if (obj == null)
+            throw new NullPointerException("null reference");
+        return obj;
+    }
 
-	public static <T> T checkNullPointer(T obj, Object msg) {
-		if (obj == null)
-			throw new NullPointerException(String.valueOf(msg));
-		return obj;
-	}
+    public static <T> T checkNullPointer(T obj, Object msg) {
+        if (obj == null)
+            throw new NullPointerException(String.valueOf(msg));
+        return obj;
+    }
 
-	public static void checkTrue(boolean val) {
-		if (val) {
-			return;
-		}
-		throw new IllegalStateException();
-	}
+    public static void checkTrue(boolean val) {
+        if (val) {
+            return;
+        }
+        throw new IllegalStateException();
+    }
 
-	public static void checkTrueWithErrorMsg(boolean val, Object msg) {
-		if (val) {
-			return;
-		}
-		throw new IllegalStateException(String.valueOf(msg));
-	}
+    public static void checkTrueWithErrorMsg(boolean val, Object msg) {
+        if (val) {
+            return;
+        }
+        throw new IllegalStateException(String.valueOf(msg));
+    }
 
 }

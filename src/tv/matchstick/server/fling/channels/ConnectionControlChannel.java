@@ -26,38 +26,38 @@ import android.os.Build;
 
 public final class ConnectionControlChannel extends FlingChannel {
 
-	private static final String mUserAgent = String.format(
-			"Android FlingSDK,%d,%s,%s,%s", 0x40be38, Build.MODEL,
-			Build.PRODUCT, android.os.Build.VERSION.RELEASE);
+    private static final String mUserAgent = String.format(
+            "Android FlingSDK,%d,%s,%s,%s", 0x40be38, Build.MODEL,
+            Build.PRODUCT, android.os.Build.VERSION.RELEASE);
 
-	private final String mPackage;
+    private final String mPackage;
 
-	public ConnectionControlChannel(String pName) {
-		super("urn:x-cast:com.google.cast.tp.connection",
-				"ConnectionControlChannel");
-		mPackage = pName;
-	}
+    public ConnectionControlChannel(String pName) {
+        super("urn:x-cast:com.google.cast.tp.connection",
+                "ConnectionControlChannel");
+        mPackage = pName;
+    }
 
-	public final void connect(String transportId) throws IOException {
-		JSONObject jsonobject = new JSONObject();
-		try {
-			jsonobject.put("type", "CONNECT");
-			JSONObject obj = new JSONObject();
-			obj.put("package", mPackage);
-			jsonobject.put("origin", obj);
-			jsonobject.put("userAgent", mUserAgent);
-		} catch (JSONException e) {
-		}
-		sendTextMessage(jsonobject.toString(), 0L, transportId);
-	}
+    public final void connect(String transportId) throws IOException {
+        JSONObject jsonobject = new JSONObject();
+        try {
+            jsonobject.put("type", "CONNECT");
+            JSONObject obj = new JSONObject();
+            obj.put("package", mPackage);
+            jsonobject.put("origin", obj);
+            jsonobject.put("userAgent", mUserAgent);
+        } catch (JSONException e) {
+        }
+        sendTextMessage(jsonobject.toString(), 0L, transportId);
+    }
 
-	public final void close(String targetId) throws IOException {
-		JSONObject jsonobject = new JSONObject();
-		try {
-			jsonobject.put("type", "CLOSE");
-		} catch (JSONException e) {
-		}
+    public final void close(String targetId) throws IOException {
+        JSONObject jsonobject = new JSONObject();
+        try {
+            jsonobject.put("type", "CLOSE");
+        } catch (JSONException e) {
+        }
 
-		sendTextMessage(jsonobject.toString(), 0L, targetId);
-	}
+        sendTextMessage(jsonobject.toString(), 0L, targetId);
+    }
 }

@@ -19,13 +19,13 @@ package tv.matchstick.server.fling.service.operation;
 import tv.matchstick.server.fling.mdns.DeviceScanner;
 
 public abstract class FlingDeviceScannerOperation {
-	public static String TAG = "FlingDeviceScannerOperation";
-	
-	protected final DeviceScanner mDeviceScanner;
+    public static String TAG = "FlingDeviceScannerOperation";
 
-	public FlingDeviceScannerOperation(DeviceScanner scanner) {
-		mDeviceScanner = scanner;
-	}
+    protected final DeviceScanner mDeviceScanner;
 
-	public abstract void act();
+    public FlingDeviceScannerOperation(DeviceScanner scanner) {
+        mDeviceScanner = scanner;
+    }
+
+    public abstract void act();
 }

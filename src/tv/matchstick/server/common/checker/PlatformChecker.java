@@ -25,22 +25,22 @@ import android.net.Uri;
  * Platform validate checker
  */
 public final class PlatformChecker {
-	public int mPlatform;
-	public String mPackage;
-	public Uri mUri;
+    public int mPlatform;
+    public String mPackage;
+    public Uri mUri;
 
-	public PlatformChecker(JSONObject obj) {
-		try {
-			int platform = obj.getInt("platform");
-			if (platform < 0 || platform > 3) {
-				throw new JSONException("Invalid value for 'platform'");
-			}
+    public PlatformChecker(JSONObject obj) {
+        try {
+            int platform = obj.getInt("platform");
+            if (platform < 0 || platform > 3) {
+                throw new JSONException("Invalid value for 'platform'");
+            }
 
-			mPlatform = platform;
-			mPackage = obj.getString("package");
-			mUri = Uri.parse(obj.getString("url"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+            mPlatform = platform;
+            mPackage = obj.getString("package");
+            mUri = Uri.parse(obj.getString("url"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

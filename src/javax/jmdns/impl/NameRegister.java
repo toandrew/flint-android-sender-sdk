@@ -28,30 +28,40 @@ public interface NameRegister {
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.NameRegister#register(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
+         * 
+         * @see javax.jmdns.impl.NameRegister#register(java.net.InetAddress,
+         * java.lang.String, javax.jmdns.impl.NameRegister.NameType)
          */
         @Override
-        public void register(InetAddress networkInterface, String name, NameType type) {
+        public void register(InetAddress networkInterface, String name,
+                NameType type) {
             // TODO Auto-generated method stub
 
         }
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.NameRegister#checkName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
+         * 
+         * @see javax.jmdns.impl.NameRegister#checkName(java.net.InetAddress,
+         * java.lang.String, javax.jmdns.impl.NameRegister.NameType)
          */
         @Override
-        public boolean checkName(InetAddress networkInterface, String name, NameType type) {
+        public boolean checkName(InetAddress networkInterface, String name,
+                NameType type) {
             // TODO Auto-generated method stub
             return false;
         }
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.NameRegister#incrementHostName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
+         * 
+         * @see
+         * javax.jmdns.impl.NameRegister#incrementHostName(java.net.InetAddress,
+         * java.lang.String, javax.jmdns.impl.NameRegister.NameType)
          */
         @Override
-        public String incrementHostName(InetAddress networkInterface, String name, NameType type) {
+        public String incrementHostName(InetAddress networkInterface,
+                String name, NameType type) {
             // TODO Auto-generated method stub
             return null;
         }
@@ -62,30 +72,40 @@ public interface NameRegister {
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.NameRegister#register(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
+         * 
+         * @see javax.jmdns.impl.NameRegister#register(java.net.InetAddress,
+         * java.lang.String, javax.jmdns.impl.NameRegister.NameType)
          */
         @Override
-        public void register(InetAddress networkInterface, String name, NameType type) {
+        public void register(InetAddress networkInterface, String name,
+                NameType type) {
             // TODO Auto-generated method stub
 
         }
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.NameRegister#checkName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
+         * 
+         * @see javax.jmdns.impl.NameRegister#checkName(java.net.InetAddress,
+         * java.lang.String, javax.jmdns.impl.NameRegister.NameType)
          */
         @Override
-        public boolean checkName(InetAddress networkInterface, String name, NameType type) {
+        public boolean checkName(InetAddress networkInterface, String name,
+                NameType type) {
             // TODO Auto-generated method stub
             return false;
         }
 
         /*
          * (non-Javadoc)
-         * @see javax.jmdns.impl.NameRegister#incrementHostName(java.net.InetAddress, java.lang.String, javax.jmdns.impl.NameRegister.NameType)
+         * 
+         * @see
+         * javax.jmdns.impl.NameRegister#incrementHostName(java.net.InetAddress,
+         * java.lang.String, javax.jmdns.impl.NameRegister.NameType)
          */
         @Override
-        public String incrementHostName(InetAddress networkInterface, String name, NameType type) {
+        public String incrementHostName(InetAddress networkInterface,
+                String name, NameType type) {
             // TODO Auto-generated method stub
             return null;
         }
@@ -104,9 +124,11 @@ public interface NameRegister {
          * @throws IllegalStateException
          *             the register can only be set once
          */
-        public static void setRegistry(NameRegister register) throws IllegalStateException {
+        public static void setRegistry(NameRegister register)
+                throws IllegalStateException {
             if (_register != null) {
-                throw new IllegalStateException("The register can only be set once.");
+                throw new IllegalStateException(
+                        "The register can only be set once.");
             }
             if (register != null) {
                 _register = register;
@@ -137,7 +159,8 @@ public interface NameRegister {
      * @param type
      *            name type to register
      */
-    public abstract void register(InetAddress networkInterface, String name, NameType type);
+    public abstract void register(InetAddress networkInterface, String name,
+            NameType type);
 
     /**
      * Checks a name that is defended by this group of mDNS.
@@ -148,12 +171,15 @@ public interface NameRegister {
      *            name to check
      * @param type
      *            name type to check
-     * @return <code>true</code> if the name is not in conflict, <code>flase</code> otherwise.
+     * @return <code>true</code> if the name is not in conflict,
+     *         <code>flase</code> otherwise.
      */
-    public abstract boolean checkName(InetAddress networkInterface, String name, NameType type);
+    public abstract boolean checkName(InetAddress networkInterface,
+            String name, NameType type);
 
     /**
-     * Increments a name that is defended by this group of mDNS after it has been found in conflict.
+     * Increments a name that is defended by this group of mDNS after it has
+     * been found in conflict.
      *
      * @param networkInterface
      *            IP address to handle
@@ -163,6 +189,7 @@ public interface NameRegister {
      *            name type to increments
      * @return new name
      */
-    public abstract String incrementHostName(InetAddress networkInterface, String name, NameType type);
+    public abstract String incrementHostName(InetAddress networkInterface,
+            String name, NameType type);
 
 }

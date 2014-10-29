@@ -22,72 +22,72 @@ import android.os.Bundle;
  * Discovery request
  */
 public final class DiscoveryRequest { // MediaRouteDiscoveryRequest
-	private final Bundle mData;
-	private MediaRouteSelector mMediaRouteSelector;
+    private final Bundle mData;
+    private MediaRouteSelector mMediaRouteSelector;
 
-	DiscoveryRequest(Bundle bundle) {
-		mData = bundle;
-	}
+    DiscoveryRequest(Bundle bundle) {
+        mData = bundle;
+    }
 
-	public DiscoveryRequest(MediaRouteSelector selector, boolean activeScan) {
-		if (selector == null) {
-			throw new IllegalArgumentException("selector must not be null");
-		}
+    public DiscoveryRequest(MediaRouteSelector selector, boolean activeScan) {
+        if (selector == null) {
+            throw new IllegalArgumentException("selector must not be null");
+        }
 
-		mData = new Bundle();
-		mMediaRouteSelector = selector;
-		mData.putBundle("selector", selector.asBundle());
-		mData.putBoolean("activeScan", activeScan);
-	}
+        mData = new Bundle();
+        mMediaRouteSelector = selector;
+        mData.putBundle("selector", selector.asBundle());
+        mData.putBoolean("activeScan", activeScan);
+    }
 
-	private void ensureSelector() {
-		if (mMediaRouteSelector == null) {
-			mMediaRouteSelector = MediaRouteSelector.fromBundle(mData
-					.getBundle("selector"));
-			if (mMediaRouteSelector == null) {
-				mMediaRouteSelector = MediaRouteSelector.EMPTY;
-			}
-		}
-	}
+    private void ensureSelector() {
+        if (mMediaRouteSelector == null) {
+            mMediaRouteSelector = MediaRouteSelector.fromBundle(mData
+                    .getBundle("selector"));
+            if (mMediaRouteSelector == null) {
+                mMediaRouteSelector = MediaRouteSelector.EMPTY;
+            }
+        }
+    }
 
-	public final MediaRouteSelector getSelector() {
-		ensureSelector();
-		return mMediaRouteSelector;
-	}
+    public final MediaRouteSelector getSelector() {
+        ensureSelector();
+        return mMediaRouteSelector;
+    }
 
-	public final boolean isActiveScan() {
-		return mData.getBoolean("activeScan");
-	}
+    public final boolean isActiveScan() {
+        return mData.getBoolean("activeScan");
+    }
 
-	public final boolean isValid() {
-		ensureSelector();
-		return mMediaRouteSelector.isValid();
-	}
+    public final boolean isValid() {
+        ensureSelector();
+        return mMediaRouteSelector.isValid();
+    }
 
-	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof DiscoveryRequest) {
-			DiscoveryRequest other = (DiscoveryRequest) o;
-			return getSelector().equals(other.getSelector())
-					&& isActiveScan() == other.isActiveScan();
-		}
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof DiscoveryRequest) {
+            DiscoveryRequest other = (DiscoveryRequest) o;
+            return getSelector().equals(other.getSelector())
+                    && isActiveScan() == other.isActiveScan();
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public final int hashCode() {
-		return getSelector().hashCode() ^ (isActiveScan() ? 1 : 0);
-	}
+    @Override
+    public final int hashCode() {
+        return getSelector().hashCode() ^ (isActiveScan() ? 1 : 0);
+    }
 
-	@Override
-	public final String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("DiscoveryRequest{ selector=").append(getSelector());
-		sb.append(", activeScan=").append(isActiveScan());
-		sb.append(", isValid=").append(isValid());
-		sb.append(" }");
+    @Override
+    public final String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DiscoveryRequest{ selector=").append(getSelector());
+        sb.append(", activeScan=").append(isActiveScan());
+        sb.append(", isValid=").append(isValid());
+        sb.append(" }");
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 }

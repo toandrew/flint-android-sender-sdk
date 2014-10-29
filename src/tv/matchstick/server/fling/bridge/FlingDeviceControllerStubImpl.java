@@ -22,106 +22,106 @@ import tv.matchstick.server.fling.FlingDeviceController;
 import android.os.RemoteException;
 
 public final class FlingDeviceControllerStubImpl extends
-		IFlingDeviceController.Stub {
-	final FlingService mFlingService;
-	private final FlingDeviceController mFlingDeviceController;
+        IFlingDeviceController.Stub {
+    final FlingService mFlingService;
+    private final FlingDeviceController mFlingDeviceController;
 
-	public FlingDeviceControllerStubImpl(FlingService service,
-			FlingDeviceController controller) {
-		super();
-		mFlingService = service;
-		mFlingDeviceController = controller;
-	}
+    public FlingDeviceControllerStubImpl(FlingService service,
+            FlingDeviceController controller) {
+        super();
+        mFlingService = service;
+        mFlingDeviceController = controller;
+    }
 
-	@Override
-	public void disconnect() throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void disconnect() throws RemoteException {
+        // TODO Auto-generated method stub
 
-		if (!mFlingDeviceController.isDisposed()) {
-			mFlingDeviceController.releaseReference();
-		}
-	}
+        if (!mFlingDeviceController.isDisposed()) {
+            mFlingDeviceController.releaseReference();
+        }
+    }
 
-	@Override
-	public void launchApplication(String applicationId,
-			boolean relaunchIfRunning) throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void launchApplication(String applicationId,
+            boolean relaunchIfRunning) throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.launchApplication(applicationId, null,
-				relaunchIfRunning);
-	}
+        mFlingDeviceController.launchApplication(applicationId, null,
+                relaunchIfRunning);
+    }
 
-	@Override
-	public void joinApplication(String applicationId, String sessionId)
-			throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void joinApplication(String applicationId, String sessionId)
+            throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.joinApplication(applicationId, sessionId);
-	}
+        mFlingDeviceController.joinApplication(applicationId, sessionId);
+    }
 
-	@Override
-	public void leaveApplication() throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void leaveApplication() throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.leaveApplication();
-	}
+        mFlingDeviceController.leaveApplication();
+    }
 
-	@Override
-	public void stopApplication(String sessionId) throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void stopApplication(String sessionId) throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.stopApplication(sessionId);
-	}
+        mFlingDeviceController.stopApplication(sessionId);
+    }
 
-	@Override
-	public void requestStatus() throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void requestStatus() throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.requestStatus();
-	}
+        mFlingDeviceController.requestStatus();
+    }
 
-	@Override
-	public void setVolume(double volume, double originalVolume, boolean isMute)
-			throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void setVolume(double volume, double originalVolume, boolean isMute)
+            throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.setVolume(volume, originalVolume, isMute);
-	}
+        mFlingDeviceController.setVolume(volume, originalVolume, isMute);
+    }
 
-	@Override
-	public void setMute(boolean mute, double volume, boolean isMute)
-			throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void setMute(boolean mute, double volume, boolean isMute)
+            throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.setMute(mute, volume, isMute);
-	}
+        mFlingDeviceController.setMute(mute, volume, isMute);
+    }
 
-	@Override
-	public void sendMessage(String namespace, String message, long requestId)
-			throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void sendMessage(String namespace, String message, long requestId)
+            throws RemoteException {
+        // TODO Auto-generated method stub
 
-		if (namespace == null || namespace.length() > 128) {
-			return;
-		}
+        if (namespace == null || namespace.length() > 128) {
+            return;
+        }
 
-		mFlingDeviceController.sendMessageInternal(namespace, message,
-				requestId);
-	}
+        mFlingDeviceController.sendMessageInternal(namespace, message,
+                requestId);
+    }
 
-	@Override
-	public void setMessageReceivedCallbacks(String namespace)
-			throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void setMessageReceivedCallbacks(String namespace)
+            throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.setMessageReceivedCallbacks(namespace);
-	}
+        mFlingDeviceController.setMessageReceivedCallbacks(namespace);
+    }
 
-	@Override
-	public void removeMessageReceivedCallbacks(String namespace)
-			throws RemoteException {
-		// TODO Auto-generated method stub
+    @Override
+    public void removeMessageReceivedCallbacks(String namespace)
+            throws RemoteException {
+        // TODO Auto-generated method stub
 
-		mFlingDeviceController.removeMessageReceivedCallbacks(namespace);
-	}
+        mFlingDeviceController.removeMessageReceivedCallbacks(namespace);
+    }
 }

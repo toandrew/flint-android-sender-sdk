@@ -21,19 +21,19 @@ import java.io.IOException;
 import tv.matchstick.server.fling.FlingDeviceController;
 
 public abstract class FlingOperation {
-	public static String TAG = "FlingOperation";
+    public static String TAG = "FlingOperation";
 
-	protected final FlingDeviceController mFlingDeviceController;
+    protected final FlingDeviceController mFlingDeviceController;
 
-	public FlingOperation(FlingDeviceController controller) {
-		mFlingDeviceController = controller;
-		mFlingDeviceController.generateId();
-	}
+    public FlingOperation(FlingDeviceController controller) {
+        mFlingDeviceController = controller;
+        mFlingDeviceController.generateId();
+    }
 
-	public abstract void doFling() throws IOException;
+    public abstract void doFling() throws IOException;
 
-	public final void releaseReference() {
-		mFlingDeviceController.releaseReference();
-	}
+    public final void releaseReference() {
+        mFlingDeviceController.releaseReference();
+    }
 
 }

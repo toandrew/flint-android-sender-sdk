@@ -15,7 +15,8 @@ public interface NetworkTopologyListener extends EventListener {
      * A network address has been added.<br/>
      * 
      * @param event
-     *            The NetworkTopologyEvent providing the name and fully qualified type of the service.
+     *            The NetworkTopologyEvent providing the name and fully
+     *            qualified type of the service.
      */
     void inetAddressAdded(NetworkTopologyEvent event);
 
@@ -23,7 +24,8 @@ public interface NetworkTopologyListener extends EventListener {
      * A network address has been removed.
      * 
      * @param event
-     *            The NetworkTopologyEvent providing the name and fully qualified type of the service.
+     *            The NetworkTopologyEvent providing the name and fully
+     *            qualified type of the service.
      */
     void inetAddressRemoved(NetworkTopologyEvent event);
 

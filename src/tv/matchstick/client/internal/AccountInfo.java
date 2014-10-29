@@ -29,170 +29,169 @@ import android.view.View;
 
 public class AccountInfo {
 
-	private final AccountInfoData mData;
-	private final View mView;
+    private final AccountInfoData mData;
+    private final View mView;
 
-	public AccountInfo(String accountName,
-			Collection<String> scopeUriCollection, int gravityForPopups,
-			View view, String packageName) {
-		mData = new AccountInfoData(accountName, scopeUriCollection,
-				gravityForPopups, packageName);
-		mView = view;
-	}
+    public AccountInfo(String accountName,
+            Collection<String> scopeUriCollection, int gravityForPopups,
+            View view, String packageName) {
+        mData = new AccountInfoData(accountName, scopeUriCollection,
+                gravityForPopups, packageName);
+        mView = view;
+    }
 
-	public String getAccountName() {
-		return mData.getAccountName();
-	}
+    public String getAccountName() {
+        return mData.getAccountName();
+    }
 
-	public String getAccountNameNotNull() {
-		return mData.getAccountNameNotNull();
-	}
+    public String getAccountNameNotNull() {
+        return mData.getAccountNameNotNull();
+    }
 
-	public int getGravityForPopups() {
-		return mData.getGravityForPopups();
-	}
+    public int getGravityForPopups() {
+        return mData.getGravityForPopups();
+    }
 
-	public List<String> copyScopeUriList() {
-		return mData.copyScopeUriList();
-	}
+    public List<String> copyScopeUriList() {
+        return mData.copyScopeUriList();
+    }
 
-	public String[] convertListToArray() {
-		return mData.copyScopeUriList().toArray(new String[0]);
-	}
+    public String[] convertListToArray() {
+        return mData.copyScopeUriList().toArray(new String[0]);
+    }
 
-	public String getPackageName() {
-		return mData.getPackageName();
-	}
+    public String getPackageName() {
+        return mData.getPackageName();
+    }
 
-	public View getView() {
-		return mView;
-	}
+    public View getView() {
+        return mView;
+    }
 
-	public static final class AccountInfoData implements SafeParcelable {
-		public static final Parcelable.Creator<AccountInfoData> CREATOR = new Parcelable.Creator<AccountInfoData>() {
+    public static final class AccountInfoData implements SafeParcelable {
+        public static final Parcelable.Creator<AccountInfoData> CREATOR = new Parcelable.Creator<AccountInfoData>() {
 
-			@Override
-			public AccountInfoData createFromParcel(Parcel source) {
-				// TODO Auto-generated method stub
+            @Override
+            public AccountInfoData createFromParcel(Parcel source) {
+                // TODO Auto-generated method stub
 
-				int size = ParcelRead.readStart(source);
-				int version = 0;
-				String name = null;
-				ArrayList<String> scopeUriList = null;
-				int gravity = 0;
-				String packageName = null;
-				while (source.dataPosition() < size) {
-					int type = ParcelRead.readInt(source);
-					switch (ParcelRead.halfOf(type)) {
-					case 1:
-						name = ParcelRead.readString(source, type);
-						break;
-					case 1000:
-						version = ParcelRead.readInt(source, type);
-						break;
-					case 2:
-						scopeUriList = ParcelRead.readStringList(source,
-								type);
-						break;
-					case 3:
-						gravity = ParcelRead.readInt(source, type);
-						break;
-					case 4:
-						packageName = ParcelRead.readString(source, type);
-						break;
-					default:
-						ParcelRead.skip(source, type);
-					}
-				}
+                int size = ParcelRead.readStart(source);
+                int version = 0;
+                String name = null;
+                ArrayList<String> scopeUriList = null;
+                int gravity = 0;
+                String packageName = null;
+                while (source.dataPosition() < size) {
+                    int type = ParcelRead.readInt(source);
+                    switch (ParcelRead.halfOf(type)) {
+                    case 1:
+                        name = ParcelRead.readString(source, type);
+                        break;
+                    case 1000:
+                        version = ParcelRead.readInt(source, type);
+                        break;
+                    case 2:
+                        scopeUriList = ParcelRead.readStringList(source, type);
+                        break;
+                    case 3:
+                        gravity = ParcelRead.readInt(source, type);
+                        break;
+                    case 4:
+                        packageName = ParcelRead.readString(source, type);
+                        break;
+                    default:
+                        ParcelRead.skip(source, type);
+                    }
+                }
 
-				if (source.dataPosition() != size) {
-					throw new ParcelRead.ReadParcelException(
-							"Overread allowed size end=" + size, source);
-				}
+                if (source.dataPosition() != size) {
+                    throw new ParcelRead.ReadParcelException(
+                            "Overread allowed size end=" + size, source);
+                }
 
-				return new AccountInfoData(version, name, scopeUriList,
-						gravity, packageName);
-			}
+                return new AccountInfoData(version, name, scopeUriList,
+                        gravity, packageName);
+            }
 
-			@Override
-			public AccountInfoData[] newArray(int size) {
-				// TODO Auto-generated method stub
+            @Override
+            public AccountInfoData[] newArray(int size) {
+                // TODO Auto-generated method stub
 
-				return new AccountInfoData[size];
-			}
+                return new AccountInfoData[size];
+            }
 
-		};
+        };
 
-		private final int mVersionCode;
-		private final String mAccountName;
-		private final List<String> mScopeUriList;
-		private final int mGravityForPopups;
-		private final String mPackageName;
+        private final int mVersionCode;
+        private final String mAccountName;
+        private final List<String> mScopeUriList;
+        private final int mGravityForPopups;
+        private final String mPackageName;
 
-		AccountInfoData(int versionCode, String accountName,
-				List<String> scopeUriList, int gravityForPopups,
-				String packageName) {
-			mScopeUriList = new ArrayList<String>();
-			mScopeUriList.addAll(scopeUriList);
+        AccountInfoData(int versionCode, String accountName,
+                List<String> scopeUriList, int gravityForPopups,
+                String packageName) {
+            mScopeUriList = new ArrayList<String>();
+            mScopeUriList.addAll(scopeUriList);
 
-			mVersionCode = versionCode;
-			mAccountName = accountName;
+            mVersionCode = versionCode;
+            mAccountName = accountName;
 
-			mGravityForPopups = gravityForPopups;
-			mPackageName = packageName;
-		}
+            mGravityForPopups = gravityForPopups;
+            mPackageName = packageName;
+        }
 
-		public AccountInfoData(String accountName,
-				Collection<String> scopeUriCollection, int gravityForPopups,
-				String packageName) {
-			this(3, accountName, new ArrayList<String>(scopeUriCollection),
-					gravityForPopups, packageName);
-		}
+        public AccountInfoData(String accountName,
+                Collection<String> scopeUriCollection, int gravityForPopups,
+                String packageName) {
+            this(3, accountName, new ArrayList<String>(scopeUriCollection),
+                    gravityForPopups, packageName);
+        }
 
-		public String getAccountName() {
-			return mAccountName;
-		}
+        public String getAccountName() {
+            return mAccountName;
+        }
 
-		public String getAccountNameNotNull() {
-			return ((mAccountName != null) ? mAccountName
-					: "<<default account>>");
-		}
+        public String getAccountNameNotNull() {
+            return ((mAccountName != null) ? mAccountName
+                    : "<<default account>>");
+        }
 
-		public int getGravityForPopups() {
-			return mGravityForPopups;
-		}
+        public int getGravityForPopups() {
+            return mGravityForPopups;
+        }
 
-		public String getPackageName() {
-			return mPackageName;
-		}
+        public String getPackageName() {
+            return mPackageName;
+        }
 
-		public List<String> copyScopeUriList() {
-			return new ArrayList<String>(mScopeUriList);
-		}
+        public List<String> copyScopeUriList() {
+            return new ArrayList<String>(mScopeUriList);
+        }
 
-		@Override
-		public int describeContents() {
-			return 0;
-		}
+        @Override
+        public int describeContents() {
+            return 0;
+        }
 
-		@Override
-		public void writeToParcel(Parcel out, int flags) {
-			buildParcel(out, flags);
-		}
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            buildParcel(out, flags);
+        }
 
-		public int getVersionCode() {
-			return mVersionCode;
-		}
+        public int getVersionCode() {
+            return mVersionCode;
+        }
 
-		private void buildParcel(Parcel out, int flags) {
-			int i = ParcelWrite.position(out);
-			ParcelWrite.write(out, 1, getAccountName(), false);
-			ParcelWrite.write(out, 1000, getVersionCode());
-			ParcelWrite.writeStringList(out, 2, copyScopeUriList(), false);
-			ParcelWrite.write(out, 3, getGravityForPopups());
-			ParcelWrite.write(out, 4, getPackageName(), false);
-			ParcelWrite.writeEnd(out, i);
-		}
-	}
+        private void buildParcel(Parcel out, int flags) {
+            int i = ParcelWrite.position(out);
+            ParcelWrite.write(out, 1, getAccountName(), false);
+            ParcelWrite.write(out, 1000, getVersionCode());
+            ParcelWrite.writeStringList(out, 2, copyScopeUriList(), false);
+            ParcelWrite.write(out, 3, getGravityForPopups());
+            ParcelWrite.write(out, 4, getPackageName(), false);
+            ParcelWrite.writeEnd(out, i);
+        }
+    }
 
 }

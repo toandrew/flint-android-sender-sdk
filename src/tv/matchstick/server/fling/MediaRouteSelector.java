@@ -23,86 +23,86 @@ import java.util.List;
 import android.os.Bundle;
 
 public final class MediaRouteSelector {
-	public static final MediaRouteSelector EMPTY = new MediaRouteSelector(
-			new Bundle(), null);
-	private final Bundle mData;
-	private List mControlCategories;
+    public static final MediaRouteSelector EMPTY = new MediaRouteSelector(
+            new Bundle(), null);
+    private final Bundle mData;
+    private List mControlCategories;
 
-	public MediaRouteSelector(Bundle bundle, List controlCategories) {
-		mData = bundle;
-		mControlCategories = controlCategories;
-	}
+    public MediaRouteSelector(Bundle bundle, List controlCategories) {
+        mData = bundle;
+        mControlCategories = controlCategories;
+    }
 
-	public static MediaRouteSelector fromBundle(Bundle data) {
-		if (data != null) {
-			return new MediaRouteSelector(data, null);
-		}
+    public static MediaRouteSelector fromBundle(Bundle data) {
+        if (data != null) {
+            return new MediaRouteSelector(data, null);
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	static void ensureControlCategories(MediaRouteSelector selector) {
-		selector.ensureControlCategories();
-	}
+    static void ensureControlCategories(MediaRouteSelector selector) {
+        selector.ensureControlCategories();
+    }
 
-	static List getControlCategories(MediaRouteSelector selector) {
-		return selector.mControlCategories;
-	}
+    static List getControlCategories(MediaRouteSelector selector) {
+        return selector.mControlCategories;
+    }
 
-	private void ensureControlCategories() {
-		if (mControlCategories == null) {
-			mControlCategories = mData.getStringArrayList("controlCategories");
-			if (mControlCategories == null || mControlCategories.isEmpty()) {
-				mControlCategories = Collections.emptyList();
-			}
-		}
-	}
+    private void ensureControlCategories() {
+        if (mControlCategories == null) {
+            mControlCategories = mData.getStringArrayList("controlCategories");
+            if (mControlCategories == null || mControlCategories.isEmpty()) {
+                mControlCategories = Collections.emptyList();
+            }
+        }
+    }
 
-	public final List getControlCategories() {
-		ensureControlCategories();
-		return mControlCategories;
-	}
+    public final List getControlCategories() {
+        ensureControlCategories();
+        return mControlCategories;
+    }
 
-	public final boolean isEmpty() {
-		ensureControlCategories();
-		return mControlCategories.isEmpty();
-	}
+    public final boolean isEmpty() {
+        ensureControlCategories();
+        return mControlCategories.isEmpty();
+    }
 
-	public final boolean isValid() {
-		ensureControlCategories();
-		return !mControlCategories.contains(null);
-	}
+    public final boolean isValid() {
+        ensureControlCategories();
+        return !mControlCategories.contains(null);
+    }
 
-	public final Bundle asBundle() {
-		return mData;
-	}
+    public final Bundle asBundle() {
+        return mData;
+    }
 
-	@Override
-	public final boolean equals(Object obj) {
-		if (obj instanceof MediaRouteSelector) {
-			MediaRouteSelector other = (MediaRouteSelector) obj;
-			ensureControlCategories();
-			other.ensureControlCategories();
-			return mControlCategories.equals(other.mControlCategories);
-		} else {
-			return false;
-		}
-	}
+    @Override
+    public final boolean equals(Object obj) {
+        if (obj instanceof MediaRouteSelector) {
+            MediaRouteSelector other = (MediaRouteSelector) obj;
+            ensureControlCategories();
+            other.ensureControlCategories();
+            return mControlCategories.equals(other.mControlCategories);
+        } else {
+            return false;
+        }
+    }
 
-	@Override
-	public final int hashCode() {
-		ensureControlCategories();
-		return mControlCategories.hashCode();
-	}
+    @Override
+    public final int hashCode() {
+        ensureControlCategories();
+        return mControlCategories.hashCode();
+    }
 
-	@Override
-	public final String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("MediaRouteSelector{ ");
-		sb.append("controlCategories=").append(
-				Arrays.toString(getControlCategories().toArray()));
-		sb.append(" }");
+    @Override
+    public final String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("MediaRouteSelector{ ");
+        sb.append("controlCategories=").append(
+                Arrays.toString(getControlCategories().toArray()));
+        sb.append(" }");
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 }
