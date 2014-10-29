@@ -75,13 +75,18 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     }
 
     @Override
-    protected void startScanInternal(List<NetworkInterface> list) {
+    protected synchronized void startScanInternal(List<NetworkInterface> list) {
         // TODO Auto-generated method stub
         log.d("startScanInternal");
 
         if (list.isEmpty()) {
             log.w("No network interfaces to scan on!");
             return;
+        }
+
+        // stop all mdns client???!!!
+        if (mMdnsClientList.size() > 0) {
+            stopScanInternal();
         }
 
         Iterator<NetworkInterface> it = list.iterator();
