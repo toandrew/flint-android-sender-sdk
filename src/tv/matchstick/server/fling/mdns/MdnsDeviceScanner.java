@@ -88,7 +88,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 		while (it.hasNext()) {
 			NetworkInterface network = (NetworkInterface) it.next();
 
-			MdnsClient mdnsClient = new MdnsClient("_MatchStick._tcp.local.",
+			MdnsClient mdnsClient = new MdnsClient("_openflint._tcp.local.",
 					network) {
 
 				@Override
