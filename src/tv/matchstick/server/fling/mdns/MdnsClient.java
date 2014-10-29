@@ -203,6 +203,8 @@ abstract class MdnsClient {
                         mJmDNS.close();
                     }
 
+                    mAddress = getAddress(mNetwork);
+                    
                     if (mAddress != null) {
                         Log.e("MdnsClient", "address:" + mAddress);
                         mJmDNS = JmDNS.create(mAddress, mHostName);
