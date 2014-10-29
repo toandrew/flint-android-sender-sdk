@@ -64,7 +64,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 					.get(deviceId);
 
 			if (deviceInfo != null) {
-				deviceInfo.mElapsedRealtime = SystemClock.elapsedRealtime();
+				deviceInfo.mScannedTime = SystemClock.elapsedRealtime();
 				deviceInfo.mIsOffline = true;
 
 				FlingDevice device = deviceInfo.mFlingDevice;
@@ -188,26 +188,24 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 	}
 
 	void onResults(FlingDeviceInfo info) {
+		// print found device info
 		if (log.isDebugEnabled()) {
 			log.d("FQDN: %s", info.mFQDN);
-			List localList4 = info.mIpV4AddrList;
-			if (localList4 != null) {
-				Iterator localIterator4 = localList4.iterator();
-				while (localIterator4.hasNext()) {
-					Inet4Address localInet4Address2 = (Inet4Address) localIterator4
-							.next();
-					log.d("IPv4 address: %s", localInet4Address2);
+
+			if (info.mIpV4AddrList != null) {
+				Iterator<Inet4Address> it = info.mIpV4AddrList.iterator();
+				while (it.hasNext()) {
+					log.d("IPv4 address: %s", (Inet4Address) it.next());
 				}
 			}
-			List localList5 = info.mIpV6AddrList;
-			if (localList5 != null) {
-				Iterator localIterator3 = localList5.iterator();
-				while (localIterator3.hasNext()) {
-					Inet6Address localInet6Address = (Inet6Address) localIterator3
-							.next();
-					log.d("IPv6 address: %s", localInet6Address);
+
+			if (info.mIpV6AddrList != null) {
+				Iterator<Inet6Address> it = info.mIpV6AddrList.iterator();
+				while (it.hasNext()) {
+					log.d("IPv6 address: %s", (Inet6Address) it.next());
 				}
 			}
+
 			log.d("service name: %s", info.mName);
 
 			log.d("service host: %s", info.mHost);
@@ -220,12 +218,10 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
 			log.d("service weight: %d", info.mWeight);
 
-			List localList6 = info.mTextStringList;
-			if (localList6 != null) {
-				Iterator localIterator2 = localList6.iterator();
-				while (localIterator2.hasNext()) {
-					String str6 = (String) localIterator2.next();
-					log.d("text string: %s", str6);
+			if (info.mTextStringList != null) {
+				Iterator<String> it = info.mTextStringList.iterator();
+				while (it.hasNext()) {
+					log.d("text string: %s", (String) it.next());
 				}
 			}
 
@@ -238,7 +234,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 			String deviceVersion = null;
 			String deviceName = null;
 			String deviceId = null;
-			String val;
 
 			Iterator<String> it = deviceInfos.iterator();
 			while (it.hasNext()) {
@@ -246,17 +241,15 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 				int split = line.indexOf('=');
 				if (split > 0) {
 					String key = line.substring(0, split);
-					val = line.substring(split + 1);
+					String val = line.substring(split + 1);
 					if ("id".equalsIgnoreCase(key)) {
 						deviceId = val;
 					} else if ("md".equalsIgnoreCase(key)) {
 						deviceName = val.replaceAll(
 								"(Eureka|Chromekey)( Dongle)?", "Dongle");
-					} else if ("ve".equalsIgnoreCase(key))
+					} else if ("ve".equalsIgnoreCase(key)) {
 						deviceVersion = val;
-					else if (!"ic".equalsIgnoreCase(key)) {
-						val = icon;
-					} else {
+					} else if ("ic".equalsIgnoreCase(key)) {
 						icon = val;
 					}
 				}
@@ -313,7 +306,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 				if (scannerDeviceData != null) {
 					if (device.equals(scannerDeviceData.mFlingDevice)) {
 						if (!scannerDeviceData.mIsOffline) {
-							scannerDeviceData.mElapsedRealtime = SystemClock
+							scannerDeviceData.mScannedTime = SystemClock
 									.elapsedRealtime();
 						}
 						return;
@@ -379,7 +372,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 					ScannerDeviceData deviceInfo = it.next().getValue();
 
 					int offline = 0;
-					if (currentTime - deviceInfo.mElapsedRealtime < 60000L) {
+					if (currentTime - deviceInfo.mScannedTime < 60000L) {
 						offline = 0;
 					} else {
 						offline = 1;
@@ -414,14 +407,14 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
 	private static final class ScannerDeviceData {
 		FlingDevice mFlingDevice;
-		long mElapsedRealtime;
+		long mScannedTime;
 		long mTTl;
 		boolean mIsOffline;
 
 		ScannerDeviceData(FlingDevice device, long ttl) {
 			mFlingDevice = device;
 			mTTl = ttl;
-			mElapsedRealtime = SystemClock.elapsedRealtime();
+			mScannedTime = SystemClock.elapsedRealtime();
 		}
 	}
 }
