@@ -364,7 +364,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
 
     private void onResult(String uuid, LocationDevice device) {
         try {
-            if (!"MatchStick".equals(device.manufacturer))
+            if (!"openflint".equals(device.manufacturer))
                 return;
             String deviceId = device.friendlyName;
             ScannerPrivData data = null;
