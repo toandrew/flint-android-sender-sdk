@@ -128,6 +128,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             public void onDisconnected(int statusCode) {
                 log.d("IFlingDeviceControllerListener.onDisconnected: %d",
                         statusCode);
+                android.util.Log.d("XXXXXXXXXXX", "mIFlingDeviceControllerListener");
                 mIsConnectedDevice = false;
                 mApplicationMetadata = null;
                 if (statusCode == 0) {
@@ -221,7 +222,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             @Override
             public void onMessageReceived(final String namespace,
                     final String message) {
-                log.d("Receive (type=text, ns=%s) %s", namespace, message);
+                android.util.Log.d("QQQQQQQQQQQ", "Receive (type=text, ns=" + namespace + ") " + message);
                 mHandler.post(new Runnable() {
                     public void run() {
                         Fling.MessageReceivedCallback localMessageReceivedCallback;
@@ -472,7 +473,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
         if ((Double.isInfinite(volume)) || Double.isNaN(volume)) {
             throw new IllegalArgumentException("Volume cannot be " + volume);
         }
-        getService().setVolume(volume, mVolume, mIsMute);
+        getService().setVolume(volume, mIsMute);
     }
 
     /**
@@ -484,7 +485,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
      */
     public void setMute(boolean mute) throws IllegalStateException,
             RemoteException {
-        getService().setMute(mute, mVolume, mIsMute);
+        getService().setVolume(mVolume, mute);
     }
 
     /**

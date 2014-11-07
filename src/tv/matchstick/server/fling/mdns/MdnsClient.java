@@ -156,15 +156,19 @@ abstract class MdnsClient {
         if (mDataTimer != null) {
             mDataTimer.cancel();
         }
-
         if (mJmDNS != null) {
-            try {
-                mJmDNS.removeServiceListener(mHostName, mJmdnsListener);
-
-                mJmDNS.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            mJmDNS.removeServiceListener(mHostName, mJmdnsListener);
+            Thread closeThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        mJmDNS.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            closeThread.start();
         }
     }
 
@@ -204,7 +208,7 @@ abstract class MdnsClient {
                     }
 
                     mAddress = getAddress(mNetwork);
-                    
+
                     if (mAddress != null) {
                         Log.e("MdnsClient", "address:" + mAddress);
                         mJmDNS = JmDNS.create(mAddress, mHostName);

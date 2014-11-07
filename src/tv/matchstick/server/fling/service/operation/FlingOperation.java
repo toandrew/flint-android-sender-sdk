@@ -19,13 +19,14 @@ package tv.matchstick.server.fling.service.operation;
 import java.io.IOException;
 
 import tv.matchstick.server.fling.FlingDeviceController;
+import tv.matchstick.server.fling.IController;
 
 public abstract class FlingOperation {
     public static String TAG = "FlingOperation";
 
-    protected final FlingDeviceController mFlingDeviceController;
+    protected final IController mFlingDeviceController;
 
-    public FlingOperation(FlingDeviceController controller) {
+    public FlingOperation(IController controller) {
         mFlingDeviceController = controller;
         mFlingDeviceController.generateId();
     }

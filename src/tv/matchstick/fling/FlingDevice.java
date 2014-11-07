@@ -37,6 +37,8 @@ import android.os.Parcelable;
  * Contain all info about a Fling device.
  */
 public class FlingDevice implements SafeParcelable {
+    public static final String FOUND_SOURCE_SSDP = "sspd";
+    public static final String FOUND_SOURCE_MDNS = "mdns";
     public static final Parcelable.Creator<FlingDevice> CREATOR = new Parcelable.Creator<FlingDevice>() {
 
         @Override
@@ -52,6 +54,7 @@ public class FlingDevice implements SafeParcelable {
             String hostAddress = null;
             String deviceId = null;
             int versionCode = 0;
+            String foundSource = null;
 
             while (source.dataPosition() < length) {
                 int position = source.readInt();
@@ -92,6 +95,9 @@ public class FlingDevice implements SafeParcelable {
                     icons = ParcelRead.readCreatorList(source, position,
                             WebImage.CREATOR);
                     break;
+                case 9:
+                    foundSource = ParcelRead.readString(source, position);
+                    break;
                 }
             }
 
@@ -101,7 +107,7 @@ public class FlingDevice implements SafeParcelable {
             }
 
             return new FlingDevice(versionCode, deviceId, hostAddress,
-                    friendlyName, modelName, deviceVersion, servicePor, icons);
+                    friendlyName, modelName, deviceVersion, servicePor, icons, foundSource);
         }
 
         @Override
@@ -157,9 +163,11 @@ public class FlingDevice implements SafeParcelable {
      * icon list
      */
     private List<WebImage> mIconList;
+    
+    private String mFoundSource;
 
     private FlingDevice() {
-        this(1, null, null, null, null, null, -1, ((List) (new ArrayList())));
+        this(1, null, null, null, null, null, -1, ((List) (new ArrayList())), null);
     }
 
     /**
@@ -184,7 +192,7 @@ public class FlingDevice implements SafeParcelable {
      */
     public FlingDevice(int versionCode, String deviceId, String hostAddress,
             String friendlyName, String modelName, String deviceVersion,
-            int servicePor, List<WebImage> icons) {
+            int servicePor, List<WebImage> icons, String foundSource) {
         mVersionCode = versionCode;
         mDeviceId = deviceId;
         mHostAddress = hostAddress;
@@ -201,6 +209,7 @@ public class FlingDevice implements SafeParcelable {
         mDeviceVersion = deviceVersion;
         mServicePort = servicePor;
         mIconList = icons;
+        mFoundSource = foundSource;
     }
 
     /**
@@ -340,6 +349,15 @@ public class FlingDevice implements SafeParcelable {
     public final int getVersionCode() {
         return mVersionCode;
     }
+    
+    public final String getFoundSource() {
+        return mFoundSource;
+    }
+
+    public static String setFoundSource(FlingDevice device, String foundSource) {
+        device.mFoundSource = foundSource;
+        return foundSource;
+    }
 
     /**
      * Fill device's bundle data with FlingDevice data
@@ -452,7 +470,8 @@ public class FlingDevice implements SafeParcelable {
                 && ObjEqualChecker.isEquals(mDeviceVersion,
                         flingDevice.mDeviceVersion)
                 && mServicePort == flingDevice.mServicePort
-                && ObjEqualChecker.isEquals(mIconList, flingDevice.mIconList)) {
+                && ObjEqualChecker.isEquals(mIconList, flingDevice.mIconList)
+                && ObjEqualChecker.isEquals(mFoundSource, flingDevice.mFoundSource)) {
             return true;
         }
 
@@ -544,7 +563,7 @@ public class FlingDevice implements SafeParcelable {
 
     @Override
     public String toString() {
-        return String.format("\"%s\" (%s)", mFriendlyName, mDeviceId);
+        return String.format("\"%s\" (%s) : (%s)", mFriendlyName, mDeviceId, mFoundSource);
     }
 
     @Override
@@ -562,6 +581,7 @@ public class FlingDevice implements SafeParcelable {
         ParcelWrite.write(out, 6, getDeviceVersion(), false);
         ParcelWrite.write(out, 7, getServicePort());
         ParcelWrite.write(out, 8, getIcons(), false);
+        ParcelWrite.write(out, 9, this.getFoundSource(), false);
         ParcelWrite.writeEnd(out, position);
     }
 

@@ -38,6 +38,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 public abstract class DeviceScanner {
     static final LOG log = new LOG("DeviceScanner");
@@ -103,8 +104,6 @@ public abstract class DeviceScanner {
     }
 
     private void stopScanInit() {
-        log.d("stopScanInit");
-
         stopScanInternal();
     }
 
@@ -210,7 +209,6 @@ public abstract class DeviceScanner {
         if (!mScanning) {
             return;
         }
-
         if (mConnectChangeReceiver != null) {
             try {
                 mContext.unregisterReceiver(mConnectChangeReceiver);

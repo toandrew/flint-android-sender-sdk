@@ -24,6 +24,8 @@ import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
+import tv.matchstick.server.fling.FlingDialController;
+import tv.matchstick.server.fling.IController;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 
@@ -32,6 +34,7 @@ import android.os.RemoteException;
  * device,etc)
  */
 public final class FlingConnectedClient implements IFlingSrvController {
+
     final FlingService mFlingService;
     private FlingDeviceControllerStubImpl mStubImpl;
     private final IFlingDeviceControllerListener mFlingDeviceControllerListener;
@@ -40,7 +43,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     private final FlingDevice mFlingDevice;
     private String mLastAppId;
     private String mLastSessionId;
-    private FlingDeviceController mFlingDeviceController;
+    private IController mFlingDeviceController;
     private final IFlingCallbacks mFlingCallbacks;
     private final String mPackageName;
     private final long mFlags;
@@ -111,10 +114,9 @@ public final class FlingConnectedClient implements IFlingSrvController {
         FlingService.log().d("acquireDeviceController by %s", mPackageName);
 
         FlingService.log().d("Create one fling device controller!");
-        mFlingDeviceController = FlingDeviceController.create(mFlingService,
-                FlingService.getHandler(mFlingService), mPackageName,
-                mFlingDevice, mFlags, this);
-
+        mFlingDeviceController = new FlingDialController(mFlingService,
+                FlingService.getHandler(mFlingService), mFlingDevice, this);
+        mFlingDeviceController.generateId();
         mStubImpl = new FlingDeviceControllerStubImpl(mFlingService,
                 mFlingDeviceController);
 
@@ -202,6 +204,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     @Override
     public final void onDisconnected(int status) {
         FlingService.log().d("onDisconnected: status=%d", status);
+        
         try {
             mFlingDeviceControllerListener.onDisconnected(status);
         } catch (RemoteException e) {
@@ -272,6 +275,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     @Override
     public final void notifyOnMessageReceived(String namespace, String message) {
         try {
+            
             mFlingDeviceControllerListener
                     .onMessageReceived(namespace, message);
         } catch (RemoteException e) {

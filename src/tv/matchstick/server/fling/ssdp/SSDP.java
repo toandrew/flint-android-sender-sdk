@@ -81,35 +81,39 @@ public class SSDP {
         static Charset ASCII_CHARSET = Charset.forName("US-ASCII");
 
         public ParsedDatagram(DatagramPacket packet) {
-            this.dp = packet;
+            try {
+                this.dp = packet;
 
-            String text = new String(dp.getData(), ASCII_CHARSET);
+                String text = new String(dp.getData(), ASCII_CHARSET);
 
-            int pos = 0;
-            int eolPos = text.indexOf("\r\n");
+                int pos = 0;
+                int eolPos = text.indexOf("\r\n");
 
-            // Get first line
-            type = text.substring(0, eolPos);
-            pos = eolPos + 2;
-
-            while (pos < text.length()) {
-                eolPos = text.indexOf("\r\n", pos);
-
-                if (eolPos < 0) {
-                    break;
-                }
-
-                String line = text.substring(pos, eolPos);
+                // Get first line
+                type = text.substring(0, eolPos);
                 pos = eolPos + 2;
+                while (pos < text.length()) {
+                    eolPos = text.indexOf("\r\n", pos);
 
-                int index = line.indexOf(':');
-                if (index == -1) {
-                    continue;
+                    if (eolPos < 0) {
+                        break;
+                    }
+
+                    String line = text.substring(pos, eolPos);
+                    pos = eolPos + 2;
+
+                    int index = line.indexOf(':');
+                    if (index == -1) {
+                        continue;
+                    }
+
+                    String key = asciiUpper(line.substring(0, index));
+                    String value = line.substring(index + 1).trim();
+
+                    data.put(key, value);
                 }
+            } catch (Exception e) {
 
-                String key = asciiUpper(line.substring(0, index));
-                String value = line.substring(index + 1).trim();
-                data.put(key, value);
             }
         }
 

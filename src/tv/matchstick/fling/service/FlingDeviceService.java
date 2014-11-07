@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import tv.matchstick.server.fling.FlingDeviceController;
 import tv.matchstick.server.fling.FlingMediaRouteProvider;
+import tv.matchstick.server.fling.IController;
 import tv.matchstick.server.fling.MediaRouteProvider;
 import tv.matchstick.server.fling.MediaRouteProviderSrv;
 import tv.matchstick.server.fling.mdns.DeviceScanner;
@@ -43,6 +44,7 @@ import android.util.Log;
  * </ul>
  */
 public class FlingDeviceService extends MediaRouteProviderSrv {
+
     private static final String MEDIA_ROUTE_ACTION = "android.media.MediaRouteProviderService";
 
     private static final String SERVICE_ACTION_KEY = "what"; // see
@@ -80,9 +82,8 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void connectFlingDevice(Context context,
-            final FlingDeviceController controller) {
+            final IController controller) {
         startFlingService(context, new FlingOperation(controller) {
-
             @Override
             public void doFling() throws IOException {
                 controller.connectToDeviceInternal();
@@ -99,15 +100,14 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param expected_level
      * @param muted
      */
-    public static void setVolume(Context context,
-            final FlingDeviceController controller, final double level,
-            final double expected_level, final boolean muted) {
+    public static void setVolume(Context context, final IController controller,
+            final double level, final boolean mute) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
                 // TODO Auto-generated method stub
-                controller.setVolumeInternal(level, expected_level, muted);
+                controller.setVolumeInternal(level, mute);
             }
 
         });
@@ -122,7 +122,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @see FlingSocket, FlingDeviceController
      */
     public static void onSocketConnectionFailed(Context context,
-            final FlingDeviceController controller, final int socketError) {
+            final IController controller, final int socketError) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -142,7 +142,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param sessionId
      */
     public static void stopApplication(Context context,
-            final FlingDeviceController controller, final String sessionId) {
+            final IController controller, final String sessionId) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -162,7 +162,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param sessionId
      */
     public static void joinApplication(Context context,
-            final FlingDeviceController controller, final String applicationId,
+            final IController controller, final String applicationId,
             final String sessionId) {
         startFlingService(context, new FlingOperation(controller) {
 
@@ -185,16 +185,13 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param transportId
      */
     public static void sendTextMessage(Context context,
-            final FlingDeviceController controller, final String namespace,
+            final IController controller, final String namespace,
             final String message, final long id, final String transportId) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
                 try {
-                    Log.e("FlingDeviceService", "sendMessage: namespace:"
-                            + namespace + " message:" + message + " id:" + id
-                            + " transportId:" + transportId);
                     controller.sendTextMessage(namespace, message, id,
                             transportId);
                     return;
@@ -216,7 +213,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param relaunch
      */
     public static void launchApplication(Context context,
-            final FlingDeviceController controller, final String applicationId,
+            final IController controller, final String applicationId,
             final String param, final boolean relaunch) {
         startFlingService(context, new FlingOperation(controller) {
 
@@ -237,7 +234,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param message
      */
     public static void procReceivedMessage(Context context,
-            final FlingDeviceController controller, final ByteBuffer message) {
+            final IController controller, final ByteBuffer message) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -247,25 +244,14 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
         });
     }
-
-    /**
-     * Mute the fling device
-     * 
-     * @param context
-     * @param controller
-     * @param mute
-     * @param level
-     * @param isMuted
-     */
-    public static void setMute(Context context,
-            final FlingDeviceController controller, final boolean mute,
-            final double level, final boolean isMuted) {
+    
+    public static void procReceivedMessage(Context context,
+            final IController controller, final String message) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
-                controller.setMuteInternal(mute, level, isMuted);
+                controller.onReceivedMessage(message);
             }
 
         });
@@ -278,7 +264,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void leaveApplication(Context context,
-            final FlingDeviceController controller) {
+            final IController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -299,13 +285,13 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      *            socket error code
      */
     public static void onSocketDisconnected(Context context,
-            final FlingDeviceController controller, final int socketError) {
+            final IController controller, final int socketError) {
+        android.util.Log.d("XXXXXXXXXXXXXX", "onSocketDisconnected");
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
-
+                android.util.Log.d("XXXXXXXXXXXXXX", "doFling");
                 controller.onSocketDisconnectedInternal(socketError);
             }
 
@@ -320,7 +306,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param namespace
      */
     public static void setMessageReceivedCallbacks(Context context,
-            final FlingDeviceController controller, final String namespace) {
+            final IController controller, final String namespace) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -339,7 +325,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void requestStatus(Context context,
-            final FlingDeviceController controller) {
+            final IController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -360,7 +346,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param namespace
      */
     public static void removeMessageReceivedCallbacks(Context context,
-            final FlingDeviceController controller, final String namespace) {
+            final IController controller, final String namespace) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -379,7 +365,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void onSocketConnected(Context context,
-            final FlingDeviceController controller) {
+            final IController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -510,7 +496,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
         String action = intent.getAction();
         if (action.equals(MEDIA_ROUTE_ACTION)) {
             String extras = (String) intent.getStringExtra(SERVICE_ACTION_KEY);
-
             if (extras == null) {
                 Log.e("FlingDeviceService", "Media scan intent?!");
                 return;

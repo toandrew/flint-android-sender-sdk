@@ -19,15 +19,17 @@ package tv.matchstick.server.fling.bridge;
 import tv.matchstick.client.internal.IFlingDeviceController;
 import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDeviceController;
+import tv.matchstick.server.fling.IController;
 import android.os.RemoteException;
 
 public final class FlingDeviceControllerStubImpl extends
-        IFlingDeviceController.Stub {
+
+IFlingDeviceController.Stub {
     final FlingService mFlingService;
-    private final FlingDeviceController mFlingDeviceController;
+    private final IController mFlingDeviceController;
 
     public FlingDeviceControllerStubImpl(FlingService service,
-            FlingDeviceController controller) {
+            IController controller) {
         super();
         mFlingService = service;
         mFlingDeviceController = controller;
@@ -81,19 +83,11 @@ public final class FlingDeviceControllerStubImpl extends
     }
 
     @Override
-    public void setVolume(double volume, double originalVolume, boolean isMute)
+    public void setVolume(double volume, boolean isMute)
             throws RemoteException {
         // TODO Auto-generated method stub
 
-        mFlingDeviceController.setVolume(volume, originalVolume, isMute);
-    }
-
-    @Override
-    public void setMute(boolean mute, double volume, boolean isMute)
-            throws RemoteException {
-        // TODO Auto-generated method stub
-
-        mFlingDeviceController.setMute(mute, volume, isMute);
+        mFlingDeviceController.setVolume(volume, isMute);
     }
 
     @Override

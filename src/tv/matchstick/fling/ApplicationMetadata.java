@@ -169,7 +169,7 @@ public final class ApplicationMetadata implements SafeParcelable {
     /**
      * default constructor.
      */
-    private ApplicationMetadata() {
+    public ApplicationMetadata() {
         this.mVersionCode = 1;
         this.mImages = new ArrayList<WebImage>();
         this.mNamespaces = new ArrayList<String>();

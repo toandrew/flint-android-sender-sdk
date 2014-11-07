@@ -24,6 +24,8 @@ public interface FlingSocketListener {
     public abstract void onConnectionFailed(int reason);
 
     public abstract void onMessageReceived(ByteBuffer message);
+    
+    public abstract void onMessageReceived(String message);
 
     public abstract void onDisconnected(int reason);
 }

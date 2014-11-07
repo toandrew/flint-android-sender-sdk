@@ -35,7 +35,7 @@ import android.text.TextUtils;
 
 /**
  * Which will be used by fling application to do all fling actions.
- *
+ * 
  * To use the service, construct a FlingManager.Builder and pass API to
  * addApi(Api). Once you have your FlingManager, call connect() and wait for the
  * onConnected(Bundle) method to be called.
@@ -62,6 +62,7 @@ import android.text.TextUtils;
  * unavailable or a route is selected by the user. <br>
  */
 public class Fling {
+
     /**
      * Max fling message length (in bytes) supported by channel.
      */
@@ -74,7 +75,7 @@ public class Fling {
 
     /**
      * extra app flags.
-     *
+     * 
      * A boolean extra for the connection hint bundle passed to
      * onConnected(Bundle) that indicates that the connection was
      * re-established, but the receiver application that was in use at the time
@@ -119,7 +120,7 @@ public class Fling {
 
     /**
      * FlingApi instance.
-     *
+     * 
      * The instance is used to interact with a fling device.
      */
     public static final FlingApi FlingApi = new FlingApi.FlingApiImpl();
@@ -128,24 +129,9 @@ public class Fling {
      * The entry point for interacting with a Fling device.
      */
     public interface FlingApi {
+        public abstract void setApplicationId(String id);
 
-        /**
-         * Create one application ID with app's url
-         * 
-         * @param appUrl
-         *            app url, whose schema will be like 'http://'.
-         * @return
-         */
-        public abstract String makeApplicationId(String appUrl);
-
-        /**
-         * Create one application ID with app's id and url
-         * 
-         * @param id
-         * @param msUrl
-         * @return
-         */
-        public abstract String makeApplicationId(String id, String msUrl);
+        public abstract String getApplicationId();
 
         /**
          * Request current receiver application's status
@@ -209,10 +195,10 @@ public class Fling {
 
         /**
          * Join to the current running receiver application.
-         *
+         * 
          * The previous PendingResult will be canceled with the
          * Fling.ApplicationConnectionResult's status code being CANCELED.
-         *
+         * 
          * @param manager
          *            fling manager with which to perform this request.
          * @param applicationId
@@ -228,10 +214,10 @@ public class Fling {
 
         /**
          * Join to the current running receiver application.
-         *
+         * 
          * The previous PendingResult will be canceled with the
          * Fling.ApplicationConnectionResult's status code being CANCELED.
-         *
+         * 
          * @param manager
          *            fling manager with which to perform this request.
          * @param applicationId
@@ -255,7 +241,7 @@ public class Fling {
 
         /**
          * Disconnect from receiver application
-         *
+         * 
          * If there is no currently active application session, this method does
          * nothing. If this method is called while stopApplication(FlingManager)
          * is pending, then this method does nothing. The Status's status code
@@ -271,11 +257,11 @@ public class Fling {
 
         /**
          * Stops any running receiver application(s)
-         *
+         * 
          * If this method is called while leaveApplication(FlingManager) is
          * pending, then this method does nothing. The Status's status code will
          * be INVALID_REQUEST.
-         *
+         * 
          * @param manager
          *            fling manager with which to perform this request.
          * @return stop's pending result which can be used to retrieve if the
@@ -287,12 +273,12 @@ public class Fling {
         /**
          * Stop aplicationStops the currently running receiver application,
          * optionally doing so only if its session ID matches the supplied one.
-         *
+         * 
          * If this method is called while leaveApplication(FlingManager) is
          * pending, then this method does nothing. The Status's status code will
          * be INVALID_REQUEST.
-         *
-         *
+         * 
+         * 
          * @param manager
          *            fling manager with which to perform this request.
          * @param sessionId
@@ -306,10 +292,10 @@ public class Fling {
 
         /**
          * Set device's volume
-         *
+         * 
          * If volume is outside of the range [0.0, 1.0], then the value will be
          * clipped.
-         *
+         * 
          * @param manager
          *            fling manager with which to perform this request.
          * @param volume
@@ -391,7 +377,7 @@ public class Fling {
         /**
          * Set callback function when received messages on the specific
          * namespace
-         *
+         * 
          * The new listener will replace an existing listener for a given
          * namespace. Messages received by the controller for the given
          * namespace will be forwarded to this listener. The caller must have
@@ -435,32 +421,14 @@ public class Fling {
          * Implementation of FlingApi interface
          */
         public static final class FlingApiImpl implements FlingApi {
-            public String makeApplicationId(String appUrl) {
-                try {
-                    String encode = URLEncoder.encode(appUrl, "UTF-8");
-                    StringBuffer sb = new StringBuffer();
-                    sb.append("app:?uri=");
-                    sb.append(encode);
-                    return sb.toString();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return appUrl;
+            private String applicationId;
+
+            public void setApplicationId(String id) {
+                applicationId = id;
             }
 
-            public String makeApplicationId(String id, String msUrl) {
-                try {
-                    String encode = URLEncoder.encode(msUrl, "UTF-8");
-                    StringBuffer sb = new StringBuffer();
-                    sb.append("app:?id=");
-                    sb.append(id);
-                    sb.append("&ms=");
-                    sb.append(encode);
-                    return sb.toString();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return id;
+            public String getApplicationId() {
+                return applicationId;
             }
 
             public void requestStatus(FlingManager manager) throws IOException,
@@ -601,11 +569,11 @@ public class Fling {
                 return manager.executeTask(new StatusResultHandler() {
                     protected void execute(FlingClientImpl client)
                             throws RemoteException {
-                        if (TextUtils.isEmpty(sessionId)) {
-                            notifyResult(FlingStatusCodes.INVALID_REQUEST,
-                                    "IllegalArgument: sessionId cannot be null or empty");
-                            return;
-                        }
+//                        if (TextUtils.isEmpty(sessionId)) {
+//                            notifyResult(FlingStatusCodes.INVALID_REQUEST,
+//                                    "IllegalArgument: sessionId cannot be null or empty");
+//                            return;
+//                        }
                         try {
                             client.stopApplication(sessionId, this);
                         } catch (IllegalStateException e) {
@@ -737,7 +705,7 @@ public class Fling {
 
     /**
      * Pending result handler
-     *
+     * 
      * @param <R>
      *            result
      */
@@ -782,7 +750,7 @@ public class Fling {
      * <p>
      * The Fling.FlingOptions.Builder is used to create an instance of
      * Fling.FlingOptions.
-     *
+     * 
      */
     public static final class FlingOptions implements FlingManager.ApiOptions {
         /**
@@ -857,7 +825,7 @@ public class Fling {
 
             /**
              * Enables or disables verbose logging for this Fling session.
-             *
+             * 
              * Debug only
              * 
              * @param enabled
@@ -884,7 +852,7 @@ public class Fling {
 
     /**
      * Interface to display current application connection status.
-     *
+     * 
      * <br>
      * When a Fling application connected to a remote receiver, this object will
      * be returned. And it contains this fling application's meta data and

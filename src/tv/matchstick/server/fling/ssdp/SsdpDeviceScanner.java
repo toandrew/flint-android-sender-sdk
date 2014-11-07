@@ -51,12 +51,15 @@ public class SsdpDeviceScanner extends DeviceScanner {
     private final static int NUM_OF_THREADS = 20;
     private final static int RESCAN_INTERVAL = 10000;
     private SSDPSocket mSSDPSocket;
+    private SSDPSearchMsg mSearchMsg;
     private Thread mResponseThread;
     private Thread mNotifyThread;
     private Pattern uuidReg;
     private List<String> mDiscoveredDeviceList = new ArrayList<String>();
     private ConcurrentHashMap<String, String> mFoundDeviceMap = new ConcurrentHashMap<String, String>();
-    private Timer mDataTimer;
+    private Timer mCheckOfflineTimer;
+    private Timer mSendSearchTimer;
+    private boolean mStarting = false;
 
     private Executor mExecutor = Executors.newFixedThreadPool(NUM_OF_THREADS,
             new ThreadFactory() {
@@ -111,11 +114,14 @@ public class SsdpDeviceScanner extends DeviceScanner {
     }
 
     public void start() {
+        if (mStarting)
+            return;
         stop();
+        mStarting = true;
         openSocket();
-
-        mDataTimer = new Timer();
-        mDataTimer.schedule(new TimerTask() {
+        mSearchMsg = new SSDPSearchMsg();
+        mCheckOfflineTimer = new Timer();
+        mCheckOfflineTimer.schedule(new TimerTask() {
 
             @Override
             public void run() {
@@ -126,7 +132,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                         String key = (String) iterator.next();
                         ScannerPrivData value = mScannerData.get(key);
                         if (value.mElapsedRealtime < SystemClock
-                                .elapsedRealtime() - 8000) {
+                                .elapsedRealtime() - RESCAN_INTERVAL) {
                             removeList.add(key);
                         }
                     }
@@ -136,6 +142,22 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 }
             }
         }, 100, RESCAN_INTERVAL);
+        
+        mSendSearchTimer = new Timer();
+        mSendSearchTimer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                if (mSSDPSocket != null) {
+                    try {
+                        android.util.Log.d(TAG, "send msg");
+                        mSSDPSocket.send(mSearchMsg.toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, 100, 5000);
 
         mResponseThread = new Thread(mResponseHandler);
         mNotifyThread = new Thread(mRespNotifyHandler);
@@ -145,18 +167,19 @@ public class SsdpDeviceScanner extends DeviceScanner {
     }
 
     public void stop() {
-        if (mDataTimer != null) {
-            mDataTimer.cancel();
+        mStarting = false;
+        if (mCheckOfflineTimer != null) {
+            mCheckOfflineTimer.cancel();
         }
-
+        if (mSendSearchTimer != null) {
+            mSendSearchTimer.cancel();
+        }
         if (mResponseThread != null) {
             mResponseThread.interrupt();
         }
-
         if (mNotifyThread != null) {
             mNotifyThread.interrupt();
         }
-
         if (mSSDPSocket != null) {
             mSSDPSocket.close();
             mSSDPSocket = null;
@@ -194,6 +217,11 @@ public class SsdpDeviceScanner extends DeviceScanner {
     };
 
     private void handleDatagramPacket(final ParsedDatagram pd) {
+        String serviceFilter = pd.data
+                .get(pd.type.equals(SSDP.SL_NOTIFY) ? SSDP.NT : SSDP.ST);
+        if (!"urn:dial-multiscreen-org:service:dial:1".equals(serviceFilter))
+            return;
+
         String usnKey = pd.data.get(SSDP.USN);
         if (usnKey == null || usnKey.length() == 0)
             return;
@@ -214,17 +242,21 @@ public class SsdpDeviceScanner extends DeviceScanner {
 
             if (location == null || location.length() == 0)
                 return;
+            android.util.Log.d(TAG, "location = " + location);
             if (!mDiscoveredDeviceList.contains(uuid)
                     && mFoundDeviceMap.get(uuid) == null) {
                 mDiscoveredDeviceList.add(uuid);
-                android.util.Log.d(TAG, "location = " + location);
+                android.util.Log.d(TAG, "getLocationData");
                 getLocationData(location, uuid);
             } else {
+                android.util.Log.d(TAG, "update");
                 String deviceId = mFoundDeviceMap.get(uuid);
                 if (deviceId != null) {
                     synchronized (mScannerData) {
-                        mScannerData.get(deviceId).mElapsedRealtime = SystemClock
-                                .elapsedRealtime();
+                        if (mScannerData.get(deviceId) != null) {
+                            mScannerData.get(deviceId).mElapsedRealtime = SystemClock
+                                    .elapsedRealtime();
+                        }
                     }
                 }
             }
@@ -235,6 +267,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                boolean success = false;
                 final LocationDevice device = new LocationDevice();
 
                 DefaultHandler dh = new DefaultHandler() {
@@ -307,6 +340,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                         parser = factory.newSAXParser();
                         parser.parse(new ByteArrayInputStream(xml.getBytes()),
                                 dh);
+                        success = true;
                     } finally {
                         in.close();
                     }
@@ -319,14 +353,19 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                onResult(uuid, device);
+                if (success) {
+                    onResult(uuid, device);
+                } else {
+                    mDiscoveredDeviceList.remove(uuid);
+                }
             }
         });
     }
 
     private void onResult(String uuid, LocationDevice device) {
         try {
+            if (!"MatchStick".equals(device.manufacturer))
+                return;
             String deviceId = device.friendlyName;
             ScannerPrivData data = null;
             final FlingDevice flingDevice;
@@ -337,13 +376,11 @@ public class SsdpDeviceScanner extends DeviceScanner {
                         mDiscoveredDeviceList.remove(uuid);
                         return;
                     }
-
                     int position = device.url.lastIndexOf(":");
                     String ip = device.url.substring("http://".length(),
                             position);
                     String port = device.url.substring(position + 1,
                             device.url.length());
-
                     Inet4Address address = (Inet4Address) InetAddress
                             .getByName(ip);
                     ArrayList<WebImage> iconList = new ArrayList<WebImage>();
@@ -365,7 +402,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     FlingDevice.setServicePort(flingDevice,
                             Integer.valueOf(port));
                     FlingDevice.setIconList(flingDevice, iconList);
-
+                    FlingDevice.setFoundSource(flingDevice,
+                            FlingDevice.FOUND_SOURCE_SSDP);
                     data = (ScannerPrivData) mScannerData.get(deviceId);
                     if (data != null) {
                         if (flingDevice.equals(data.mFlingDevice)) {
@@ -379,7 +417,6 @@ public class SsdpDeviceScanner extends DeviceScanner {
                             mScannerData.remove(deviceId);
                         }
                     }
-
                     mScannerData.put((String) deviceId, new ScannerPrivData(
                             flingDevice, 10L, uuid));
                     mFoundDeviceMap.put(uuid, deviceId);
@@ -404,6 +441,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 });
             }
         } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
             e.printStackTrace();
         }
     }

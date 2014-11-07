@@ -49,7 +49,8 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-public final class FlingDeviceController implements FlingSocketListener {
+public final class FlingDeviceController implements FlingSocketListener,
+        IController {
     private static AtomicLong ID = new AtomicLong(0L);
 
     private final Runnable mHeartbeatRunnable = new Runnable() {
@@ -515,10 +516,8 @@ public final class FlingDeviceController implements FlingSocketListener {
         FlingDeviceService.onSocketConnected(mContext, this);
     }
 
-    public final void setVolume(double volume, double expected_level,
-            boolean flag) {
-        FlingDeviceService.setVolume(mContext, this, volume, expected_level,
-                flag);
+    public final void setVolume(double volume, boolean mute) {
+        FlingDeviceService.setVolume(mContext, this, volume, mute);
     }
 
     @Override
@@ -653,10 +652,6 @@ public final class FlingDeviceController implements FlingSocketListener {
         FlingDeviceService.procReceivedMessage(mContext, this, message);
     }
 
-    public final void setMute(boolean mute, double level, boolean isMuted) {
-        FlingDeviceService.setMute(mContext, this, mute, level, isMuted);
-    }
-
     public final void connectDevice() {
         if (mReconnectStrategy.wasReconnecting()) {
             log.d("already reconnecting; ignoring");
@@ -667,14 +662,13 @@ public final class FlingDeviceController implements FlingSocketListener {
         FlingDeviceService.connectFlingDevice(mContext, this);
     }
 
-    public final void setVolumeInternal(double level, double expected_level,
-            boolean muted) {
-        try {
-            mReceiverControlChannel.setVolume(level, expected_level, muted);
-            return;
-        } catch (Exception e) {
-            log.w(e, "Error while setting volume");
-        }
+    public final void setVolumeInternal(double level, boolean mute) {
+//        try {
+//            mReceiverControlChannel.setVolume(level, mute, muted);
+//            return;
+//        } catch (Exception e) {
+//            log.w(e, "Error while setting volume");
+//        }
 
         onSocketError(FlingStatusCodes.NETWORK_ERROR);
     }
@@ -1100,5 +1094,17 @@ public final class FlingDeviceController implements FlingSocketListener {
                 mStartConnectTime = SystemClock.elapsedRealtime();
             }
         }
+    }
+
+    @Override
+    public void onMessageReceived(String message) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onReceivedMessage(String message) {
+        // TODO Auto-generated method stub
+        
     }
 }

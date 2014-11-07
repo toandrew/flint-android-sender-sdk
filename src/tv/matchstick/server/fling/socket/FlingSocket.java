@@ -561,5 +561,4 @@ public final class FlingSocket {
             return byte0;
         }
     }
-
 }

@@ -33,9 +33,7 @@ interface IFlingDeviceController
 
 	void requestStatus();
 
-	void setVolume(double volume, double originalVolume, boolean isMute);
-
-	void setMute(boolean mute, double volume, boolean isMute);
+	void setVolume(double volume, boolean isMute);
 
 	void sendMessage(String namespace, String message, long requestId);
 

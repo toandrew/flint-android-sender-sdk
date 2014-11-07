@@ -409,6 +409,12 @@ abstract class DeviceFilter {
                 }
             }
         }
+
+        @Override
+        public void onMessageReceived(String message) {
+            // TODO Auto-generated method stub
+            
+        }
     }
 
 }
