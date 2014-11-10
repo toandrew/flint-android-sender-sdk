@@ -126,7 +126,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     @Override
     protected void stopScanInternal() {
         // TODO Auto-generated method stub
-        
+
         synchronized (mMdnsClientList) {
             if (!mMdnsClientList.isEmpty()) {
                 Iterator<MdnsClient> it = mMdnsClientList.iterator();
@@ -156,7 +156,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
         mScannerLoopThread = null;
     }
-
     @Override
     public void onAllDevicesOffline() {
         // TODO Auto-generated method stub
@@ -164,7 +163,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             if (!mMdnsClientList.isEmpty()) {
                 mMdnsClientList.clear();
 
-            }
                 final List<IDeviceScanListener> listeners = super
                         .getDeviceScannerListenerList();
 
@@ -185,8 +183,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                     });
                 }
             }
+        }
     }
-
     void onResults(FlingDeviceInfo info) {
         // print found device info
         if (log.isDebugEnabled()) {
@@ -296,7 +294,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 FlingDevice.setDeviceVersion(device, (String) deviceVersion);
                 FlingDevice.setServicePort(device, info.mPort);
                 FlingDevice.setIconList(device, iconList);
-                FlingDevice.setFoundSource(device, FlingDevice.FOUND_SOURCE_MDNS);
+                FlingDevice.setFoundSource(device,
+                        FlingDevice.FOUND_SOURCE_MDNS);
                 scannerDeviceData = (ScannerDeviceData) mFoundDevices
                         .get(deviceId);
                 if (scannerDeviceData != null) {

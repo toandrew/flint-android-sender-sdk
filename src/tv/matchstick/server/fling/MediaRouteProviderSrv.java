@@ -394,30 +394,28 @@ public abstract class MediaRouteProviderSrv extends IntentService {
         int size = mFlingDeathRecipientList.size();
         int i = 0;
         boolean flag = false;
-        DiscoveryRequest tempRequest = null;
+        DiscoveryRequest request = null;
 
         Bundle bundle;
         MediaRouteSelector anotherSelector;
         MediaRouteSelector selector;
-        android.util.Log.d("QQQQQQQQQQQQ", "size = " + size);
         while (i < size) {
             DiscoveryRequest discoveryRequest = ((FlingDeathRecipient) mFlingDeathRecipientList
                     .get(i)).mDiscoveryRequest;
-            android.util.Log.d("QQQQQQQQQQQQ", "discoveryRequest = " + discoveryRequest);
             boolean f;
             CategoriesData category;
+            DiscoveryRequest reqeust;
             if (discoveryRequest != null
                     && (!discoveryRequest.getSelector().isEmpty() || discoveryRequest
                             .isActiveScan())) {
-                f = flag || discoveryRequest.isActiveScan();
-                android.util.Log.d("QQQQQQQQQQQ", "t = " + tempRequest);
-                if (tempRequest == null) {
+                f = flag | discoveryRequest.isActiveScan();
+                if (request == null) {
                     category = (CategoriesData) obj;
-                    tempRequest = discoveryRequest;
+                    reqeust = discoveryRequest;
                 } else {
 
                     if (obj == null)
-                        category = new CategoriesData(tempRequest.getSelector());
+                        category = new CategoriesData(request.getSelector());
                     else
                         category = (CategoriesData) obj;
                     selector = discoveryRequest.getSelector();
@@ -427,17 +425,18 @@ public abstract class MediaRouteProviderSrv extends IntentService {
                     }
 
                     category.addCategoryList(selector.getControlCategories());
+                    reqeust = request;
                 }
             } else {
                 f = flag;
                 category = (CategoriesData) obj;
+                reqeust = request;
             }
             i++;
-            android.util.Log.d("QQQQQQQQQQ", "222222222222");
+            request = reqeust;
             obj = category;
             flag = f;
         }
-        android.util.Log.d("QQQQQQQQQQ", "obj = " + obj);
         if (obj != null) {
             if (((CategoriesData) (obj)).mControlCategories == null) {
                 anotherSelector = MediaRouteSelector.EMPTY;
@@ -448,28 +447,24 @@ public abstract class MediaRouteProviderSrv extends IntentService {
                 anotherSelector = new MediaRouteSelector(bundle,
                         ((CategoriesData) (obj)).mControlCategories);
             }
-            android.util.Log.d("QQQQQQQQQQ", "111111111111");
-            tempRequest = new DiscoveryRequest(anotherSelector, flag);
+            request = new DiscoveryRequest(anotherSelector, flag);
         }
-        android.util.Log.d("QQQQQQQQQ", "mDiscoveryRequest = " + mDiscoveryRequest);
-        android.util.Log.d("QQQQQQQQQ", "request = " + tempRequest);
-
-        if (mDiscoveryRequest == tempRequest || (mDiscoveryRequest != null
-                && mDiscoveryRequest.equals(tempRequest))) {
+        if (mDiscoveryRequest == request || mDiscoveryRequest != null
+                && mDiscoveryRequest.equals(request)) {
             return false;
         }
 
-        mDiscoveryRequest = tempRequest;
+        mDiscoveryRequest = request;
 
         MainThreadChecker.isOnAppMainThread();
 
-        if (mMediaRouteProvider.mDiscoveryRequest != tempRequest
+        if (mMediaRouteProvider.mDiscoveryRequest != request
                 && (mMediaRouteProvider.mDiscoveryRequest == null || !mMediaRouteProvider.mDiscoveryRequest
-                        .equals(tempRequest))) {
-            mMediaRouteProvider.mDiscoveryRequest = tempRequest;
+                        .equals(request))) {
+            mMediaRouteProvider.mDiscoveryRequest = request;
             if (!mMediaRouteProvider.mPendingDiscoveryRequestChange) {
                 mMediaRouteProvider.mPendingDiscoveryRequestChange = true;
-                mMediaRouteProvider.mHandler.sendEmptyMessage(MediaRouteProvider.MSG_DELIVER_DISCOVERY_REQUEST_CHANGED); // device
+                mMediaRouteProvider.mHandler.sendEmptyMessage(2); // device
                                                                   // discovery
                                                                   // request
             }
@@ -637,8 +632,6 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 
         public final boolean setDiscoveryRequestInternal(
                 DiscoveryRequest request) {
-            android.util.Log.d("uuuuuuuuuuuuuu", "mDiscoveryRequest = " + mDiscoveryRequest);
-            android.util.Log.d("uuuuuuuuuuuuuu", "request = " + request);
             if (mDiscoveryRequest != request
                     && (mDiscoveryRequest == null || !mDiscoveryRequest
                             .equals(request))) {

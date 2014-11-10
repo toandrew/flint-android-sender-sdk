@@ -48,10 +48,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     private final DeviceScanner mMdnsDeviceScanner;
     private final DeviceScanner mSsdpDeviceScanner;
-    
-    public Map<String, FlingDeviceControllerHelper> getFlingDeviceControllerMap() {
-        return mFlingDeviceControllerMap;
-    }
 
     private final IDeviceScanListener mDeviceScannerListener = new IDeviceScanListener() {
 
@@ -117,6 +113,10 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
     };
 
+    public Map<String, FlingDeviceControllerHelper> getFlingDeviceControllerMap() {
+        return mFlingDeviceControllerMap;
+    }
+
     private final Map<String, DiscoveryCriteriaHelper> mDiscoveryCriteriaMap = new HashMap<String, DiscoveryCriteriaHelper>();
     private final Map<String, FlingDeviceControllerHelper> mFlingDeviceControllerMap = new HashMap<String, FlingDeviceControllerHelper>();
     private boolean s;
@@ -148,11 +148,13 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             @Override
             protected void setDeviceOffline(FlingDevice flingdevice) {
                 // TODO Auto-generated method stub
-                android.util.Log.d("XXXXXXXXXX", "flingdevice = " + flingdevice);
-                if (flingdevice.getFoundSource().equals(FlingDevice.FOUND_SOURCE_MDNS))
-                    mMdnsDeviceScanner.setDeviceOffline(flingdevice.getDeviceId());
+                if (flingdevice.getFoundSource().equals(
+                        FlingDevice.FOUND_SOURCE_MDNS))
+                    mMdnsDeviceScanner.setDeviceOffline(flingdevice
+                            .getDeviceId());
                 else
-                    mSsdpDeviceScanner.setDeviceOffline(flingdevice.getDeviceId());
+                    mSsdpDeviceScanner.setDeviceOffline(flingdevice
+                            .getDeviceId());
             }
 
             @Override
@@ -379,7 +381,8 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                 log.d("disposing FlingDeviceController for %s", flingdevice);
 
                 if (helper.isOffline) {
-                    if (flingdevice.getFoundSource().equals(FlingDevice.FOUND_SOURCE_MDNS))
+                    if (flingdevice.getFoundSource().equals(
+                            FlingDevice.FOUND_SOURCE_MDNS))
                         mMdnsDeviceScanner.setDeviceOffline(id);
                     else
                         mSsdpDeviceScanner.setDeviceOffline(id);
@@ -400,16 +403,13 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
     }
 
     private void onDiscoveryRequestChanged() {
-        android.util.Log.d("AAAAAAAAAAAA", "onDiscoveryRequestChanged");
         boolean isStartScan, flag1, flag2;
         HashSet<DiscoveryCriteria> hashset = new HashSet<DiscoveryCriteria>(
                 mDiscoveryCriterias);
-        android.util.Log.d("AAAAAAAAAAAA", "hashset = " + hashset);
         DiscoveryRequest request;
         isStartScan = true;
         mDiscoveryCriterias.clear();
         request = super.mDiscoveryRequest;
-        android.util.Log.d("AAAAAAAAAAAA", "request = " + request);
         if (request == null) {
             flag1 = false;
         } else {
@@ -420,10 +420,8 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             size = list.size();
             index = 0;
             flag1 = false;
-            android.util.Log.d("AAAAAAAAAAAA", "size = " + size);
             while (index < size) {
                 String category = (String) list.get(index);
-                android.util.Log.d("AAAAAAAAAAAA", "category = " + category);
                 if (!category
                         .equals("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK")
                         && !category
@@ -432,7 +430,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                                 .equals("tv.matchstick.fling.CATEGORY_FLING")
                         && !category
                                 .startsWith("tv.matchstick.fling.CATEGORY_FLING/")) {
-                    android.util.Log.d("AAAAAAAAAAAA", "flag1 = " + flag1);
                     flag2 = flag1;
                 } else {
                     try {
@@ -442,9 +439,7 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
                     } catch (IllegalArgumentException e) {
                         e.printStackTrace();
                     } finally {
-                        
                         flag2 = isStartScan;
-                        android.util.Log.d("AAAAAAAAAAAA", "flag2 = " + flag2);
                     }
                 }
 
@@ -454,15 +449,11 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         }
         if (!s) {
             isStartScan = flag1;
-            android.util.Log.d("AAAAAAAAAAAA", "isStartScan = " + isStartScan);
         }
 
-        android.util.Log.d("AAAAAAAAAAAA", "mDiscoveryCriterias = " + mDiscoveryCriterias);
         if (hashset.equals(mDiscoveryCriterias)) {
-            android.util.Log.d("AAAAAAAAAAAA", "1111111111111");
             isStartScan = false;
         } else {
-            android.util.Log.d("AAAAAAAAAAAA", "2222222222222");
             mFlingDeviceFilter.reset(mDiscoveryCriterias);
         }
 
