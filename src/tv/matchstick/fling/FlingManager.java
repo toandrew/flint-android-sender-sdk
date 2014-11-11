@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import tv.matchstick.client.common.IFlingClient;
 import tv.matchstick.client.common.api.FlingManagerImpl;
-import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.internal.Api;
 import tv.matchstick.fling.internal.MatchStickApi.MatchStickApiImpl;
@@ -32,7 +31,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
 
 /**
  * Fling Manager interface.
@@ -209,12 +207,12 @@ public interface FlingManager {
         /**
          * Gravity for popup windows
          */
-        private int mGravityForPopups;
+        // private int mGravityForPopups;
 
         /**
          * Used view
          */
-        private View mView;
+        // private View mView;
 
         /**
          * Package name
@@ -224,7 +222,7 @@ public interface FlingManager {
         /**
          * Account name
          */
-        private String mAccountName;
+        // private String mAccountName;
 
         /**
          * Builder Constructor
@@ -312,17 +310,6 @@ public interface FlingManager {
         }
 
         /**
-         * Set popup view.
-         *
-         * @param viewForPopups
-         * @return
-         */
-        public Builder setViewForPopups(View viewForPopups) {
-            mView = viewForPopups;
-            return this;
-        }
-
-        /**
          * Add Api.
          *
          * @param api
@@ -345,54 +332,13 @@ public interface FlingManager {
         }
 
         /**
-         * Set account name.
-         *
-         * @param accountName
-         * @return
-         */
-        public Builder setAccountName(String accountName) {
-            this.mAccountName = accountName;
-            return this;
-        }
-
-        /**
-         * Use default account
-         *
-         * @return one Builder object
-         */
-        public Builder useDefaultAccount() {
-            return setAccountName("<<default account>>");
-        }
-
-        /**
-         * Set gravity
-         *
-         * @param gravityForPopups
-         * @return
-         */
-        public Builder setGravityForPopups(int gravityForPopups) {
-            mGravityForPopups = gravityForPopups;
-            return this;
-        }
-
-        /**
-         * Create account info according to current data
-         *
-         * @return
-         */
-        public AccountInfo getAccount() {
-            return new AccountInfo(mAccountName, mScopeUriSet,
-                    mGravityForPopups, mView, mPackageName);
-        }
-
-        /**
          * Create FlingManager object according to current data
          * 
          * @return
          */
         public FlingManager build() {
-            return new FlingManagerImpl(mContext, mLooper, getAccount(),
-                    mApiOptionMap, mCallbacksSet, mFailedListenerSet);
+            return new FlingManagerImpl(mContext, mLooper, mApiOptionMap,
+                    mCallbacksSet, mFailedListenerSet);
         }
     }
 

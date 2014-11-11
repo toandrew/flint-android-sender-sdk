@@ -28,7 +28,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.client.internal.FlingClientEvents;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.ConnectionResult;
@@ -162,13 +161,11 @@ public final class FlingManagerImpl implements FlingManager {
      *
      * @param context
      * @param looper
-     * @param account
      * @param apiOptionsMap
      * @param connCallbacksSet
      * @param connFailedListenerSet
      */
-    public FlingManagerImpl(Context context, Looper looper,
-            AccountInfo account, Map<Api, ApiOptions> apiOptionsMap,
+    public FlingManagerImpl(Context context, Looper looper, Map<Api, ApiOptions> apiOptionsMap,
             Set<ConnectionCallbacks> connCallbacksSet,
             Set<OnConnectionFailedListener> connFailedListenerSet) {
         mFlingClientEvents = new FlingClientEvents(context, looper,
@@ -193,7 +190,7 @@ public final class FlingManagerImpl implements FlingManager {
             Api api = apis.next();
             final Api.ConnectionBuilder<?> builder = api.getConnectionBuilder();
             ApiOptions apiOption = apiOptionsMap.get(api);
-            mConnectionMap.put(builder, builder.build(context, looper, account,
+            mConnectionMap.put(builder, builder.build(context, looper,
                     apiOption, mConnectionCallbacks,
                     /**
                      * Connection failed listener

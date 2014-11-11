@@ -41,11 +41,6 @@ public class FlingMediaControlIntent {
     public static final String CATEGORY_REMOTE_PLAYBACK = "tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK";
 
     /**
-     * Default media player receiver application id
-     */
-    public static final String DEFAULT_MEDIA_RECEIVER_APPLICATION_ID = "CC1AD845";
-
-    /**
      * Sync status action.
      *
      * A Fling extension action for requesting the current media status when the

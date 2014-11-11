@@ -16,7 +16,6 @@
 
 package tv.matchstick.fling.internal;
 
-import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.FlingManager.ApiOptions;
 import android.content.Context;
@@ -90,8 +89,6 @@ public final class Api {
          *            application context
          * @param looper
          *            looper
-         * @param account
-         *            account information
          * @param options
          *            Api options
          * @param callbacks
@@ -100,7 +97,7 @@ public final class Api {
          *            failed listener
          * @return the specific class instance
          */
-        public T build(Context context, Looper looper, AccountInfo account,
+        public T build(Context context, Looper looper,
                 ApiOptions options, FlingManager.ConnectionCallbacks callbacks,
                 FlingManager.OnConnectionFailedListener failedListener);
 

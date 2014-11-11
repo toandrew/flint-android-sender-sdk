@@ -18,7 +18,6 @@ package tv.matchstick.fling;
 
 import java.io.IOException;
 
-import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.client.internal.FlingClientImpl;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.FlingManager.ApiOptions;
@@ -94,8 +93,7 @@ public class Fling {
          * connect(),disconnect(), etc.
          */
         @Override
-        public FlingClientImpl build(Context context, Looper looper,
-                AccountInfo account, ApiOptions options,
+        public FlingClientImpl build(Context context, Looper looper, ApiOptions options,
                 ConnectionCallbacks callbacks,
                 OnConnectionFailedListener failedListener) {
             ValueChecker.checkNullPointer(options,
@@ -580,11 +578,6 @@ public class Fling {
                 return manager.executeTask(new StatusResultHandler() {
                     protected void execute(FlingClientImpl client)
                             throws RemoteException {
-//                        if (TextUtils.isEmpty(sessionId)) {
-//                            notifyResult(FlingStatusCodes.INVALID_REQUEST,
-//                                    "IllegalArgument: sessionId cannot be null or empty");
-//                            return;
-//                        }
                         try {
                             client.stopApplication(sessionId, this);
                         } catch (IllegalStateException e) {
