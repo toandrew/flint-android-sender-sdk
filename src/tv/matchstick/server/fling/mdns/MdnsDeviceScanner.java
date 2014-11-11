@@ -162,9 +162,9 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     @Override
     public void onAllDevicesOffline() {
         // TODO Auto-generated method stub
-        synchronized (mMdnsClientList) {
-            if (!mMdnsClientList.isEmpty()) {
-                mMdnsClientList.clear();
+        synchronized (mFoundDevices) {
+            if (!mFoundDevices.isEmpty()) {
+                mFoundDevices.clear();
 
                 final List<IDeviceScanListener> listeners = super
                         .getDeviceScannerListenerList();
@@ -301,6 +301,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                         FlingDevice.FOUND_SOURCE_MDNS);
                 scannerDeviceData = (ScannerDeviceData) mFoundDevices
                         .get(deviceId);
+
                 if (scannerDeviceData != null) {
                     if (device.equals(scannerDeviceData.mFlingDevice)) {
                         if (!scannerDeviceData.mIsOffline) {
