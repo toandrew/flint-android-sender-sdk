@@ -17,8 +17,6 @@
 package tv.matchstick.fling;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 import tv.matchstick.client.internal.AccountInfo;
 import tv.matchstick.client.internal.FlingClientImpl;
@@ -31,7 +29,6 @@ import tv.matchstick.fling.internal.MatchStickApi.MatchStickApiImpl;
 import android.content.Context;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.text.TextUtils;
 
 /**
  * Which will be used by fling application to do all fling actions.
@@ -129,8 +126,24 @@ public class Fling {
      * The entry point for interacting with a Fling device.
      */
     public interface FlingApi {
+        /**
+         * Set Application's ID
+         * 
+         * The Id can be one of them: 
+         * <br>
+         * Start with "~" : which means this application will use some Fling internal specific features. 
+         * <br>
+         * Not start with "~" : Standard DIAL application ID.
+         * 
+         * @param id Application ID
+         */
         public abstract void setApplicationId(String id);
 
+        /**
+         * Get Application's ID
+         * 
+         * @return application id
+         */
         public abstract String getApplicationId();
 
         /**
@@ -152,8 +165,7 @@ public class Fling {
          * @param manager
          *            fling manager with which to perform this request.
          * @param namespace
-         *            the dest namespace. Namespace must begin with the prefix
-         *            " urn:x-cast:".
+         *            the dest namespace.
          * @param message
          *            message which will be sent
          * @return pending result which can be used to see whether the message
@@ -167,21 +179,21 @@ public class Fling {
          * 
          * @param manager
          *            fling manager with which to perform this request.
-         * @param applicationId
-         *            The ID of the receiver application to launch.
+         * @param url
+         *            The url of the receiver application to launch.
          * @return pending result which can be used to retrieve connection
          *         information.
          */
         public abstract PendingResult<ApplicationConnectionResult> launchApplication(
-                FlingManager manager, String applicationId);
+                FlingManager manager, String url);
 
         /**
          * Launch a receiver application
          * 
          * @param manager
          *            fling manager with which to perform this request.
-         * @param applicationId
-         *            application Id The ID of the receiver application to
+         * @param url
+         *            the url of the receiver application to
          *            launch.
          * @param relaunchIfRunning
          *            If true, relaunch the application if it is already
@@ -190,7 +202,7 @@ public class Fling {
          *         connection information.
          */
         public abstract PendingResult<ApplicationConnectionResult> launchApplication(
-                FlingManager manager, String applicationId,
+                FlingManager manager, String url,
                 boolean relaunchIfRunning);
 
         /**
@@ -201,8 +213,8 @@ public class Fling {
          * 
          * @param manager
          *            fling manager with which to perform this request.
-         * @param applicationId
-         *            application Id of the receiver application to join.
+         * @param url
+         *            the url of the receiver application to join.
          * @param sessionId
          *            The expected session ID of the receiver application, or
          *            null to connect without checking for a matching session ID
@@ -210,7 +222,7 @@ public class Fling {
          *         connection information.
          */
         public abstract PendingResult<ApplicationConnectionResult> joinApplication(
-                FlingManager manager, String applicationId, String sessionId);
+                FlingManager manager, String url, String sessionId);
 
         /**
          * Join to the current running receiver application.
@@ -220,13 +232,13 @@ public class Fling {
          * 
          * @param manager
          *            fling manager with which to perform this request.
-         * @param applicationId
-         *            application Id of the receiver application to join.
+         * @param url
+         *            the url of the receiver application to join.
          * @return join's pending result which can be used to retrieve
          *         connection information.
          */
         public abstract PendingResult<ApplicationConnectionResult> joinApplication(
-                FlingManager manager, String applicationId);
+                FlingManager manager, String url);
 
         /**
          * Join to the current running receiver application.
@@ -271,7 +283,7 @@ public class Fling {
                 FlingManager manager);
 
         /**
-         * Stop aplicationStops the currently running receiver application,
+         * Stops the currently running receiver application,
          * optionally doing so only if its session ID matches the supplied one.
          * 
          * If this method is called while leaveApplication(FlingManager) is
@@ -386,8 +398,7 @@ public class Fling {
          * @param manager
          *            fling manager with which to perform this request.
          * @param namespace
-         *            used namespace of the Fling channel. Namespaces must begin
-         *            with the prefix "urn:x-cast:".
+         *            used namespace of the Fling channel.
          * @param callback
          *            callback function
          * @throws IOException
@@ -436,7 +447,7 @@ public class Fling {
                 try {
                     manager.getConnectionApi(Fling.mConnectionBuilder)
                             .requestStatus();
-                } catch (RemoteException localRemoteException) {
+                } catch (RemoteException e) {
                     throw new IOException("service error");
                 }
             }
@@ -458,13 +469,13 @@ public class Fling {
             }
 
             public PendingResult<ApplicationConnectionResult> launchApplication(
-                    FlingManager manager, final String applicationId) {
+                    FlingManager manager, final String url) {
                 return manager
                         .executeTask(new ApplicationConnectionResultHandler() {
                             protected void execute(FlingClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.launchApplication(applicationId,
+                                    client.launchApplication(url,
                                             false, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -474,14 +485,14 @@ public class Fling {
             }
 
             public PendingResult<ApplicationConnectionResult> launchApplication(
-                    FlingManager manager, final String applicationId,
+                    FlingManager manager, final String url,
                     final boolean relaunchIfRunning) {
                 return manager
                         .executeTask(new ApplicationConnectionResultHandler() {
                             protected void execute(FlingClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.launchApplication(applicationId,
+                                    client.launchApplication(url,
                                             relaunchIfRunning, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -491,14 +502,14 @@ public class Fling {
             }
 
             public PendingResult<ApplicationConnectionResult> joinApplication(
-                    FlingManager manager, final String applicationId,
+                    FlingManager manager, final String url,
                     final String sessionId) {
                 return manager
                         .executeTask(new ApplicationConnectionResultHandler() {
                             protected void execute(FlingClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.joinApplication(applicationId,
+                                    client.joinApplication(url,
                                             sessionId, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -508,13 +519,13 @@ public class Fling {
             }
 
             public PendingResult<ApplicationConnectionResult> joinApplication(
-                    FlingManager manager, final String applicationId) {
+                    FlingManager manager, final String url) {
                 return manager
                         .executeTask(new ApplicationConnectionResultHandler() {
                             protected void execute(FlingClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.joinApplication(applicationId, null,
+                                    client.joinApplication(url, null,
                                             this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);

@@ -164,6 +164,9 @@ public class FlingDevice implements SafeParcelable {
      */
     private List<WebImage> mIconList;
     
+    /**
+     * device found source
+     */
     private String mFoundSource;
 
     private FlingDevice() {

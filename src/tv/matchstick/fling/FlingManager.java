@@ -41,7 +41,7 @@ import android.view.View;
  * the connect() method. The device is not considered connected until the
  * onConnected(Bundle) callback has been called. When your app is done using
  * this connection, call disconnect(), even if the async result from connect()
- * has not yet been delivered. You should instantiate a client object in your
+ * has not yet been delivered. You should instantiate a manager object in your
  * Activity's onCreate(Bundle) method and then call connect() in onStart() and
  * disconnect() in onStop(), regardless of the state.
  */
