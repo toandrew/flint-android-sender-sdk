@@ -25,11 +25,11 @@ interface IFlingDeviceController
 	void launchApplication(String applicationId,
 			boolean relaunchIfRunning);
 
-	void joinApplication(String applicationId, String sessionId);
+	void joinApplication(String applicationId);
 
 	void leaveApplication();
 
-	void stopApplication(String sessionId);
+	void stopApplication();
 
 	void requestStatus();
 

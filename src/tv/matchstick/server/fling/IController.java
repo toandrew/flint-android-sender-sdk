@@ -6,11 +6,11 @@ public interface IController {
     void connectToDeviceInternal();
     void setVolumeInternal(double level, boolean mute);
     void onSocketConnectionFailedInternal(int socketError);
-    void stopApplicationInternal(String sessionId);
-    void joinApplicationInternal(String applicationId, String sessionId);
+    void stopApplicationInternal();
+    void joinApplicationInternal(String url);
     void sendTextMessage(String namespace, String message, long id,
             String transportId);
-    void launchApplicationInternal(String applicationId, String param,
+    void launchApplicationInternal(String applicationId,
             boolean relaunch);
     void onReceivedMessage(ByteBuffer message);
     void onReceivedMessage(String message);
@@ -25,13 +25,13 @@ public interface IController {
     boolean isDisposed();
     boolean isConnected();
     boolean isConnecting();
-    void reconnectToDevice(String lastAppId, String sessionId);
+    void reconnectToDevice(String lastAppId);
     void connectDevice();
-    void launchApplication(String applicationId, String param,
+    void launchApplication(String applicationId,
             boolean relaunchIfRunning);
-    void joinApplication(String applicationId, String sessionId);
+    void joinApplication(String url);
     void leaveApplication();
-    void stopApplication(String sessionId);
+    void stopApplication();
     void requestStatus();
     void setVolume(double volume, boolean mute);
     void sendMessageInternal(String namespace, String message, long requestId);

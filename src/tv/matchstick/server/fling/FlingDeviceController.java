@@ -327,7 +327,7 @@ public final class FlingDeviceController implements FlingSocketListener,
                     if (w) {
                         w = false;
                         launchApplicationInternal(mApplicationId,
-                                ((String) (null)), true);
+                                true);
                         return;
                     } else {
                         mFlingSrvController
@@ -379,7 +379,7 @@ public final class FlingDeviceController implements FlingSocketListener,
                 }
             }
             w = false;
-            launchApplicationInternal(appId, ((String) (null)), true);
+            launchApplicationInternal(appId, true);
         } else {
             log.d("processReceiverStatus_a:ignore status messages for application id is null!");
         }
@@ -480,35 +480,35 @@ public final class FlingDeviceController implements FlingSocketListener,
     }
 
     private void finishConnecting() {
-        log.d("finishConnecting");
-        mRequestIdGen = new AtomicLong(0L);
-        try {
-            mConnectionControlChannel.connect("receiver-0");
-        } catch (Exception e) {
-            onSocketError(FlingStatusCodes.NETWORK_ERROR);// 7
-            return;
-        }
-
-        mHeartbeatChannel = new HeartbeatChannel();
-        setSender(mHeartbeatChannel);
-        mHandler.postDelayed(mHeartbeatRunnable, 1000L);
-        mIsConnected = true;
-        mIsConnecting = false;
-        if (mLastApplicationId != null && mLastSessionId != null) {
-            w = false;
-            joinApplicationInternal(mLastApplicationId, mLastSessionId);
-            return;
-        }
-        mReconnectStrategy.reset();
-
-        mFlingSrvController.onConnected();
-
-        try {
-            mReceiverControlChannel.getStatus();
-            return;
-        } catch (Exception e) {
-            onSocketError(FlingStatusCodes.NETWORK_ERROR); // 7
-        }
+//        log.d("finishConnecting");
+//        mRequestIdGen = new AtomicLong(0L);
+//        try {
+//            mConnectionControlChannel.connect("receiver-0");
+//        } catch (Exception e) {
+//            onSocketError(FlingStatusCodes.NETWORK_ERROR);// 7
+//            return;
+//        }
+//
+//        mHeartbeatChannel = new HeartbeatChannel();
+//        setSender(mHeartbeatChannel);
+//        mHandler.postDelayed(mHeartbeatRunnable, 1000L);
+//        mIsConnected = true;
+//        mIsConnecting = false;
+//        if (mLastApplicationId != null && mLastSessionId != null) {
+//            w = false;
+//            joinApplicationInternal(mLastApplicationId, mLastSessionId);
+//            return;
+//        }
+//        mReconnectStrategy.reset();
+//
+//        mFlingSrvController.onConnected();
+//
+//        try {
+//            mReceiverControlChannel.getStatus();
+//            return;
+//        } catch (Exception e) {
+//            onSocketError(FlingStatusCodes.NETWORK_ERROR); // 7
+//        }
     }
 
     @Override
@@ -607,8 +607,7 @@ public final class FlingDeviceController implements FlingSocketListener,
 
     public final void launchApplication(String applicationId, String sessionId,
             boolean relaunchIfRunning) {
-        FlingDeviceService.launchApplication(mContext, this, applicationId,
-                sessionId, relaunchIfRunning);
+        FlingDeviceService.launchApplication(mContext, this, applicationId, relaunchIfRunning);
     }
 
     public final void sendBinaryMessage(String nameSpace, byte message[],
@@ -699,15 +698,14 @@ public final class FlingDeviceController implements FlingSocketListener,
     }
 
     public final void stopApplication(String sessionId) {
-        FlingDeviceService.stopApplication(mContext, this, sessionId);
+        FlingDeviceService.stopApplication(mContext, this);
     }
 
     public final void joinApplication(String applicationId, String sessionId) {
-        FlingDeviceService.joinApplication(mContext, this, applicationId,
-                sessionId);
+        FlingDeviceService.joinApplication(mContext, this, applicationId);
     }
 
-    public final void launchApplicationInternal(String appId, String param,
+    public final void launchApplicationInternal(String appId,
             boolean relaunch) {
         log.d("launchApplicationInternal() id=%s, relaunch=%b", appId, relaunch);
         if (appId == null || appId.equals("")) {
@@ -717,7 +715,7 @@ public final class FlingDeviceController implements FlingSocketListener,
         }
         if (relaunch) {
             try {
-                mReceiverControlChannel.launchApplication(appId, param);
+                mReceiverControlChannel.launchApplication(appId, null);
                 return;
             } catch (Exception e) {
                 log.w(e, "Error while launching application");
@@ -727,7 +725,7 @@ public final class FlingDeviceController implements FlingSocketListener,
         }
 
         w = true;
-        joinApplicationInternal(appId, null);
+        joinApplicationInternal(appId);
         return;
     }
 
@@ -856,48 +854,47 @@ public final class FlingDeviceController implements FlingSocketListener,
         onSocketError(FlingStatusCodes.NETWORK_ERROR);
     }
 
-    public final void joinApplicationInternal(String applicationId,
-            String sessionId) {
-        log.d("joinApplicationInternal(%s, %s)", applicationId, sessionId);
-
-        if (mApplicationMetadata != null) {
-            if (applicationId == null
-                    || applicationId.equals(mApplicationMetadata
-                            .getApplicationId())
-                    && (sessionId == null || sessionId.equals(mSessionId))) {
-                log.d("already connected to requested app, so skipping join logic");
-
-                mFlingSrvController.onApplicationConnected(
-                        mApplicationMetadata, mStatusText, mSessionId, false);
-                return;
-            }
-            log.d("clearing mLastConnected* variables");
-            mLastApplicationId = null;
-            mLastSessionId = null;
-            if (mReconnectStrategy.reset()) {
-                mFlingSrvController.onConnectedWithoutApp();
-                return;
-            } else {
-                mFlingSrvController
-                        .onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
-                return;
-            }
-        }
-
-        if (applicationId == null) {
-            applicationId = "";
-        }
-
-        mApplicationId = applicationId;
-        mSessionId_y = sessionId;
-        try {
-            mReceiverControlChannel.getStatus();
-            return;
-        } catch (Exception e) {
-            log.w(e, "Error while requesting device status for join");
-        }
-
-        onSocketError(FlingStatusCodes.NETWORK_ERROR);
+    public final void joinApplicationInternal(String applicationId) {
+//        log.d("joinApplicationInternal(%s, %s)", applicationId, sessionId);
+//
+//        if (mApplicationMetadata != null) {
+//            if (applicationId == null
+//                    || applicationId.equals(mApplicationMetadata
+//                            .getApplicationId())
+//                    && (sessionId == null || sessionId.equals(mSessionId))) {
+//                log.d("already connected to requested app, so skipping join logic");
+//
+//                mFlingSrvController.onApplicationConnected(
+//                        mApplicationMetadata, mStatusText, mSessionId, false);
+//                return;
+//            }
+//            log.d("clearing mLastConnected* variables");
+//            mLastApplicationId = null;
+//            mLastSessionId = null;
+//            if (mReconnectStrategy.reset()) {
+//                mFlingSrvController.onConnectedWithoutApp();
+//                return;
+//            } else {
+//                mFlingSrvController
+//                        .onApplicationConnectionFailed(FlingStatusCodes.APPLICATION_NOT_RUNNING);
+//                return;
+//            }
+//        }
+//
+//        if (applicationId == null) {
+//            applicationId = "";
+//        }
+//
+//        mApplicationId = applicationId;
+//        mSessionId_y = sessionId;
+//        try {
+//            mReceiverControlChannel.getStatus();
+//            return;
+//        } catch (Exception e) {
+//            log.w(e, "Error while requesting device status for join");
+//        }
+//
+//        onSocketError(FlingStatusCodes.NETWORK_ERROR);
     }
 
     public final void onSocketDisconnectedInternal(int socketError) {
@@ -1104,6 +1101,38 @@ public final class FlingDeviceController implements FlingSocketListener,
 
     @Override
     public void onReceivedMessage(String message) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void stopApplicationInternal() {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void reconnectToDevice(String lastAppId) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void joinApplication(String url) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void stopApplication() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void launchApplication(String applicationId,
+            boolean relaunchIfRunning) {
         // TODO Auto-generated method stub
         
     }

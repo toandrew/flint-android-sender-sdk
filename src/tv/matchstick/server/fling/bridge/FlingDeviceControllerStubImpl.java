@@ -49,16 +49,16 @@ IFlingDeviceController.Stub {
             boolean relaunchIfRunning) throws RemoteException {
         // TODO Auto-generated method stub
 
-        mFlingDeviceController.launchApplication(applicationId, null,
+        mFlingDeviceController.launchApplication(applicationId,
                 relaunchIfRunning);
     }
 
     @Override
-    public void joinApplication(String applicationId, String sessionId)
+    public void joinApplication(String applicationId)
             throws RemoteException {
         // TODO Auto-generated method stub
 
-        mFlingDeviceController.joinApplication(applicationId, sessionId);
+        mFlingDeviceController.joinApplication(applicationId);
     }
 
     @Override
@@ -69,10 +69,10 @@ IFlingDeviceController.Stub {
     }
 
     @Override
-    public void stopApplication(String sessionId) throws RemoteException {
+    public void stopApplication() throws RemoteException {
         // TODO Auto-generated method stub
 
-        mFlingDeviceController.stopApplication(sessionId);
+        mFlingDeviceController.stopApplication();
     }
 
     @Override

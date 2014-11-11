@@ -139,15 +139,14 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * 
      * @param context
      * @param controller
-     * @param sessionId
      */
     public static void stopApplication(Context context,
-            final IController controller, final String sessionId) {
+            final IController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                controller.stopApplicationInternal(sessionId);
+                controller.stopApplicationInternal();
             }
 
         });
@@ -159,16 +158,14 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param context
      * @param controller
      * @param applicationId
-     * @param sessionId
      */
     public static void joinApplication(Context context,
-            final IController controller, final String applicationId,
-            final String sessionId) {
+            final IController controller, final String applicationId) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                controller.joinApplicationInternal(applicationId, sessionId);
+                controller.joinApplicationInternal(applicationId);
             }
 
         });
@@ -214,12 +211,12 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      */
     public static void launchApplication(Context context,
             final IController controller, final String applicationId,
-            final String param, final boolean relaunch) {
+            final boolean relaunch) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                controller.launchApplicationInternal(applicationId, param,
+                controller.launchApplicationInternal(applicationId,
                         relaunch);
             }
 

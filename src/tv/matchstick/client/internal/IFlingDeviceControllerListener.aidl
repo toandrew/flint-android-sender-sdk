@@ -25,7 +25,7 @@ interface IFlingDeviceControllerListener
 
 	void onApplicationConnected(
 			in ApplicationMetadata applicationMetadata, String statusText,
-			String sessionId, boolean relaunched);
+			boolean relaunched);
 
 	void postApplicationConnectionResult(int statusCode);
 

@@ -5,14 +5,15 @@ import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -49,6 +50,7 @@ public class FlingDialController implements FlingSocketListener, IController {
     private ApplicationState mApplicationState = new ApplicationState();
     private int mLaunchStateCounter = 0;
     private int mHeartbeatInterval = 1000;
+    private Set<String> mNamespaces = new HashSet<String>();
     private Executor mExecutor = Executors.newFixedThreadPool(NUM_OF_THREADS,
             new ThreadFactory() {
                 @Override
@@ -102,6 +104,7 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void connectToDeviceInternal() {
+        mIsConnecting = true;
         getStatus(new StateCallback() {
             @Override
             void onResult() {
@@ -110,6 +113,7 @@ public class FlingDialController implements FlingSocketListener, IController {
                 } else {
                     onConnectionFailed(0);
                 }
+                mIsConnecting = false;
             }
         });
     }
@@ -182,11 +186,12 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void onSocketConnectionFailedInternal(int socketError) {
-
+        mFlingSrvController.onDisconnected(socketError);
+//        mFlingSrvController.onConnectionFailed();
     }
 
     @Override
-    public void stopApplicationInternal(String sessionId) {
+    public void stopApplicationInternal() {
         final String url = buildAppUrl();
         android.util.Log.d("XXXXXXXXXXX", "stopApplicationInternal: url = "
                 + url);
@@ -230,8 +235,11 @@ public class FlingDialController implements FlingSocketListener, IController {
     }
 
     @Override
-    public void joinApplicationInternal(String applicationId, String sessionId) {
-        launchApplication("join", applicationId);
+    public void joinApplicationInternal(String url) {
+        if (TextUtils.isEmpty(url))
+            launchApplication("join", mCurrentReceiverUrl);
+        else
+            launchApplication("join", url);
     }
 
     @Override
@@ -246,19 +254,18 @@ public class FlingDialController implements FlingSocketListener, IController {
     }
 
     @Override
-    public void launchApplicationInternal(String applicationId, String param,
+    public void launchApplicationInternal(String url,
             final boolean relaunch) {
         if (mApplicationState != null
                 && !"stopped".equals(mApplicationState.state)) {
             if (relaunch) {
-                launchApplication("relaunch", applicationId);
+                launchApplication("relaunch", url);
             } else {
-                joinApplication(applicationId, "");
+                joinApplication(url);
             }
         } else {
-            launchApplication("launch", applicationId);
+            launchApplication("launch", url);
         }
-        // launchApplication(relaunch ? "relaunch" : "launch", applicationId);
     }
 
     private void launchApplication(final String type, final String receiverUrl) {
@@ -454,7 +461,13 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void addNamespace(String namespace) {
+        if (TextUtils.isEmpty(namespace)) {
+            return;
+        }
 
+        synchronized (mNamespaces) {
+            mNamespaces.add(namespace);
+        }
     }
 
     private void getStatus(final StateCallback callback) {
@@ -560,8 +573,13 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void removeNamespace(String namespace) {
-        // TODO Auto-generated method stub
+        if (TextUtils.isEmpty(namespace)) {
+            return;
+        }
 
+        synchronized (mNamespaces) {
+            mNamespaces.remove(namespace);
+        }
     }
 
     @Override
@@ -625,27 +643,23 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public boolean isConnecting() {
-        // TODO Auto-generated method stub
-        return false;
+        return mIsConnecting;
     }
 
     @Override
-    public void reconnectToDevice(String lastAppId, String sessionId) {
-        // TODO Auto-generated method stub
-
+    public void reconnectToDevice(String lastAppId) {
+        connectDevice();
     }
 
     @Override
-    public void launchApplication(String applicationId, String sessionId,
+    public void launchApplication(String applicationId,
             boolean relaunchIfRunning) {
-        FlingDeviceService.launchApplication(mContext, this, applicationId,
-                sessionId, relaunchIfRunning);
+        FlingDeviceService.launchApplication(mContext, this, applicationId, relaunchIfRunning);
     }
 
     @Override
-    public void joinApplication(String applicationId, String sessionId) {
-        FlingDeviceService.joinApplication(mContext, this, applicationId,
-                sessionId);
+    public void joinApplication(String url) {
+        FlingDeviceService.joinApplication(mContext, this, url);
     }
 
     @Override
@@ -654,15 +668,14 @@ public class FlingDialController implements FlingSocketListener, IController {
     }
 
     @Override
-    public void stopApplication(String sessionId) {
+    public void stopApplication() {
         stopHeartbeat();
-        FlingDeviceService.stopApplication(mContext, this, sessionId);
+        FlingDeviceService.stopApplication(mContext, this);
     }
 
     @Override
     public void requestStatus() {
-        // TODO Auto-generated method stub
-
+        FlingDeviceService.requestStatus(mContext, this);
     }
 
     @Override
@@ -679,14 +692,14 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void setMessageReceivedCallbacks(String namespace) {
-        // TODO Auto-generated method stub
-
+        FlingDeviceService.setMessageReceivedCallbacks(mContext, this,
+                namespace);
     }
 
     @Override
     public void removeMessageReceivedCallbacks(String namespace) {
-        // TODO Auto-generated method stub
-
+        FlingDeviceService.removeMessageReceivedCallbacks(mContext, this,
+                namespace);
     }
 
     private void onSocketError(int socketError) {

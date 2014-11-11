@@ -213,25 +213,6 @@ public class Fling {
          *            fling manager with which to perform this request.
          * @param url
          *            the url of the receiver application to join.
-         * @param sessionId
-         *            The expected session ID of the receiver application, or
-         *            null to connect without checking for a matching session ID
-         * @return join's pending result which can be used to retrieve
-         *         connection information.
-         */
-        public abstract PendingResult<ApplicationConnectionResult> joinApplication(
-                FlingManager manager, String url, String sessionId);
-
-        /**
-         * Join to the current running receiver application.
-         * 
-         * The previous PendingResult will be canceled with the
-         * Fling.ApplicationConnectionResult's status code being CANCELED.
-         * 
-         * @param manager
-         *            fling manager with which to perform this request.
-         * @param url
-         *            the url of the receiver application to join.
          * @return join's pending result which can be used to retrieve
          *         connection information.
          */
@@ -279,26 +260,6 @@ public class Fling {
          */
         public abstract PendingResult<Status> stopApplication(
                 FlingManager manager);
-
-        /**
-         * Stops the currently running receiver application,
-         * optionally doing so only if its session ID matches the supplied one.
-         * 
-         * If this method is called while leaveApplication(FlingManager) is
-         * pending, then this method does nothing. The Status's status code will
-         * be INVALID_REQUEST.
-         * 
-         * 
-         * @param manager
-         *            fling manager with which to perform this request.
-         * @param sessionId
-         *            session Id of the application to stop. sessionId cannot be
-         *            null or an empty string.
-         * @return stop's pending result which can be used to retrieve if the
-         *         command was successful.
-         */
-        public abstract PendingResult<Status> stopApplication(
-                FlingManager manager, String sessionId);
 
         /**
          * Set device's volume
@@ -500,30 +461,13 @@ public class Fling {
             }
 
             public PendingResult<ApplicationConnectionResult> joinApplication(
-                    FlingManager manager, final String url,
-                    final String sessionId) {
-                return manager
-                        .executeTask(new ApplicationConnectionResultHandler() {
-                            protected void execute(FlingClientImpl client)
-                                    throws RemoteException {
-                                try {
-                                    client.joinApplication(url,
-                                            sessionId, this);
-                                } catch (IllegalStateException e) {
-                                    notifyResult(FlingStatusCodes.INVALID_REQUEST);
-                                }
-                            }
-                        });
-            }
-
-            public PendingResult<ApplicationConnectionResult> joinApplication(
                     FlingManager manager, final String url) {
                 return manager
                         .executeTask(new ApplicationConnectionResultHandler() {
                             protected void execute(FlingClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.joinApplication(url, null,
+                                    client.joinApplication(url,
                                             this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
@@ -539,7 +483,7 @@ public class Fling {
                             protected void execute(FlingClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.joinApplication(null, null, this);
+                                    client.joinApplication(null, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
                                 }
@@ -560,26 +504,13 @@ public class Fling {
                 });
             }
 
-            public PendingResult<Status> stopApplication(FlingManager manager) {
+            public PendingResult<Status> stopApplication(FlingManager manager
+                    ) {
                 return manager.executeTask(new StatusResultHandler() {
                     protected void execute(FlingClientImpl client)
                             throws RemoteException {
                         try {
-                            client.stopApplication("", this);
-                        } catch (IllegalStateException e) {
-                            notifyResult(FlingStatusCodes.INVALID_REQUEST);
-                        }
-                    }
-                });
-            }
-
-            public PendingResult<Status> stopApplication(FlingManager manager,
-                    final String sessionId) {
-                return manager.executeTask(new StatusResultHandler() {
-                    protected void execute(FlingClientImpl client)
-                            throws RemoteException {
-                        try {
-                            client.stopApplication(sessionId, this);
+                            client.stopApplication(this);
                         } catch (IllegalStateException e) {
                             notifyResult(FlingStatusCodes.INVALID_REQUEST);
                         }
@@ -690,10 +621,6 @@ public class Fling {
 
                 public boolean getWasLaunched() {
                     return false;
-                }
-
-                public String getSessionId() {
-                    return null;
                 }
 
                 public String getApplicationStatus() {
@@ -876,13 +803,6 @@ public class Fling {
          * @return application status
          */
         public abstract String getApplicationStatus();
-
-        /**
-         * Get current application's session ID
-         * 
-         * @return session id
-         */
-        public abstract String getSessionId();
 
         /**
          * Check whether current application was launched from scratch

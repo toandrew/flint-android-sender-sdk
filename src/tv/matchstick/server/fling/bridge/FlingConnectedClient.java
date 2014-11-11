@@ -142,8 +142,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
                     .d("reconnecting to device with applicationId=%s, sessionId=%s",
                             mLastAppId, mLastSessionId);
             if (mLastAppId != null)
-                mFlingDeviceController.reconnectToDevice(mLastAppId,
-                        mLastSessionId);
+                mFlingDeviceController.reconnectToDevice(mLastAppId);
             else
                 mFlingDeviceController.connectDevice();
         }
@@ -234,7 +233,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
         mLastSessionId = sessionId;
         try {
             mFlingDeviceControllerListener.onApplicationConnected(
-                    applicationmetadata, statusText, sessionId, relaunched);
+                    applicationmetadata, statusText, relaunched);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

@@ -75,8 +75,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 
     private String mApplicationId;
 
-    private String mSessionId;
-
     private Bundle mExtraMessage;
 
     private Map<Long, ResultCallback<Status>> mResultCallbackMap;
@@ -142,16 +140,15 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
              */
             @Override
             public void onApplicationConnected(ApplicationMetadata data,
-                    String statusText, String sessionId, boolean relaunched) {
+                    String statusText, boolean relaunched) {
                 mApplicationMetadata = data;
                 mApplicationId = data.getApplicationId();
-                mSessionId = sessionId;
                 synchronized (mLock_x) {
                     if (mResultCallback != null) {
                         mResultCallback
                                 .onResult(new ApplicationConnectionResultImpl(
                                         new Status(0), data, statusText,
-                                        sessionId, relaunched));
+                                        relaunched));
                         mResultCallback = null;
                     }
                 }
@@ -185,7 +182,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             @Override
             public void onApplicationDisconnected(final int statusCode) {
                 mApplicationId = null;
-                mSessionId = null;
                 if (notifyCallback(statusCode)) {
                     return;
                 }
@@ -380,16 +376,15 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
      * Join application
      * 
      * @param applicationId
-     * @param sessionId
      * @param callback
      * @throws IllegalStateException
      * @throws RemoteException
      */
-    public void joinApplication(String applicationId, String sessionId,
+    public void joinApplication(String applicationId,
             ResultCallback<Fling.ApplicationConnectionResult> callback)
             throws IllegalStateException, RemoteException {
         setApplicationConnectionResultCallback(callback);
-        getService().joinApplication(applicationId, sessionId);
+        getService().joinApplication(applicationId);
     }
 
     /**
@@ -424,15 +419,14 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
     /**
      * Stop application.
      * 
-     * @param sessionId
      * @param paramc
      * @throws IllegalStateException
      * @throws RemoteException
      */
-    public void stopApplication(String sessionId, ResultCallback<Status> paramc)
+    public void stopApplication(ResultCallback<Status> paramc)
             throws IllegalStateException, RemoteException {
         setStatusCallback(paramc);
-        getService().stopApplication(sessionId);
+        getService().stopApplication();
     }
 
     /**
@@ -655,21 +649,19 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
         private final Status status;
         private final ApplicationMetadata data;
         private final String applicationStatus;
-        private final String sessionId;
         private final boolean wasLaunched;
 
         public ApplicationConnectionResultImpl(Status paramStatus,
                 ApplicationMetadata applicationMetadata,
-                String applicationStatus, String sessionId, boolean wasLaunched) {
+                String applicationStatus, boolean wasLaunched) {
             this.status = paramStatus;
             this.data = applicationMetadata;
             this.applicationStatus = applicationStatus;
-            this.sessionId = sessionId;
             this.wasLaunched = wasLaunched;
         }
 
         public ApplicationConnectionResultImpl(Status status) {
-            this(status, null, null, null, false);
+            this(status, null, null, false);
         }
 
         public Status getStatus() {
@@ -682,10 +674,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 
         public String getApplicationStatus() {
             return this.applicationStatus;
-        }
-
-        public String getSessionId() {
-            return this.sessionId;
         }
 
         public boolean getWasLaunched() {
@@ -717,16 +705,13 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
     @Override
     protected void getServiceFromBroker(IFlingServiceBroker serviceBroker,
             IFlingCallbackImpl flingCallback) throws RemoteException {
-        log.d("getServiceFromBroker(): mLastApplicationId=%s, mLastSessionId=%s",
-                mApplicationId, mSessionId);
+        log.d("getServiceFromBroker(): mLastApplicationId=%s",
+                mApplicationId);
         Bundle bundle = new Bundle();
         mFlingDevice.putInBundle(bundle);
         bundle.putLong("tv.matchstick.fling.EXTRA_FLING_FLAGS", mFlingFlags);
         if (mApplicationId != null) {
             bundle.putString("last_application_id", mApplicationId);
-            if (mSessionId != null) {
-                bundle.putString("last_session_id", mSessionId);
-            }
         }
 
         /**
