@@ -111,6 +111,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             }
         }
 
+        mQuit = false;
+
         mScannerLoopThread = new Thread(new Runnable() {
 
             @Override
@@ -138,6 +140,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             }
         }
         mQuit = true;
+
         if (mScannerLoopThread != null) {
             boolean needWait = true;
             while (needWait) {
@@ -367,7 +370,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                     ScannerDeviceData deviceInfo = it.next().getValue();
 
                     int offline = 0;
-                    if (currentTime - deviceInfo.mScannedTime < 60000L) {
+                    if (currentTime - deviceInfo.mScannedTime < 30000L) {
                         offline = 0;
                     } else {
                         offline = 1;
