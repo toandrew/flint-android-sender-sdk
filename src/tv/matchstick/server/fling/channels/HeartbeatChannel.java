@@ -31,7 +31,7 @@ public final class HeartbeatChannel extends FlingChannel {
     private int mCounter;
 
     public HeartbeatChannel() {
-        super("urn:x-cast:com.google.cast.tp.heartbeat", "HeartbeatChannel");
+        super("ns:com.google.cast.tp.heartbeat", "HeartbeatChannel");
         mTimeout = 10000L;
         reset();
     }

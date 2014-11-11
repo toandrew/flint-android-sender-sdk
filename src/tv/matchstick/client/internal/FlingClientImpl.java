@@ -126,7 +126,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             public void onDisconnected(int statusCode) {
                 log.d("IFlingDeviceControllerListener.onDisconnected: %d",
                         statusCode);
-                android.util.Log.d("XXXXXXXXXXX", "mIFlingDeviceControllerListener");
                 mIsConnectedDevice = false;
                 mApplicationMetadata = null;
                 if (statusCode == 0) {
@@ -218,7 +217,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             @Override
             public void onMessageReceived(final String namespace,
                     final String message) {
-                android.util.Log.d("QQQQQQQQQQQ", "Receive (type=text, ns=" + namespace + ") " + message);
                 mHandler.post(new Runnable() {
                     public void run() {
                         Fling.MessageReceivedCallback localMessageReceivedCallback;

@@ -20,7 +20,7 @@ import android.util.Log;
 
 public class LOG {
 
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = true;
 
     private final String TAG;
     private boolean mDebugEnabled;

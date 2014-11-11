@@ -279,12 +279,10 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      */
     public static void onSocketDisconnected(Context context,
             final IController controller, final int socketError) {
-        android.util.Log.d("XXXXXXXXXXXXXX", "onSocketDisconnected");
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                android.util.Log.d("XXXXXXXXXXXXXX", "doFling");
                 controller.onSocketDisconnectedInternal(socketError);
             }
 

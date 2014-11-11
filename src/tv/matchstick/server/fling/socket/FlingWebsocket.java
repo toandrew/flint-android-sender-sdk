@@ -15,24 +15,27 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingStatusCodes;
 import android.os.SystemClock;
 
 public class FlingWebsocket extends WebSocketClient {
+    private final LOG log = new LOG("FlingWebsocket");
     private final FlingSocketListener mSocketListener;
     private int mSocketStatus;
 
     public FlingWebsocket(FlingSocketListener listener, URI serverURI) {
         super(serverURI);
+        log.d("url = %s", serverURI.toString());
         mSocketListener = listener;
         mSocketStatus = 0;
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
+        log.d("open");
         mSocketStatus = 2;
         mSocketListener.onConnected();
-        android.util.Log.d("XXXXXXXXXXXXXX", "onOpen");
     }
 
     public void sendText(String namespace, String senderId, String requestId, String data) {
@@ -46,7 +49,6 @@ public class FlingWebsocket extends WebSocketClient {
             json.put("namespace", namespace);
             json.put("requestId", requestId);
             json.put("data", data);
-            android.util.Log.d("QQQQQQQQQQ", "send: " + json.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -55,27 +57,18 @@ public class FlingWebsocket extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        android.util.Log.d("QQQQQQQQQQ", "receive message = " + message);
-        //"{\"namespace\":\"urn:x-cast:com.google.cast.media\",\"senderId\":\"*:*\",\"data\":\"{\\\"type\\\":\\\"PONG\\\"}\"}"
-//        try {
-//            JSONObject json = new JSONObject(message);
-//            if ("PONG") {
-                mSocketListener.onMessageReceived(message);
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+        mSocketListener.onMessageReceived(message);
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        android.util.Log.d("XXXXXXXXXXX", "onClose");
+        log.d("close");
         mSocketListener.onDisconnected(FlingStatusCodes.SUCCESS);
     }
 
     @Override
     public void onError(Exception ex) {
-        android.util.Log.d("XXXXXXXXXXX", "onError");
+        log.d("error");
         mSocketListener.onDisconnected(FlingStatusCodes.NETWORK_ERROR);
     }
 }
