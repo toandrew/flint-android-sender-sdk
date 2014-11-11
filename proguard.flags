@@ -1,0 +1,111 @@
+-injars  bin/fling_sdk_android.jar
+-outjars bin/fling_sdk_android_public.jar
+
+-libraryjars support/android-support-v7-appcompat.jar
+-libraryjars support/android-support-v7-mediarouter.jar
+-libraryjars support/android.jar
+
+-dontoptimize
+-dontusemixedcaseclassnames
+-keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+-dontpreverify
+-verbose
+-dontwarn android.support.**
+
+
+-keep public class com.google.vending.licensing.ILicensingService
+
+-keep public class com.android.vending.licensing.ILicensingService
+
+# keep setters in Views so that animations can still work.
+# see http://proguard.sourceforge.net/manual/examples.html#beans
+-keepclassmembers public class * extends android.view.View {
+    void set*(***);
+    *** get*();
+}
+
+# We want to keep methods in Activity that could be used in the XML attribute onClick
+-keepclassmembers class * extends android.app.Activity {
+    public void *(android.view.View);
+}
+
+-keep class * extends android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+
+# Keep - Library. Keep all public and protected classes, fields, and methods.
+#-keep public class * {
+#    public protected <fields>;
+#    public protected <methods>;
+#}
+
+-keep class tv.matchstick.fling.ApplicationMetadata { public <fields>; public <methods>; }
+-keep class tv.matchstick.fling.ConnectionResult { public <fields>; public <methods>;}
+
+-keep class tv.matchstick.fling.Fling { public <fields>; public <methods>; }
+-keep public class tv.matchstick.fling.Fling$* { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.FlingDevice { public <fields>; public <methods>; }
+-keep class tv.matchstick.fling.FlingDevice$* { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.FlingManager { public <fields>; public <methods>; }
+-keep public class tv.matchstick.fling.FlingManager$* { public <fields>; public <methods>;}
+-keep public class tv.matchstick.client.common.IFlingClient {public <fields>; public <methods>;}
+-keep public class tv.matchstick.client.common.IFlingClient$* {public <fields>; public <methods>;}
+
+-keep class tv.matchstick.fling.FlingMediaControlIntent { public <fields>; public <methods>; }
+-keep class tv.matchstick.fling.FlingStatusCodes { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.MediaInfo { public <fields>; public <methods>;  }
+-keep public class tv.matchstick.fling.MediaInfo$* { public <fields>; public <methods>;}
+
+-keep class tv.matchstick.fling.MediaMetadata { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.MediaStatus { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.PendingResult { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.RemoteMediaPlayer { public <fields>; public <methods>; }
+-keep public class tv.matchstick.fling.RemoteMediaPlayer$* { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.Result { public <fields>; public <methods>; }
+-keep class tv.matchstick.fling.ResultCallback { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.Status { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.images.WebImage { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.internal.Api { public <fields>; public <methods>; }
+-keep public class tv.matchstick.fling.internal.Api$* { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.internal.MatchStickApi { public <fields>; public <methods>; }
+-keep public class tv.matchstick.fling.internal.MatchStickApi$* { public <fields>; public <methods>; }
+
+-keep class tv.matchstick.fling.service.FlingDeviceService { public <fields>; public <methods>; }
+-keep class tv.matchstick.fling.service.FlingService { public <fields>; public <methods>; }
+
+-keep class javax.** {*;}
+-keep class org.** {*;}
+
+# Also keep - Enumerations. Keep the special static methods that are required in
+# enumeration classes.
+-keepclassmembers enum  * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep names - Native method names. Keep all native class/method names.
+-keepclasseswithmembers,allowshrinking class * {
+    native <methods>;
+}
+
+# Keep names - _class method names. Keep all .class method names. This may be
+# useful for libraries that will be obfuscated again with different obfuscators.
+-keepclassmembers,allowshrinking class * {
+    java.lang.Class class$(java.lang.String);
+    java.lang.Class class$(java.lang.String,boolean);
+}
