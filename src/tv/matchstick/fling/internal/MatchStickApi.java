@@ -282,8 +282,8 @@ public class MatchStickApi {
         /**
          * Set result callback function and call something later
          *
-         * @time
-         * @units
+         * @param time
+         * @param units
          */
         public final void setResultCallback(ResultCallback<R> callback,
                 long time, TimeUnit units) {

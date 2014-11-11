@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import tv.matchstick.server.fling.FlingDeviceController;
 import tv.matchstick.server.fling.FlingMediaRouteProvider;
 import tv.matchstick.server.fling.IController;
 import tv.matchstick.server.fling.MediaRouteProvider;
@@ -97,8 +96,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param context
      * @param controller
      * @param level
-     * @param expected_level
-     * @param muted
+     * @param mute
      */
     public static void setVolume(Context context, final IController controller,
             final double level, final boolean mute) {
@@ -119,7 +117,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param context
      * @param controller
      * @param socketError
-     * @see FlingSocket, FlingDeviceController
      */
     public static void onSocketConnectionFailed(Context context,
             final IController controller, final int socketError) {
@@ -206,7 +203,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param context
      * @param controller
      * @param applicationId
-     * @param param
      * @param relaunch
      */
     public static void launchApplication(Context context,
@@ -404,7 +400,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * Stop scan fling device
      * 
      * @param context
-     * @param operation
+     * @param deviceScanner
      */
     public static void stopScanFlingDevice(Context context,
             final DeviceScanner deviceScanner) {
