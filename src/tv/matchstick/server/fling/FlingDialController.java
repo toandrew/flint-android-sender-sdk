@@ -10,8 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -51,6 +53,9 @@ public class FlingDialController implements FlingSocketListener, IController {
     private int mLaunchStateCounter = 0;
     private int mHeartbeatInterval = 1000;
     private Set<String> mNamespaces = new HashSet<String>();
+    private FlingWebsocket mFlingWebsocket;
+    private String mCurrentReceiverUrl;
+
     private Executor mExecutor = Executors.newFixedThreadPool(NUM_OF_THREADS,
             new ThreadFactory() {
                 @Override
@@ -60,8 +65,6 @@ public class FlingDialController implements FlingSocketListener, IController {
                     return th;
                 }
             });
-    private FlingWebsocket mFlingWebsocket;
-    private String mCurrentReceiverUrl;
 
     public FlingDialController(Context context, Handler handler,
             FlingDevice flingDevice, IFlingSrvController controller) {
@@ -78,7 +81,7 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void onConnected() {
-        mFlingSrvController.onApplicationConnected(new ApplicationMetadata(),
+        mFlingSrvController.onApplicationConnected(new ApplicationMetadata(mApplicationState.additionalData),
                 "", "", false);
     }
 
@@ -186,8 +189,8 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void onSocketConnectionFailedInternal(int socketError) {
-        mFlingSrvController.onDisconnected(socketError);
-//        mFlingSrvController.onConnectionFailed();
+        // mFlingSrvController.onDisconnected(socketError);
+        // mFlingSrvController.onConnectionFailed();
     }
 
     @Override
@@ -236,6 +239,7 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void joinApplicationInternal(String url) {
+        android.util.Log.d("XXXXXXXXXXXXXX", "joinApplicationInternal");
         if (TextUtils.isEmpty(url))
             launchApplication("join", mCurrentReceiverUrl);
         else
@@ -254,8 +258,8 @@ public class FlingDialController implements FlingSocketListener, IController {
     }
 
     @Override
-    public void launchApplicationInternal(String url,
-            final boolean relaunch) {
+    public void launchApplicationInternal(String url, final boolean relaunch) {
+        android.util.Log.d("XXXXXXXXXXXXXX", "launchApplicationInternal");
         if (mApplicationState != null
                 && !"stopped".equals(mApplicationState.state)) {
             if (relaunch) {
@@ -271,7 +275,8 @@ public class FlingDialController implements FlingSocketListener, IController {
     private void launchApplication(final String type, final String receiverUrl) {
         final String url = buildAppUrl();
         mCurrentReceiverUrl = receiverUrl;
-        android.util.Log.d("XXXXXXXXXXX", "launchApplication: url = " + url);
+        android.util.Log.d("XXXXXXXXXXX", "launchApplication: url = " + url
+                + "; type = " + type);
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -353,7 +358,8 @@ public class FlingDialController implements FlingSocketListener, IController {
         getStatus(new StateCallback() {
             @Override
             void onResult() {
-                if (mApplicationState.state.equals("running") && !TextUtils.isEmpty(mApplicationState.url)) {
+                if (mApplicationState.state.equals("running")
+                        && !TextUtils.isEmpty(mApplicationState.url)) {
                     android.util.Log.d("XXXXXXXXXXX", "running");
                     if (mFlingWebsocket != null) {
                         mFlingWebsocket.close();
@@ -396,9 +402,9 @@ public class FlingDialController implements FlingSocketListener, IController {
                 } else {
                     mHandler.removeCallbacks(mTimeoutRunnable);
                     mHandler.postDelayed(mHeartbeatRunnable, mHeartbeatInterval);
-                    
+
                 }
-             }
+            }
         });
     }
 
@@ -477,6 +483,7 @@ public class FlingDialController implements FlingSocketListener, IController {
             public void run() {
                 DefaultHandler dh = new DefaultHandler() {
                     String currentValue = null;
+                    boolean parseAdditionalData = false;
 
                     @Override
                     public void characters(char[] ch, int start, int length)
@@ -495,6 +502,8 @@ public class FlingDialController implements FlingSocketListener, IController {
                         if ("link".equals(qName)) {
                             mApplicationState.appAddress = attributes
                                     .getValue("href");
+                        } else if ("additionalData".equals(qName)) {
+                            parseAdditionalData = true;
                         }
                         currentValue = null;
                     }
@@ -508,6 +517,14 @@ public class FlingDialController implements FlingSocketListener, IController {
                             mApplicationState.url = currentValue;
                         } else if ("name".equals(qName)) {
                             mApplicationState.appName = currentValue;
+                        } else if ("additionalData".equals(qName)) {
+                            parseAdditionalData = false;
+                        }
+                        if (parseAdditionalData) {
+                            if (mApplicationState.additionalData == null) {
+                                mApplicationState.additionalData = new HashMap<String, String>();
+                            }
+                            mApplicationState.additionalData.put(qName, currentValue);
                         }
                         currentValue = null;
                     }
@@ -529,20 +546,23 @@ public class FlingDialController implements FlingSocketListener, IController {
                             && !TextUtils.isEmpty(mApplicationState.token)) {
                         urlConnection.setRequestProperty("Authorization",
                                 mApplicationState.token);
-                        android.util.Log.d("XXXXXXXXXX", "getstatus: token = " + mApplicationState.token);
+                        android.util.Log.d("XXXXXXXXXX", "getstatus: token = "
+                                + mApplicationState.token);
                     }
                     InputStream in = new BufferedInputStream(urlConnection
                             .getInputStream());
 
                     try {
                         if (urlConnection.getResponseCode() == 400) {
+                            android.util.Log.d("XXXXXXXXXXXXXX", "400");
                             launchApplication("join", mCurrentReceiverUrl);
                         } else {
                             Scanner s = new Scanner(in).useDelimiter("\\A");
                             String xml = s.hasNext() ? s.next() : "";
-    
+
                             parser = factory.newSAXParser();
-                            parser.parse(new ByteArrayInputStream(xml.getBytes()),
+                            parser.parse(
+                                    new ByteArrayInputStream(xml.getBytes()),
                                     dh);
                         }
                     } finally {
@@ -648,13 +668,14 @@ public class FlingDialController implements FlingSocketListener, IController {
 
     @Override
     public void reconnectToDevice(String lastAppId) {
-        connectDevice();
+        // connectDevice();
     }
 
     @Override
     public void launchApplication(String applicationId,
             boolean relaunchIfRunning) {
-        FlingDeviceService.launchApplication(mContext, this, applicationId, relaunchIfRunning);
+        FlingDeviceService.launchApplication(mContext, this, applicationId,
+                relaunchIfRunning);
     }
 
     @Override
@@ -718,7 +739,7 @@ public class FlingDialController implements FlingSocketListener, IController {
         String token;
         String appName;
         String state;
-        List<String> additionalData;
+        Map<String, String> additionalData;
     }
 
     @Override
@@ -729,7 +750,8 @@ public class FlingDialController implements FlingSocketListener, IController {
     @Override
     public void onReceivedMessage(String message) {
         try {
-            android.util.Log.d("QQQQQQQQQQQQQ", "dial onReceivedMessage = " + message);
+            android.util.Log.d("QQQQQQQQQQQQQ", "dial onReceivedMessage = "
+                    + message);
             JSONObject json = new JSONObject(message);
             String namespace = json.optString("namespace", "");
             String data = json.optString("data", "");

@@ -229,7 +229,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     public final void onApplicationConnected(
             ApplicationMetadata applicationmetadata, String statusText,
             String sessionId, boolean relaunched) {
-        mLastAppId = applicationmetadata.getApplicationId();
+//        mLastAppId = applicationmetadata.getApplicationId();
         mLastSessionId = sessionId;
         try {
             mFlingDeviceControllerListener.onApplicationConnected(

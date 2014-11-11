@@ -17,6 +17,7 @@
 package tv.matchstick.client.common.internal.safeparcel;
 
 import java.util.List;
+import java.util.Map;
 
 import android.os.Bundle;
 import android.os.IBinder;
@@ -143,6 +144,18 @@ public class ParcelWrite {
         }
         int start = writeStart(data, position);
         data.writeStringList(val);
+        writeEnd(data, start);
+    }
+    
+    public static void write(Parcel data, int position,
+            Map<String, String> val, boolean mayNull) {
+        if (val == null) {
+            if (mayNull)
+                writeStart(data, position, 0);
+            return;
+        }
+        int start = writeStart(data, position);
+        data.writeMap(val);
         writeEnd(data, start);
     }
 

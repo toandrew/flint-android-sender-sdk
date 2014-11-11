@@ -142,7 +142,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
             public void onApplicationConnected(ApplicationMetadata data,
                     String statusText, boolean relaunched) {
                 mApplicationMetadata = data;
-                mApplicationId = data.getApplicationId();
+//                mApplicationId = data.getApplicationId();
                 synchronized (mLock_x) {
                     if (mResultCallback != null) {
                         mResultCallback

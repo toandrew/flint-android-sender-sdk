@@ -17,6 +17,7 @@
 package tv.matchstick.client.common.internal.safeparcel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.os.Bundle;
 import android.os.IBinder;
@@ -151,6 +152,16 @@ public class ParcelRead {
         ArrayList<String> list = data.createStringArrayList();
         data.setDataPosition(start + length);
         return list;
+    }
+    
+    public static HashMap<String, String> readHashMap(Parcel data, int position) {
+        int length = readStart(data, position);
+        int start = data.dataPosition();
+        if (length == 0)
+            return null;
+        HashMap<String, String> map = data.readHashMap(HashMap.class.getClassLoader());
+        data.setDataPosition(start + length);
+        return map;
     }
 
     public static <T> ArrayList<T> readCreatorList(Parcel data, int position,

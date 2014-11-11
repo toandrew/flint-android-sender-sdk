@@ -273,12 +273,7 @@ public final class FlingDeviceController implements FlingSocketListener,
             senderAppLaunchUrl = checker.mUri;
         }
         mStatusText = applicationInfo.getStatusText();
-        mApplicationMetadata = new ApplicationMetadata(1,
-                applicationInfo.getApplicationId(),
-                applicationInfo.getDisplayName(),
-                applicationInfo.getAppImages(),
-                applicationInfo.getNamespaces(), senderAppIdentifier,
-                senderAppLaunchUrl);
+        mApplicationMetadata = new ApplicationMetadata(new HashMap<String, String>());
         mSessionId = applicationInfo.getSessionId();
         mLastApplicationId = applicationInfo.getApplicationId();
         mLastSessionId = mSessionId;
