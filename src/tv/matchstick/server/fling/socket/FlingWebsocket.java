@@ -70,7 +70,7 @@ public class FlingWebsocket extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         android.util.Log.d("XXXXXXXXXXX", "onClose");
-        mSocketListener.onDisconnected(FlingStatusCodes.NETWORK_ERROR);
+        mSocketListener.onDisconnected(FlingStatusCodes.SUCCESS);
     }
 
     @Override
