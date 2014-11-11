@@ -192,6 +192,8 @@ public class FlingDevice implements SafeParcelable {
      *            device's service port
      * @param icons
      *            device icons
+     * @param foundSource
+     *            device discovery source
      */
     public FlingDevice(int versionCode, String deviceId, String hostAddress,
             String friendlyName, String modelName, String deviceVersion,

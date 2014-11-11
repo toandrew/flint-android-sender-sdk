@@ -205,16 +205,6 @@ public interface FlingManager {
         private Looper mLooper;
 
         /**
-         * Gravity for popup windows
-         */
-        // private int mGravityForPopups;
-
-        /**
-         * Used view
-         */
-        // private View mView;
-
-        /**
          * Package name
          */
         private String mPackageName;
