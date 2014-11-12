@@ -113,7 +113,7 @@ public class SSDP {
                     data.put(key, value);
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
 

@@ -217,8 +217,11 @@ public class SsdpDeviceScanner extends DeviceScanner {
     };
 
     private void handleDatagramPacket(final ParsedDatagram pd) {
+        if (pd.data == null)
+            return;
+
         String serviceFilter = pd.data
-                .get(pd.type.equals(SSDP.SL_NOTIFY) ? SSDP.NT : SSDP.ST);
+                .get(SSDP.SL_NOTIFY.equals(pd.type) ? SSDP.NT : SSDP.ST);
         if (!"urn:dial-multiscreen-org:service:dial:1".equals(serviceFilter))
             return;
 
