@@ -1,5 +1,5 @@
--injars  bin/fling_sdk_android.jar
--outjars bin/fling_sdk_android_public.jar
+-injars  bin/flint-android-sender-sdk.jar
+-outjars bin/flint-android-sender-sdk_public.jar
 
 -libraryjars support/android-support-v7-appcompat.jar
 -libraryjars support/android-support-v7-mediarouter.jar
