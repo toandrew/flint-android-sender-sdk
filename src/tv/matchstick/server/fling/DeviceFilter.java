@@ -16,8 +16,6 @@
 
 package tv.matchstick.server.fling;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,9 +30,7 @@ import org.json.JSONObject;
 
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.server.fling.socket.FlingSocket;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
-import tv.matchstick.server.fling.socket.data.FlingMessage;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -86,34 +82,12 @@ abstract class DeviceFilter {
      */
     public final void connectOrAcceptDevice(FlingDevice device) {
         FlingDeviceManager manager = new FlingDeviceManager(this, device);
-
-        if (!manager.mNoApp || !manager.mNoNamespace) {
-            try {
-                log.d("connecting to: %s:%d (%s)", manager.mFlingDevice
-                        .getIpAddress().toString(), manager.mFlingDevice
-                        .getServicePort(), manager.mFlingDevice
-                        .getFriendlyName());
-
-                manager.mFlingSocket.connect(
-                        manager.mFlingDevice.getIpAddress(),
-                        manager.mFlingDevice.getServicePort());
-            } catch (Exception e) {
-                log.e(e, "Exception while connecting socket");
-            }
-        } else {
-            log.d("accept device to: %s:%d (%s)", manager.mFlingDevice
-                    .getIpAddress().toString(), manager.mFlingDevice
-                    .getServicePort(), manager.mFlingDevice.getFriendlyName());
-
-            manager.acceptDevice(manager.mFlingDevice,
-                    manager.mDeviceFilter.mDiscoveryCriterias);
-        }
-
+        manager.acceptDevice(manager.mFlingDevice,
+                manager.mDeviceFilter.mDiscoveryCriterias);
         mDeviceConnections.add(manager);
     }
 
     private final class FlingDeviceManager implements FlingSocketListener {
-        final FlingSocket mFlingSocket;
         final FlingDevice mFlingDevice;
         boolean mNoApp;
         boolean mNoNamespace;
@@ -132,7 +106,6 @@ abstract class DeviceFilter {
             mNoApp = true;
             mNoNamespace = false;
             mIsConnecting = true;
-            mFlingSocket = new FlingSocket(mContext, this);
             mFlingDevice = flingDevice;
 
             mSourceId = String.format("%s-%d", mPackageName,
@@ -168,24 +141,6 @@ abstract class DeviceFilter {
             }
         }
 
-        private void sendMessage(String namespace, String message)
-                throws Exception {
-            log.d("Sending text message to %s: (ns=%s, dest=%s) %s",
-                    mFlingDevice.getFriendlyName(), namespace, "receiver-0",
-                    message);
-
-            FlingMessage msg = new FlingMessage();
-            msg.setProtocolVersion(0);
-            msg.setSourceId(mSourceId);
-            msg.setDestinationId("receiver-0");
-            msg.setNamespace(namespace);
-            msg.setPayloadMessage(message);
-
-            byte bytes[] = msg.buildJson().toString().getBytes("UTF-8");
-
-            mFlingSocket.send(ByteBuffer.wrap(bytes));
-        }
-
         private void setNoApp() {
             mNoApp = true;
             if (mNoApp && mNoNamespace) {
@@ -201,20 +156,6 @@ abstract class DeviceFilter {
         }
 
         private void updateStatus() {
-            if (mFlingSocket.isConnected()) {
-                try {
-                    sendMessage("urn:x-cast:com.google.cast.tp.connection",
-                            (new JSONObject()).put("type", "CLOSE").toString());
-                } catch (IOException ex) {
-                    log.d(ex.toString(), "Failed to send disconnect message");
-                } catch (JSONException je) {
-                    log.e(je, "Failed to build disconnect message");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    log.d(e.toString(), "Failed to send disconnect message");
-                }
-                mFlingSocket.disconnect();
-            }
             HashSet hashset = new HashSet();
             Iterator<DiscoveryCriteria> iterator = mDiscoveryCriterias
                     .iterator();
@@ -253,35 +194,7 @@ abstract class DeviceFilter {
 
         @Override
         public final void onConnected() {
-            try {
-                sendMessage(
-                        "urn:x-cast:com.google.cast.tp.connection",
-                        (new JSONObject())
-                                .put("type", "CONNECT")
-                                .put("origin",
-                                        new JSONObject().put("package",
-                                                mPackageName)).toString());
-
-                if (!mNoApp)
-                    sendMessage(
-                            "urn:x-cast:com.google.cast.receiver",
-                            (new JSONObject()).put("requestId", 1)
-                                    .put("type", "GET_APP_AVAILABILITY")
-                                    .put("appId", mApplicationIds).toString());
-
-                if (!mNoNamespace)
-                    sendMessage(
-                            "urn:x-cast:com.google.cast.receiver",
-                            (new JSONObject()).put("requestId", 2)
-                                    .put("type", "GET_STATUS").toString());
-
-                return;
-            } catch (JSONException ex) {
-                log.e(ex, "Failed to build messages");
-            } catch (Exception e) {
-                log.e(e, "Failed to send messages");
-                e.printStackTrace();
-            }
+            
         }
 
         @Override
@@ -311,44 +224,6 @@ abstract class DeviceFilter {
                 }
 
             });
-        }
-
-        @Override
-        public final void onMessageReceived(ByteBuffer receivedMessage) {
-            long requestId;
-            log.d("onMessageReceived:in[%s]", mSourceId);
-
-            FlingMessage flingMessage = new FlingMessage(
-                    receivedMessage.array());
-
-            if (flingMessage.getPayloadType() != 0) {
-                return;
-            }
-
-            String message = flingMessage.getMessage();
-            Log.d("DeviceFilter", "onMessageReceived:" + message);
-
-            try {
-                JSONObject obj = new JSONObject(message);
-                requestId = obj.optLong("requestId", -1L);
-                if (requestId == -1L) {
-                    return;
-                }
-                if (requestId != 1L) {
-                    if (requestId != 2L) {
-                        log.d("Unrecognized request ID: " + requestId);
-                        return;
-                    }
-                    mAppInfoHelper.fillNamespaceList(obj);
-                    setNoNameSpace();
-                    return;
-                }
-                mAppInfoHelper.fillAppAvailabityList(obj);
-                setNoApp();
-            } catch (JSONException e) {
-                log.e("Failed to parse response: %s", e.getMessage());
-            }
-
         }
 
         @Override
@@ -412,8 +287,29 @@ abstract class DeviceFilter {
 
         @Override
         public void onMessageReceived(String message) {
-            // TODO Auto-generated method stub
-            
+            Log.d("DeviceFilter", "onMessageReceived:" + message);
+
+            try {
+                JSONObject obj = new JSONObject(message);
+                long requestId = obj.optLong("requestId", -1L);
+                if (requestId == -1L) {
+                    return;
+                }
+                if (requestId != 1L) {
+                    if (requestId != 2L) {
+                        log.d("Unrecognized request ID: " + requestId);
+                        return;
+                    }
+                    mAppInfoHelper.fillNamespaceList(obj);
+                    setNoNameSpace();
+                    return;
+                }
+                mAppInfoHelper.fillAppAvailabityList(obj);
+                setNoApp();
+            } catch (JSONException e) {
+                log.e("Failed to parse response: %s", e.getMessage());
+            }
+
         }
     }
 

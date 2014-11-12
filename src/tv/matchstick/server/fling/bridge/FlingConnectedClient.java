@@ -23,9 +23,7 @@ import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingService;
-import tv.matchstick.server.fling.FlingDeviceController;
 import tv.matchstick.server.fling.FlingDialController;
-import tv.matchstick.server.fling.IController;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 
@@ -43,7 +41,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     private final FlingDevice mFlingDevice;
     private String mLastAppId;
     private String mLastSessionId;
-    private IController mFlingDeviceController;
+    private FlingDialController mFlingDialController;
     private final IFlingCallbacks mFlingCallbacks;
     private final String mPackageName;
     private final long mFlags;
@@ -107,23 +105,23 @@ public final class FlingConnectedClient implements IFlingSrvController {
                     mListenerDeathHandler, 0);
         } catch (RemoteException e) {
             FlingService.log().e("client disconnected before listener was set");
-            if (!mFlingDeviceController.isDisposed())
-                mFlingDeviceController.releaseReference();
+            if (!mFlingDialController.isDisposed())
+                mFlingDialController.releaseReference();
         }
 
         FlingService.log().d("acquireDeviceController by %s", mPackageName);
 
         FlingService.log().d("Create one fling device controller!");
-        mFlingDeviceController = new FlingDialController(mFlingService,
+        mFlingDialController = new FlingDialController(mFlingService,
                 FlingService.getHandler(mFlingService), mFlingDevice, this);
-        mFlingDeviceController.generateId();
+        mFlingDialController.generateId();
         mStubImpl = new FlingDeviceControllerStubImpl(mFlingService,
-                mFlingDeviceController);
+                mFlingDialController);
 
         /**
          * already connected?
          */
-        if (mFlingDeviceController.isConnected()) {
+        if (mFlingDialController.isConnected()) {
             try {
                 mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
                         mStubImpl.asBinder(), null);
@@ -136,15 +134,15 @@ public final class FlingConnectedClient implements IFlingSrvController {
         /**
          * is not busy on connecting to device?
          */
-        if (!mFlingDeviceController.isConnecting()) {
+        if (!mFlingDialController.isConnecting()) {
             FlingService
                     .log()
                     .d("reconnecting to device with applicationId=%s, sessionId=%s",
                             mLastAppId, mLastSessionId);
             if (mLastAppId != null)
-                mFlingDeviceController.reconnectToDevice(mLastAppId);
+                mFlingDialController.reconnectToDevice(mLastAppId);
             else
-                mFlingDeviceController.connectDevice();
+                mFlingDialController.connectDevice();
         }
 
         /**
@@ -164,11 +162,11 @@ public final class FlingConnectedClient implements IFlingSrvController {
      * @param client
      */
     static void handleBinderDeath(FlingConnectedClient client) {
-        if (client.mFlingDeviceController != null
-                && !client.mFlingDeviceController.isDisposed()) {
+        if (client.mFlingDialController != null
+                && !client.mFlingDialController.isDisposed()) {
             FlingService.log().w(
                     "calling releaseReference from handleBinderDeath()");
-            client.mFlingDeviceController.releaseReference();
+            client.mFlingDialController.releaseReference();
             FlingService.log().d("Released controller.");
         }
         FlingService.log().d("Removing ConnectedClient.");
@@ -214,11 +212,11 @@ public final class FlingConnectedClient implements IFlingSrvController {
         /**
          * release resources in controller instance
          */
-        if (!mFlingDeviceController.isDisposed()) {
+        if (!mFlingDialController.isDisposed()) {
             FlingService
                     .log()
                     .w("calling releaseReference from ConnectedClient.onDisconnected");
-            mFlingDeviceController.releaseReference();
+            mFlingDialController.releaseReference();
         }
     }
 

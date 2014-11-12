@@ -222,17 +222,9 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         String status;
         if (controllerHelper != null) {
             isConnecting = controllerHelper.isConnecting;
-            FlingDeviceController controller = controllerHelper.getController();
-            if (controller != null && controller.isConnected()) {
-                int k1 = (int) Math.round(20D * controller.getVolume());
-                statusText = controller.getStatusText();
-                volume = k1;
-                volumeHandling = 1;
-            } else {
-                statusText = null;
-                volumeHandling = 0;
-                volume = 0;
-            }
+            statusText = null;
+            volumeHandling = 0;
+            volume = 0;
         } else {
             statusText = null;
             isConnecting = false;
@@ -548,9 +540,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
             return mFlingRouteControllerList.isEmpty();
         }
 
-        public FlingDeviceController getController() {
-            return FlingDeviceController.getCurrentController();
-        }
     }
 
     final class MediaRouteDescriptorPrivateData {

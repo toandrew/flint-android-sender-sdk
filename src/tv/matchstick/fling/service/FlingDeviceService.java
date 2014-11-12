@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import tv.matchstick.server.fling.FlingDialController;
 import tv.matchstick.server.fling.FlingMediaRouteProvider;
-import tv.matchstick.server.fling.IController;
 import tv.matchstick.server.fling.MediaRouteProvider;
 import tv.matchstick.server.fling.MediaRouteProviderSrv;
 import tv.matchstick.server.fling.mdns.DeviceScanner;
@@ -81,7 +81,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void connectFlingDevice(Context context,
-            final IController controller) {
+            final FlingDialController controller) {
         startFlingService(context, new FlingOperation(controller) {
             @Override
             public void doFling() throws IOException {
@@ -98,7 +98,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param level
      * @param mute
      */
-    public static void setVolume(Context context, final IController controller,
+    public static void setVolume(Context context, final FlingDialController controller,
             final double level, final boolean mute) {
         startFlingService(context, new FlingOperation(controller) {
 
@@ -119,7 +119,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param socketError
      */
     public static void onSocketConnectionFailed(Context context,
-            final IController controller, final int socketError) {
+            final FlingDialController controller, final int socketError) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -138,7 +138,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void stopApplication(Context context,
-            final IController controller) {
+            final FlingDialController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -157,7 +157,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param applicationId
      */
     public static void joinApplication(Context context,
-            final IController controller, final String applicationId) {
+            final FlingDialController controller, final String applicationId) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -179,7 +179,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param transportId
      */
     public static void sendTextMessage(Context context,
-            final IController controller, final String namespace,
+            final FlingDialController controller, final String namespace,
             final String message, final long id, final String transportId) {
         startFlingService(context, new FlingOperation(controller) {
 
@@ -206,7 +206,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param relaunch
      */
     public static void launchApplication(Context context,
-            final IController controller, final String applicationId,
+            final FlingDialController controller, final String applicationId,
             final boolean relaunch) {
         startFlingService(context, new FlingOperation(controller) {
 
@@ -219,27 +219,8 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
         });
     }
 
-    /**
-     * Received message from fling device
-     * 
-     * @param context
-     * @param controller
-     * @param message
-     */
     public static void procReceivedMessage(Context context,
-            final IController controller, final ByteBuffer message) {
-        startFlingService(context, new FlingOperation(controller) {
-
-            @Override
-            public void doFling() throws IOException {
-                controller.onReceivedMessage(message);
-            }
-
-        });
-    }
-    
-    public static void procReceivedMessage(Context context,
-            final IController controller, final String message) {
+            final FlingDialController controller, final String message) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -257,7 +238,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void leaveApplication(Context context,
-            final IController controller) {
+            final FlingDialController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -278,7 +259,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      *            socket error code
      */
     public static void onSocketDisconnected(Context context,
-            final IController controller, final int socketError) {
+            final FlingDialController controller, final int socketError) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -297,7 +278,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param namespace
      */
     public static void setMessageReceivedCallbacks(Context context,
-            final IController controller, final String namespace) {
+            final FlingDialController controller, final String namespace) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -316,7 +297,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void requestStatus(Context context,
-            final IController controller) {
+            final FlingDialController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -337,7 +318,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param namespace
      */
     public static void removeMessageReceivedCallbacks(Context context,
-            final IController controller, final String namespace) {
+            final FlingDialController controller, final String namespace) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
@@ -356,7 +337,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param controller
      */
     public static void onSocketConnected(Context context,
-            final IController controller) {
+            final FlingDialController controller) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
