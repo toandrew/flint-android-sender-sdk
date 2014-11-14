@@ -28,11 +28,7 @@ public interface IFlingSrvController {
 
     void onVolumeChanged(String statusText, double volume, boolean muteState);
 
-    void onRequestCallback(String namespace, long requestId, int result);
-
     void notifyOnMessageReceived(String namespace, String message);
-
-    void onReceiveBinary(String namespace, byte[] message);
 
     void onConnectedWithoutApp();
 

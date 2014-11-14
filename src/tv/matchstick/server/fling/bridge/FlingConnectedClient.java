@@ -253,20 +253,6 @@ public final class FlingConnectedClient implements IFlingSrvController {
     }
 
     /**
-     * called for request callback
-     */
-    @Override
-    public final void onRequestCallback(String namespace, long requestId,
-            int result) {
-        try {
-            mFlingDeviceControllerListener.requestCallback(namespace,
-                    requestId, result);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * notified app when message received
      */
     @Override
@@ -275,18 +261,6 @@ public final class FlingConnectedClient implements IFlingSrvController {
             
             mFlingDeviceControllerListener
                     .onMessageReceived(namespace, message);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * notified app when binary message is received
-     */
-    @Override
-    public final void onReceiveBinary(String namespace, byte message[]) {
-        try {
-            mFlingDeviceControllerListener.onReceiveBinary(namespace, message);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

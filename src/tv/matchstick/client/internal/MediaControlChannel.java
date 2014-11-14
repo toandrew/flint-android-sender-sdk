@@ -66,7 +66,7 @@ public class MediaControlChannel extends FlingChannel {
     private boolean mTrackTaskStarting;
 
     public MediaControlChannel() {
-        super("urn:x-cast:com.google.cast.media", "MediaControlChannel");
+        super("ns:tv.matchstick.fling.media", "MediaControlChannel");
 
         cleanInternal();
     }

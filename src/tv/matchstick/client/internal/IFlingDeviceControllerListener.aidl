@@ -34,14 +34,9 @@ interface IFlingDeviceControllerListener
 
 	void onMessageReceived(String namespace, String message);
 
-	void onReceiveBinary(String namespace, in byte[] binary);
-
 	void onRequestResult(int result);
 
 	void onRequestStatus(int status);
 
 	void onApplicationDisconnected(int statusCode);
-
-	void requestCallback(String namespace, long requestId,
-			int statusCode);
 }

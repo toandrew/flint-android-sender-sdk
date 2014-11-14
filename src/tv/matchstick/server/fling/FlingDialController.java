@@ -241,13 +241,11 @@ public class FlingDialController implements FlingSocketListener {
             launchApplication("join", url);
     }
 
-    public void sendTextMessage(String namespace, String message, long id,
-            String transportId) {
+    public void sendTextMessage(String namespace, String message) {
         log.d("sendTextMessage: message = %s", message);
 
         if (mFlingWebsocket != null && mFlingWebsocket.isOpen()) {
-            mFlingWebsocket.sendText(namespace, "meida", String.valueOf(id),
-                    message);
+            mFlingWebsocket.sendText(namespace, message);
         }
     }
 
@@ -656,10 +654,8 @@ public class FlingDialController implements FlingSocketListener {
         FlingDeviceService.setVolume(mContext, this, volume, mute);
     }
 
-    public void sendMessageInternal(String namespace, String message,
-            long requestId) {
-        FlingDeviceService.sendTextMessage(mContext, this, namespace, message,
-                requestId, "");
+    public void sendMessageInternal(String namespace, String message) {
+        FlingDeviceService.sendTextMessage(mContext, this, namespace, message);
     }
 
     public void setMessageReceivedCallbacks(String namespace) {
@@ -701,8 +697,8 @@ public class FlingDialController implements FlingSocketListener {
             log.d("onReceivedMessage, message = %s", message);
             JSONObject json = new JSONObject(message);
             String namespace = json.optString("namespace", "");
-            String data = json.optString("data", "");
-            mFlingSrvController.notifyOnMessageReceived(namespace, data);
+            String payload = json.optString("payload", "");
+            mFlingSrvController.notifyOnMessageReceived(namespace, payload);
         } catch (JSONException e) {
             e.printStackTrace();
         }

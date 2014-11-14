@@ -90,7 +90,7 @@ IFlingDeviceController.Stub {
     }
 
     @Override
-    public void sendMessage(String namespace, String message, long requestId)
+    public void sendMessage(String namespace, String message)
             throws RemoteException {
         // TODO Auto-generated method stub
 
@@ -98,8 +98,7 @@ IFlingDeviceController.Stub {
             return;
         }
 
-        mFlingDeviceController.sendMessageInternal(namespace, message,
-                requestId);
+        mFlingDeviceController.sendMessageInternal(namespace, message);
     }
 
     @Override

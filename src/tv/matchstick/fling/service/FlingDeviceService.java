@@ -180,14 +180,13 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      */
     public static void sendTextMessage(Context context,
             final FlingDialController controller, final String namespace,
-            final String message, final long id, final String transportId) {
+            final String message) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
                 try {
-                    controller.sendTextMessage(namespace, message, id,
-                            transportId);
+                    controller.sendTextMessage(namespace, message);
                     return;
                 } catch (IllegalStateException e) {
                     Log.e(TAG, e.getMessage());

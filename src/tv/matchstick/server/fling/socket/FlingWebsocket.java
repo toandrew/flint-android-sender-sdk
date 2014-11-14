@@ -1,23 +1,14 @@
 package tv.matchstick.server.fling.socket;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingStatusCodes;
-import android.os.SystemClock;
 
 public class FlingWebsocket extends WebSocketClient {
     private final LOG log = new LOG("FlingWebsocket");
@@ -38,17 +29,16 @@ public class FlingWebsocket extends WebSocketClient {
         mSocketListener.onConnected();
     }
 
-    public void sendText(String namespace, String senderId, String requestId, String data) {
+    public void sendText(String namespace, String payload) {
         if (isOpen())
-            send(buildMessage(namespace, senderId, requestId, data));
+            send(buildMessage(namespace, payload));
     }
 
-    private String buildMessage(String namespace, String senderId, String requestId, String data) {
+    private String buildMessage(String namespace, String payload) {
         JSONObject json = new JSONObject();
         try {
             json.put("namespace", namespace);
-            json.put("requestId", requestId);
-            json.put("data", data);
+            json.put("payload", payload);
         } catch (JSONException e) {
             e.printStackTrace();
         }

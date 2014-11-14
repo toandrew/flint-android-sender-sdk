@@ -71,13 +71,9 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
 
     private double mVolume;
 
-    private final AtomicLong mRequestIdCreator;
-
     private String mApplicationId;
 
     private Bundle mExtraMessage;
-
-    private Map<Long, ResultCallback<Status>> mResultCallbackMap;
 
     private ResultCallback<Fling.ApplicationConnectionResult> mResultCallback;
 
@@ -111,8 +107,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
         this.mApplicationStatus = null;
         this.mVolume = 0.0D;
         this.mIsMute = false;
-        this.mRequestIdCreator = new AtomicLong(0L);
-        this.mResultCallbackMap = new HashMap();
 
         /**
          * Callback listener for device controller.
@@ -235,33 +229,6 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                 });
             }
 
-            /**
-             * receive binary message.
-             */
-            @Override
-            public void onReceiveBinary(String namespace, byte[] message) {
-                log.d("IGNORING: Receive (type=binary, ns=%s) <%d bytes>",
-                        namespace, message.length);
-            }
-
-            @Override
-            public void requestCallback(String namespace, long requestId,
-                    int statusCode) {
-                notifyCallback(requestId, statusCode);
-            }
-
-            private void notifyCallback(long requestId, int statusCode) {
-                ResultCallback resultCallback = null;
-                synchronized (mResultCallbackMap) {
-                    resultCallback = (ResultCallback) mResultCallbackMap
-                            .remove(Long.valueOf(requestId));
-                }
-                if (resultCallback == null) {
-                    return;
-                }
-                resultCallback.onResult(new Status(statusCode));
-            }
-
             private boolean notifyCallback(int statusCode) {
                 synchronized (mLock_y) {
                     if (mStatusResultCallback != null) {
@@ -272,6 +239,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                 }
                 return false;
             }
+
         };
     }
 
@@ -349,9 +317,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
         }
 
         checkConnectedDeviceThrowable();
-        long requestId = mRequestIdCreator.incrementAndGet();
-        getService().sendMessage(namespace, payloadMessage, requestId);
-        mResultCallbackMap.put(requestId, callback);
+        getService().sendMessage(namespace, payloadMessage);
     }
 
     /**
