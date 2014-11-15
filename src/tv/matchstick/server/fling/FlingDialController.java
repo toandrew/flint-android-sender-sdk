@@ -483,7 +483,7 @@ public class FlingDialController implements FlingSocketListener {
                             String qName) throws SAXException {
                         if ("state".equals(qName)) {
                             mApplicationState.state = currentValue;
-                        } else if ("serverId".equals(qName)) {
+                        } else if ("channelBaseUrl".equals(qName)) {
                             mApplicationState.url = currentValue;
                         } else if ("name".equals(qName)) {
                             mApplicationState.appName = currentValue;
