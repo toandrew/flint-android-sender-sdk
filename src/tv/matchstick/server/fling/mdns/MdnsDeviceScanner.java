@@ -234,7 +234,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
             String icon = null;
             String deviceVersion = null;
             String deviceName = null;
-            String deviceId = null;
+            String deviceId = info.mFriendlyName;
 
             Iterator<String> it = deviceInfos.iterator();
             while (it.hasNext()) {
@@ -243,11 +243,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 if (split > 0) {
                     String key = line.substring(0, split);
                     String val = line.substring(split + 1);
-                    if ("id".equalsIgnoreCase(key)) {
-                        deviceId = val;
-                    } else if ("md".equalsIgnoreCase(key)) {
-                        deviceName = val.replaceAll(
-                                "(Eureka|Chromekey)( Dongle)?", "Dongle");
+                    if ("md".equalsIgnoreCase(key)) {
+                        deviceName = val;
                     } else if ("ve".equalsIgnoreCase(key)) {
                         deviceVersion = val;
                     } else if ("ic".equalsIgnoreCase(key)) {
