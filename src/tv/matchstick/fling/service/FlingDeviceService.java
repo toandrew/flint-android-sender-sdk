@@ -449,10 +449,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
             operation.doFling();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            Log.e("FlingIntentService", "begin call releaseReference");
-            operation.releaseReference();
-            Log.e("FlingIntentService", "after call releaseReference");
         }
     }
 

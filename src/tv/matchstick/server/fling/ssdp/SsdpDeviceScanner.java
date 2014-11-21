@@ -245,7 +245,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
 
             if (location == null || location.length() == 0)
                 return;
-            android.util.Log.d(TAG, "location = " + location);
+            android.util.Log.d(TAG, "location = " + location
+                    + "; uuid = " + uuid);
             if (!mDiscoveredDeviceList.contains(uuid)
                     && mFoundDeviceMap.get(uuid) == null) {
                 mDiscoveredDeviceList.add(uuid);
@@ -270,6 +271,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                android.util.Log.d(TAG, "execute");
                 boolean success = false;
                 final LocationDevice device = new LocationDevice();
 
@@ -356,6 +358,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                android.util.Log.d(TAG, "success: " + success);
                 if (success) {
                     onResult(uuid, device);
                 } else {

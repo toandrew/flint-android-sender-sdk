@@ -106,7 +106,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
         } catch (RemoteException e) {
             FlingService.log().e("client disconnected before listener was set");
             if (!mFlingDialController.isDisposed())
-                mFlingDialController.releaseReference();
+                mFlingDialController.release();
         }
 
         FlingService.log().d("acquireDeviceController by %s", mPackageName);
@@ -114,7 +114,6 @@ public final class FlingConnectedClient implements IFlingSrvController {
         FlingService.log().d("Create one fling device controller!");
         mFlingDialController = new FlingDialController(mFlingService,
                 FlingService.getHandler(mFlingService), mFlingDevice, this);
-        mFlingDialController.generateId();
         mStubImpl = new FlingDeviceControllerStubImpl(mFlingService,
                 mFlingDialController);
 
@@ -166,7 +165,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
                 && !client.mFlingDialController.isDisposed()) {
             FlingService.log().w(
                     "calling releaseReference from handleBinderDeath()");
-            client.mFlingDialController.releaseReference();
+            client.mFlingDialController.release();
             FlingService.log().d("Released controller.");
         }
         FlingService.log().d("Removing ConnectedClient.");
@@ -216,7 +215,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
             FlingService
                     .log()
                     .w("calling releaseReference from ConnectedClient.onDisconnected");
-            mFlingDialController.releaseReference();
+            mFlingDialController.release();
         }
     }
 

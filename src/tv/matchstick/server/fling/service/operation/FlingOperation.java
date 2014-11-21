@@ -27,13 +27,7 @@ public abstract class FlingOperation {
 
     public FlingOperation(FlingDialController controller) {
         mFlingDeviceController = controller;
-        mFlingDeviceController.generateId();
     }
 
     public abstract void doFling() throws IOException;
-
-    public final void releaseReference() {
-        mFlingDeviceController.releaseReference();
-    }
-
 }

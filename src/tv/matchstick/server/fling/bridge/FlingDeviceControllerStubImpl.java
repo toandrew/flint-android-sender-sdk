@@ -39,7 +39,7 @@ IFlingDeviceController.Stub {
         // TODO Auto-generated method stub
 
         if (!mFlingDeviceController.isDisposed()) {
-            mFlingDeviceController.releaseReference();
+            mFlingDeviceController.release();
         }
     }
 
