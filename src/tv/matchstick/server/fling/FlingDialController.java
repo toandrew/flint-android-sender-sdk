@@ -58,6 +58,9 @@ public class FlingDialController implements FlingSocketListener {
     private boolean mDisposed = false;
     private boolean mIsConnected = false;
     private boolean mIsConnecting = false;
+    
+    private String mLastToken;
+    private String mLastAddress;
 
     private Executor mExecutor = Executors.newFixedThreadPool(NUM_OF_THREADS,
             new ThreadFactory() {
@@ -197,16 +200,27 @@ public class FlingDialController implements FlingSocketListener {
             @Override
             public void run() {
                 try {
-                    URL mURL = new URL(TextUtils
-                            .isEmpty(mApplicationState.appAddress) ? url : url
-                            + "/" + mApplicationState.appAddress);
+                    URL mURL;
+                    if (!TextUtils.isEmpty(mApplicationState.appAddress)) {
+                        mURL = new URL(url
+                                + "/" + mApplicationState.appAddress);
+                    } else if (!TextUtils.isEmpty(mLastAddress)) {
+                        mURL = new URL(url
+                                + "/" + mLastAddress);
+                    }  else {
+                        mURL = new URL(url);
+                    }
+
                     HttpURLConnection urlConnection = (HttpURLConnection) mURL
                             .openConnection();
                     urlConnection.setRequestMethod("DELETE");
-                    if (mApplicationState != null
-                            && !TextUtils.isEmpty(mApplicationState.token)) {
+                    
+                    if (!TextUtils.isEmpty(mApplicationState.token)) {
                         urlConnection.setRequestProperty("Authorization",
                                 mApplicationState.token);
+                    } else if (!TextUtils.isEmpty(mLastToken)) {
+                        urlConnection.setRequestProperty("Authorization",
+                                mLastToken);
                     }
                     urlConnection.connect();
                     final int response = urlConnection.getResponseCode();
@@ -428,6 +442,8 @@ public class FlingDialController implements FlingSocketListener {
         log.d("release: disposed = %b", mDisposed);
         if (!mDisposed) {
             stopHeartbeat();
+            mLastToken = mApplicationState.token;
+            mLastAddress = mApplicationState.appAddress;
             mApplicationState.reset();
             mDisposed = true;
             if (mFlingWebsocket != null && mFlingWebsocket.isOpen())

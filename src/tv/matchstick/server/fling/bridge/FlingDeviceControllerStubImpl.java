@@ -36,8 +36,6 @@ IFlingDeviceController.Stub {
 
     @Override
     public void disconnect() throws RemoteException {
-        // TODO Auto-generated method stub
-
         if (!mFlingDeviceController.isDisposed()) {
             mFlingDeviceController.release();
         }
@@ -46,8 +44,6 @@ IFlingDeviceController.Stub {
     @Override
     public void launchApplication(String applicationId,
             boolean relaunchIfRunning) throws RemoteException {
-        // TODO Auto-generated method stub
-
         mFlingDeviceController.launchApplication(applicationId,
                 relaunchIfRunning);
     }
