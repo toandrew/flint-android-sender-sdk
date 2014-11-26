@@ -22,8 +22,10 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import tv.matchstick.client.internal.LOG;
@@ -38,6 +40,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 public abstract class DeviceScanner {
@@ -55,6 +58,9 @@ public abstract class DeviceScanner {
     private boolean mScanning;
     private boolean m;
     private boolean mErrorState;
+
+    protected final Map<String, ScannerDeviceData> mScannerData = new HashMap<String, ScannerDeviceData>();
+
 
     protected DeviceScanner(Context context) {
         mContext = context;
@@ -254,6 +260,19 @@ public abstract class DeviceScanner {
                     reportNetworkError();
                 }
             });
+        }
+    }
+
+    public class ScannerDeviceData {
+        FlingDevice mFlingDevice;
+        long mScannedTime;
+        long mTTl;
+        boolean mIsOffline;
+
+        public ScannerDeviceData(FlingDevice device, long ttl) {
+            mFlingDevice = device;
+            mTTl = ttl;
+            mScannedTime = SystemClock.elapsedRealtime();
         }
     }
 }

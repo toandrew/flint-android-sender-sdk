@@ -38,8 +38,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
     private final List<MdnsClient> mMdnsClientList = new ArrayList<MdnsClient>();
 
-    private final Map<String, ScannerDeviceData> mFoundDevices = new HashMap<String, ScannerDeviceData>();
-
     private final String mName;
 
     private Thread mScannerLoopThread;
@@ -57,8 +55,8 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     public void setDeviceOffline(String deviceId) {
         // TODO Auto-generated method stub
         // let device offline according to the input 'deviceId';
-        synchronized (this.mFoundDevices) {
-            ScannerDeviceData deviceInfo = (ScannerDeviceData) mFoundDevices
+        synchronized (mScannerData) {
+            ScannerDeviceData deviceInfo = (ScannerDeviceData) mScannerData
                     .get(deviceId);
 
             if (deviceInfo != null) {
@@ -127,8 +125,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
     @Override
     protected void stopScanInternal() {
-        // TODO Auto-generated method stub
-
         synchronized (mMdnsClientList) {
             if (!mMdnsClientList.isEmpty()) {
                 Iterator<MdnsClient> it = mMdnsClientList.iterator();
@@ -161,10 +157,9 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     }
     @Override
     public void onAllDevicesOffline() {
-        // TODO Auto-generated method stub
-        synchronized (mFoundDevices) {
-            if (!mFoundDevices.isEmpty()) {
-                mFoundDevices.clear();
+        synchronized (mScannerData) {
+            if (!mScannerData.isEmpty()) {
+                mScannerData.clear();
 
                 final List<IDeviceScanListener> listeners = super
                         .getDeviceScannerListenerList();
@@ -263,11 +258,11 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
             final FlingDevice device;
             ScannerDeviceData scannerDeviceData;
-            synchronized (mFoundDevices) {
+            synchronized (mScannerData) {
 
                 if ((info.mIpV4AddrList == null)
                         || (info.mIpV4AddrList.isEmpty())) {
-                    mFoundDevices.remove(deviceId);
+                    mScannerData.remove(deviceId);
                     return;
                 }
 
@@ -296,7 +291,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 FlingDevice.setIconList(device, iconList);
                 FlingDevice.setFoundSource(device,
                         FlingDevice.FOUND_SOURCE_MDNS);
-                scannerDeviceData = (ScannerDeviceData) mFoundDevices
+                scannerDeviceData = (ScannerDeviceData) mScannerData
                         .get(deviceId);
 
                 if (scannerDeviceData != null) {
@@ -307,16 +302,16 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                         }
                         return;
                     } else {
-                        mFoundDevices.remove(deviceId);
+                        mScannerData.remove(deviceId);
                     }
                 }
 
-                mFoundDevices.put((String) deviceId, new ScannerDeviceData(
+                mScannerData.put((String) deviceId, new ScannerDeviceData(
                         device, info.mTTL));
             }
 
             if (scannerDeviceData != null
-                    && scannerDeviceData.mFlingDevice != null) {
+                    && scannerDeviceData.mFlingDevice != null && scannerDeviceData.mFlingDevice.getFoundSource().equals(FlingDevice.FOUND_SOURCE_MDNS)) {
                 notifyDeviceOffline(scannerDeviceData.mFlingDevice);
             }
 
@@ -359,10 +354,10 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                 }
             }
 
-            synchronized (mFoundDevices) {
+            synchronized (mScannerData) {
                 long currentTime = SystemClock.elapsedRealtime();
 
-                Iterator<Entry<String, ScannerDeviceData>> it = mFoundDevices
+                Iterator<Entry<String, ScannerDeviceData>> it = mScannerData
                         .entrySet().iterator();
                 while (it.hasNext()) {
                     ScannerDeviceData deviceInfo = it.next().getValue();
@@ -399,19 +394,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
         log.d("refreshLoop exiting");
 
         return;
-    }
-
-    private static final class ScannerDeviceData {
-        FlingDevice mFlingDevice;
-        long mScannedTime;
-        long mTTl;
-        boolean mIsOffline;
-
-        ScannerDeviceData(FlingDevice device, long ttl) {
-            mFlingDevice = device;
-            mTTl = ttl;
-            mScannedTime = SystemClock.elapsedRealtime();
-        }
     }
 
     protected static final class FlingDeviceInfo {

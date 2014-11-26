@@ -47,7 +47,6 @@ import android.os.SystemClock;
 
 public class SsdpDeviceScanner extends DeviceScanner {
     private final static String TAG = "SsdpDeviceScanner";
-    private final Map<String, ScannerPrivData> mScannerData = new HashMap<String, ScannerPrivData>();
     private final static int NUM_OF_THREADS = 20;
     private final static int RESCAN_INTERVAL = 10000;
     private SSDPSocket mSSDPSocket;
@@ -130,7 +129,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     Iterator iterator = mScannerData.keySet().iterator();
                     while (iterator.hasNext()) {
                         String key = (String) iterator.next();
-                        ScannerPrivData value = mScannerData.get(key);
+                        SsdpScannerData value = (SsdpScannerData) mScannerData.get(key);
                         if (value.mElapsedRealtime < SystemClock
                                 .elapsedRealtime() - RESCAN_INTERVAL) {
                             removeList.add(key);
@@ -258,7 +257,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 if (deviceId != null) {
                     synchronized (mScannerData) {
                         if (mScannerData.get(deviceId) != null) {
-                            mScannerData.get(deviceId).mElapsedRealtime = SystemClock
+                            ((SsdpScannerData) mScannerData.get(deviceId)).mElapsedRealtime = SystemClock
                                     .elapsedRealtime();
                         }
                     }
@@ -373,7 +372,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
             if (!"openflint".equals(device.manufacturer))
                 return;
             String deviceId = device.friendlyName;
-            ScannerPrivData data = null;
+            SsdpScannerData data = null;
             final FlingDevice flingDevice;
             if (deviceId != null) {
                 synchronized (mScannerData) {
@@ -410,7 +409,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     FlingDevice.setIconList(flingDevice, iconList);
                     FlingDevice.setFoundSource(flingDevice,
                             FlingDevice.FOUND_SOURCE_SSDP);
-                    data = (ScannerPrivData) mScannerData.get(deviceId);
+                    data = (SsdpScannerData) mScannerData.get(deviceId);
                     if (data != null) {
                         if (flingDevice.equals(data.mFlingDevice)) {
                             if (!data.d) {
@@ -423,13 +422,13 @@ public class SsdpDeviceScanner extends DeviceScanner {
                             mScannerData.remove(deviceId);
                         }
                     }
-                    mScannerData.put((String) deviceId, new ScannerPrivData(
+                    mScannerData.put((String) deviceId, new SsdpScannerData(
                             flingDevice, 10L, uuid));
                     mFoundDeviceMap.put(uuid, deviceId);
                     mDiscoveredDeviceList.remove(uuid);
                 }
 
-                if (data != null && data.mFlingDevice != null) {
+                if (data != null && data.mFlingDevice != null && data.mFlingDevice.getFoundSource().equals(FlingDevice.FOUND_SOURCE_SSDP)) {
                     notifyDeviceOffline(data.mFlingDevice);
                 }
 
@@ -457,7 +456,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
     public void setDeviceOffline(String id) {
         FlingDevice device = null;
         synchronized (mScannerData) {
-            ScannerPrivData data = (ScannerPrivData) this.mScannerData.get(id);
+            SsdpScannerData data = (SsdpScannerData) mScannerData.get(id);
             if (data != null) {
                 data.mElapsedRealtime = SystemClock.elapsedRealtime();
                 data.d = true;
@@ -505,18 +504,15 @@ public class SsdpDeviceScanner extends DeviceScanner {
         }
     }
 
-    final class ScannerPrivData {
+    class SsdpScannerData extends ScannerDeviceData {
         FlingDevice mFlingDevice;
         long mElapsedRealtime;
         long mTTl;
         boolean d;
         String mUuid;
 
-        ScannerPrivData(FlingDevice device, long ttl, String uuid) {
-            super();
-            mFlingDevice = device;
-            mTTl = ttl;
-            mElapsedRealtime = SystemClock.elapsedRealtime();
+        SsdpScannerData(FlingDevice device, long ttl, String uuid) {
+            super(device, ttl);
             mUuid = uuid;
         }
     }
