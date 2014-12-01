@@ -17,20 +17,16 @@
 package tv.matchstick.server.fling.bridge;
 
 import tv.matchstick.client.internal.IFlingDeviceController;
-import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDialController;
 import android.os.RemoteException;
 
 public final class FlingDeviceControllerStubImpl extends
 
 IFlingDeviceController.Stub {
-    final FlingService mFlingService;
     private final FlingDialController mFlingDeviceController;
 
-    public FlingDeviceControllerStubImpl(FlingService service,
-            FlingDialController controller) {
+    public FlingDeviceControllerStubImpl(FlingDialController controller) {
         super();
-        mFlingService = service;
         mFlingDeviceController = controller;
     }
 

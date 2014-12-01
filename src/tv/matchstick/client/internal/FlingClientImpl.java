@@ -18,7 +18,6 @@ package tv.matchstick.client.internal;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.Fling;
@@ -28,6 +27,7 @@ import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.ResultCallback;
 import tv.matchstick.fling.Status;
+import tv.matchstick.server.fling.bridge.FlingConnectedClient;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -667,22 +667,16 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
      * communicate with this Fling client.
      */
     @Override
-    protected void getServiceFromBroker(IFlingServiceBroker serviceBroker,
+    protected synchronized FlingConnectedClient createFlingConnectedClient(
             IFlingCallbackImpl flingCallback) throws RemoteException {
         log.d("getServiceFromBroker(): mLastApplicationId=%s",
                 mApplicationId);
-        Bundle bundle = new Bundle();
-        mFlingDevice.putInBundle(bundle);
-        bundle.putLong("tv.matchstick.fling.EXTRA_FLING_FLAGS", mFlingFlags);
-        if (mApplicationId != null) {
-            bundle.putString("last_application_id", mApplicationId);
-        }
 
         /**
          * Init fling service.
          */
-        serviceBroker.init(flingCallback, 4323000, getContext()
-                .getPackageName(), mIFlingDeviceControllerListener.asBinder(),
-                bundle); // TODO
+        return new FlingConnectedClient(getContext(),
+                (IFlingCallbacks)flingCallback, mFlingDevice, mApplicationId,
+                mIFlingDeviceControllerListener);
     }
 }

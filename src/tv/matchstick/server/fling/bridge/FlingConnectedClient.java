@@ -18,13 +18,16 @@ package tv.matchstick.server.fling.bridge;
 
 import tv.matchstick.client.internal.IFlingCallbacks;
 import tv.matchstick.client.internal.IFlingDeviceControllerListener;
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
-import tv.matchstick.fling.service.FlingService;
 import tv.matchstick.server.fling.FlingDialController;
+import android.content.Context;
 import android.os.IBinder.DeathRecipient;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 
 /**
@@ -32,52 +35,38 @@ import android.os.RemoteException;
  * device,etc)
  */
 public final class FlingConnectedClient implements IFlingSrvController {
-
-    final FlingService mFlingService;
+    private static final LOG log = new LOG("FlingConnectedClient");
     private FlingDeviceControllerStubImpl mStubImpl;
     private final IFlingDeviceControllerListener mFlingDeviceControllerListener;
     private final DeathRecipient mFlingCallbackDeathHandler;
     private final DeathRecipient mListenerDeathHandler;
     private final FlingDevice mFlingDevice;
     private String mLastAppId;
-    private String mLastSessionId;
     private FlingDialController mFlingDialController;
     private final IFlingCallbacks mFlingCallbacks;
-    private final String mPackageName;
-    private final long mFlags;
 
     /**
      * Fling Client which will be interacted with app side to do all media
      * control works
      * 
-     * @param service
+     * @param context
      * @param callbacks
      * @param device
      * @param lastApplicationId
-     * @param lastSessionId
      * @param listener
-     * @param packageName
-     * @param flags
      */
-    public FlingConnectedClient(FlingService service,
-            IFlingCallbacks callbacks, FlingDevice device,
-            String lastApplicationId, String lastSessionId,
-            IFlingDeviceControllerListener listener, String packageName,
-            long flags) {
+    public FlingConnectedClient(Context context, IFlingCallbacks callbacks,
+            FlingDevice device, String lastApplicationId,
+            IFlingDeviceControllerListener listener) {
         super();
-
-        mFlingService = service;
 
         mFlingCallbacks = (IFlingCallbacks) ValueChecker
                 .checkNullPointer(callbacks);
 
         mFlingDevice = device;
         mLastAppId = lastApplicationId;
-        mLastSessionId = lastSessionId;
         mFlingDeviceControllerListener = listener;
         mStubImpl = null;
-        mPackageName = packageName;
-        mFlags = flags;
 
         mFlingCallbackDeathHandler = new DeathRecipient() {
 
@@ -104,18 +93,15 @@ public final class FlingConnectedClient implements IFlingSrvController {
             mFlingDeviceControllerListener.asBinder().linkToDeath(
                     mListenerDeathHandler, 0);
         } catch (RemoteException e) {
-            FlingService.log().e("client disconnected before listener was set");
+            log.e("client disconnected before listener was set");
             if (!mFlingDialController.isDisposed())
                 mFlingDialController.release();
         }
 
-        FlingService.log().d("acquireDeviceController by %s", mPackageName);
-
-        FlingService.log().d("Create one fling device controller!");
-        mFlingDialController = new FlingDialController(mFlingService,
-                FlingService.getHandler(mFlingService), mFlingDevice, this);
-        mStubImpl = new FlingDeviceControllerStubImpl(mFlingService,
-                mFlingDialController);
+        log.d("Create one fling device controller!");
+        mFlingDialController = new FlingDialController(context, new Handler(
+                Looper.getMainLooper()), mFlingDevice, this);
+        mStubImpl = new FlingDeviceControllerStubImpl(mFlingDialController);
 
         /**
          * already connected?
@@ -125,7 +111,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
                 mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
                         mStubImpl.asBinder(), null);
             } catch (RemoteException e) {
-                FlingService.log().d("client died while brokering service");
+                log.d("client died while brokering service");
             }
             return;
         }
@@ -134,10 +120,8 @@ public final class FlingConnectedClient implements IFlingSrvController {
          * is not busy on connecting to device?
          */
         if (!mFlingDialController.isConnecting()) {
-            FlingService
-                    .log()
-                    .d("reconnecting to device with applicationId=%s, sessionId=%s",
-                            mLastAppId, mLastSessionId);
+            log.d(
+                    "reconnecting to device with applicationId=%s", mLastAppId);
             if (mLastAppId != null)
                 mFlingDialController.reconnectToDevice(mLastAppId);
             else
@@ -151,7 +135,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
             mFlingCallbacks.asBinder().linkToDeath(mFlingCallbackDeathHandler,
                     0);
         } catch (RemoteException e) {
-            FlingService.log().w("Unable to link listener reaper");
+            log.w("Unable to link listener reaper");
         }
     }
 
@@ -163,15 +147,13 @@ public final class FlingConnectedClient implements IFlingSrvController {
     static void handleBinderDeath(FlingConnectedClient client) {
         if (client.mFlingDialController != null
                 && !client.mFlingDialController.isDisposed()) {
-            FlingService.log().w(
+            log.w(
                     "calling releaseReference from handleBinderDeath()");
             client.mFlingDialController.release();
-            FlingService.log().d("Released controller.");
+            log.d("Released controller.");
         }
-        FlingService.log().d("Removing ConnectedClient.");
-
-        // remove connected client in fling service
-        FlingService.removeFlingClient(client.mFlingService, client);
+        log.d("Removing ConnectedClient.");
+        
     }
 
     /**
@@ -184,9 +166,9 @@ public final class FlingConnectedClient implements IFlingSrvController {
         try {
             mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
                     mStubImpl.asBinder(), null);
-            FlingService.log().d("Connected to device.");
+            log.d("Connected to device.");
         } catch (RemoteException remoteexception) {
-            FlingService.log().w(remoteexception,
+            log.w(remoteexception,
                     "client died while brokering service");
         }
     }
@@ -199,12 +181,12 @@ public final class FlingConnectedClient implements IFlingSrvController {
      */
     @Override
     public final void onDisconnected(int status) {
-        FlingService.log().d("onDisconnected: status=%d", status);
-        
+        log.d("onDisconnected: status=%d", status);
+
         try {
             mFlingDeviceControllerListener.onDisconnected(status);
         } catch (RemoteException e) {
-            FlingService.log().d(e.toString(),
+            log.d(e.toString(),
                     "client died while brokering service");
         }
 
@@ -212,9 +194,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
          * release resources in controller instance
          */
         if (!mFlingDialController.isDisposed()) {
-            FlingService
-                    .log()
-                    .w("calling releaseReference from ConnectedClient.onDisconnected");
+            log.w("calling releaseReference from ConnectedClient.onDisconnected");
             mFlingDialController.release();
         }
     }
@@ -226,8 +206,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     public final void onApplicationConnected(
             ApplicationMetadata applicationmetadata, String statusText,
             String sessionId, boolean relaunched) {
-//        mLastAppId = applicationmetadata.getApplicationId();
-        mLastSessionId = sessionId;
+        // mLastAppId = applicationmetadata.getApplicationId();
         try {
             mFlingDeviceControllerListener.onApplicationConnected(
                     applicationmetadata, statusText, relaunched);
@@ -257,7 +236,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     @Override
     public final void notifyOnMessageReceived(String namespace, String message) {
         try {
-            
+
             mFlingDeviceControllerListener
                     .onMessageReceived(namespace, message);
         } catch (RemoteException e) {
@@ -273,10 +252,10 @@ public final class FlingConnectedClient implements IFlingSrvController {
         try {
             mFlingCallbacks
                     .onPostInitComplete(1001, mStubImpl.asBinder(), null);
-            FlingService.log().d("Connected to device without app.");
+            log.d("Connected to device without app.");
         } catch (RemoteException e) {
             e.printStackTrace();
-            FlingService.log().d(e.toString(),
+            log.d(e.toString(),
                     "client died while brokering service");
         }
     }
@@ -304,7 +283,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
                     null, null);
         } catch (RemoteException e) {
             e.printStackTrace();
-            FlingService.log().d(e.toString(),
+            log.d(e.toString(),
                     "client died while brokering service");
         }
     }
