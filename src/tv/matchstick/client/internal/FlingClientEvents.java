@@ -19,7 +19,6 @@ package tv.matchstick.client.internal;
 import java.util.ArrayList;
 
 import tv.matchstick.client.common.IFlingClient;
-import tv.matchstick.client.common.IFlingClient.OnConnectionFailedListener;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.FlingManager.ConnectionCallbacks;
@@ -39,9 +38,7 @@ public class FlingClientEvents {
     private final Handler mHandler;
 
     private ArrayList<ConnectionCallbacks> mConnectionCallbacks = new ArrayList<ConnectionCallbacks>();
-    private ArrayList<OnConnectionFailedListener> mFailedListeners = new ArrayList<OnConnectionFailedListener>();
 
-    private boolean mIsNotifingFailedListener = false;
     private boolean mIsNotifingCallbacks = false;
 
     public FlingClientEvents(Context paramContext, Looper paramLooper,
@@ -100,22 +97,15 @@ public class FlingClientEvents {
     }
 
     public void notifyOnConnectionFailed(ConnectionResult result) {
-        mHandler.removeMessages(1);
-        synchronized (mFailedListeners) {
-            mIsNotifingFailedListener = true;
-            ArrayList<OnConnectionFailedListener> failedList = mFailedListeners;
-            int i = 0;
-            int size = failedList.size();
-            while (i < size) {
+        mHandler.removeMessages(NOTIFY_CALLBACK);
+        synchronized (mConnectionCallbacks) {
+            ArrayList<ConnectionCallbacks> failedList = mConnectionCallbacks;
+            for (ConnectionCallbacks failedCallback : failedList) {
                 if (!mFlingClientEventCallback.canReceiveEvent()) {
                     return;
                 }
-                if (mFailedListeners.contains(failedList.get(i))) {
-                    failedList.get(i).onConnectionFailed(result);
-                }
-                ++i;
+                failedCallback.onConnectionFailed(result);
             }
-            mIsNotifingFailedListener = false;
         }
     }
 
@@ -164,51 +154,6 @@ public class FlingClientEvents {
                 } else if (mIsNotifingCallbacks
                         && !(mUnConnectionCallbacks.contains(listener))) {
                     mUnConnectionCallbacks.add(listener);
-                }
-            }
-        }
-    }
-
-    public void registerConnectionFailedListener(
-            IFlingClient.OnConnectionFailedListener listener) {
-        ValueChecker.checkNullPointer(listener);
-        synchronized (mFailedListeners) {
-            if (mFailedListeners.contains(listener)) {
-                Log.w("FlingClientEvents",
-                        "registerConnectionFailedListener(): listener "
-                                + listener + " is already registered");
-            } else {
-                if (mIsNotifingFailedListener) {
-                    mFailedListeners = new ArrayList<OnConnectionFailedListener>(
-                            mFailedListeners);
-                }
-                mFailedListeners.add(listener);
-            }
-        }
-    }
-
-    public boolean isConnectionFailedListenerRegistered(
-            IFlingClient.OnConnectionFailedListener listener) {
-        ValueChecker.checkNullPointer(listener);
-        synchronized (mFailedListeners) {
-            return mFailedListeners.contains(listener);
-        }
-    }
-
-    public void unregisterConnectionFailedListener(
-            IFlingClient.OnConnectionFailedListener listener) {
-        ValueChecker.checkNullPointer(listener);
-        synchronized (mFailedListeners) {
-            if (mFailedListeners != null) {
-                if (mIsNotifingFailedListener) {
-                    mFailedListeners = new ArrayList<OnConnectionFailedListener>(
-                            mFailedListeners);
-                }
-                boolean result = mFailedListeners.remove(listener);
-                if (!result) {
-                    Log.w("FlingClientEvents",
-                            "unregisterConnectionFailedListener(): listener "
-                                    + listener + " not found");
                 }
             }
         }

@@ -19,7 +19,7 @@ package tv.matchstick.server.fling.socket;
 public interface FlingSocketListener {
     public abstract void onConnected();
 
-    public abstract void onConnectionFailed(int reason);
+    public abstract void onConnectionFailed();
 
     public abstract void onMessageReceived(String message);
 

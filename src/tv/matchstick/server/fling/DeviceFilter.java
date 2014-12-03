@@ -198,10 +198,10 @@ abstract class DeviceFilter {
         }
 
         @Override
-        public final void onConnectionFailed(int reason) {
-            log.w("Connection to %s:%d (%s) failed with error %d", mFlingDevice
+        public final void onConnectionFailed() {
+            log.w("Connection to %s:%d (%s) failed with error net work", mFlingDevice
                     .getIpAddress().toString(), mFlingDevice.getServicePort(),
-                    mFlingDevice.getFriendlyName(), reason);
+                    mFlingDevice.getFriendlyName());
 
             mHandler.post(new Runnable() {
 

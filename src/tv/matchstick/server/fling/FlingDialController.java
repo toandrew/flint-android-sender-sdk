@@ -95,11 +95,6 @@ public class FlingDialController implements FlingSocketListener {
     }
 
     @Override
-    public void onConnectionFailed(int reason) {
-        mFlingSrvController.onConnectionFailed();
-    }
-
-    @Override
     public void onDisconnected(int reason) {
         FlingDeviceService.onSocketDisconnected(mContext, this, reason);
     }
@@ -115,7 +110,7 @@ public class FlingDialController implements FlingSocketListener {
                 if (mApplicationState.state != null) {
                     onDialConnected();
                 } else {
-                    onConnectionFailed(0);
+                    onConnectionFailed();
                 }
                 mIsConnecting = false;
             }
@@ -724,5 +719,10 @@ public class FlingDialController implements FlingSocketListener {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onConnectionFailed() {
+        mFlingSrvController.onConnectionFailed();
     }
 }

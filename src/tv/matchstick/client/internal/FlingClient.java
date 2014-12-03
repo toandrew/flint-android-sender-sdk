@@ -77,7 +77,6 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     protected FlingClient(Context context, Looper looper,
             FlingManager.ConnectionCallbacks callbacks,
-            FlingManager.OnConnectionFailedListener failedListener,
             String[] strArray) {
 
         ValueChecker.checkNullPointer(context);
@@ -89,9 +88,6 @@ public abstract class FlingClient<T extends IInterface> implements
 
         ValueChecker.checkNullPointer(callbacks);
         registerConnectionCallbacks(callbacks);
-
-        ValueChecker.checkNullPointer(failedListener);
-        registerConnectionFailedListener(failedListener);
     }
 
     /**
@@ -104,12 +100,10 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     protected FlingClient(Context context,
             IFlingClient.ConnectionCallbacks callbacks,
-            IFlingClient.OnConnectionFailedListener failedListener,
             String[] strArray) {
 
         this(context, context.getMainLooper(), new ClientConnectionCallbacks(
-                callbacks),
-                new ClientOnConnectionFailedListener(failedListener), strArray);
+                callbacks), strArray);
     }
 
     /**
@@ -148,10 +142,9 @@ public abstract class FlingClient<T extends IInterface> implements
      * {@link tv.matchstick.client.internal.FlingClient.FlingClientServiceConnection}
      */
     public void connect() {
-        if (mConnected) {
+        if (mFlingConnectedClient != null) {
             return;
         }
-
         mConnected = true;
         mConnectedState = CONNECTION_STATUS_CONNECTING;
 
@@ -296,14 +289,6 @@ public abstract class FlingClient<T extends IInterface> implements
     }
 
     /**
-     * Register connection failed listener.
-     */
-    public void registerConnectionFailedListener(
-            FlingManager.OnConnectionFailedListener listener) {
-        this.mClientEvent.registerConnectionFailedListener(listener);
-    }
-
-    /**
      * register connection callback.
      */
     public void registerConnectionCallbacks(
@@ -331,30 +316,6 @@ public abstract class FlingClient<T extends IInterface> implements
         this.mClientEvent
                 .unregisterConnectionCallbacks(new ClientConnectionCallbacks(
                         callbacks));
-    }
-
-    /**
-     * register connection failed listener.
-     */
-    public void registerConnectionFailedListener(
-            IFlingClient.OnConnectionFailedListener listener) {
-        this.mClientEvent.registerConnectionFailedListener(listener);
-    }
-
-    /**
-     * check whether connection failed listener is registered.
-     */
-    public boolean isConnectionFailedListenerRegistered(
-            IFlingClient.OnConnectionFailedListener listener) {
-        return this.mClientEvent.isConnectionFailedListenerRegistered(listener);
-    }
-
-    /**
-     * unregister connection failed listener.
-     */
-    public void unregisterConnectionFailedListener(
-            IFlingClient.OnConnectionFailedListener listener) {
-        this.mClientEvent.unregisterConnectionFailedListener(listener);
     }
 
     /**
@@ -387,32 +348,9 @@ public abstract class FlingClient<T extends IInterface> implements
             ValueChecker
                     .checkNullPointer(flingClient,
                             "onPostInitComplete can be called only once per call to getServiceFromBroker");
-
             // return current connect status.
             flingClient.onPostInitResult(statusCode, binder, bundle);
             flingClient = null;
-        }
-    }
-
-    public static final class ClientOnConnectionFailedListener implements
-            FlingManager.OnConnectionFailedListener {
-        private final IFlingClient.OnConnectionFailedListener failedListener;
-
-        public ClientOnConnectionFailedListener(
-                IFlingClient.OnConnectionFailedListener listener) {
-            this.failedListener = listener;
-        }
-
-        public void onConnectionFailed(ConnectionResult result) {
-            this.failedListener.onConnectionFailed(result);
-        }
-
-        public boolean equals(Object other) {
-            if ((other instanceof ClientOnConnectionFailedListener)) {
-                return this.failedListener
-                        .equals(((ClientOnConnectionFailedListener) other).failedListener);
-            }
-            return this.failedListener.equals(other);
         }
     }
 
@@ -439,6 +377,11 @@ public abstract class FlingClient<T extends IInterface> implements
                         .equals(((ClientConnectionCallbacks) other).callback);
             }
             return this.callback.equals(other);
+        }
+
+        @Override
+        public void onConnectionFailed(ConnectionResult result) {
+            callback.onConnectionFailed(result);
         }
     }
 
@@ -530,10 +473,7 @@ public abstract class FlingClient<T extends IInterface> implements
                     }
                 } catch (RemoteException e) {
                 }
-                mConnected = false;
-                mFlingClientHandler.sendMessage(mFlingClientHandler
-                        .obtainMessage(MSG_WHAT_DISCONNECTED,
-                                Integer.valueOf(1)));
+                mFlingConnectedClient = null;
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
                 mClientEvent.notifyOnConnectionFailed(new ConnectionResult(8,
@@ -549,10 +489,7 @@ public abstract class FlingClient<T extends IInterface> implements
                     pendingIntent = (PendingIntent) this.bundle
                             .getParcelable("pendingIntent");
                 }
-                mConnected = false;
-                mFlingClientHandler.sendMessage(mFlingClientHandler
-                        .obtainMessage(MSG_WHAT_DISCONNECTED,
-                                Integer.valueOf(1)));
+                mFlingConnectedClient = null;
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
                 mClientEvent.notifyOnConnectionFailed(new ConnectionResult(
@@ -604,6 +541,7 @@ public abstract class FlingClient<T extends IInterface> implements
             if (msg.what == MSG_WHAT_DISCONNECTED) {
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
+
                 mClientEvent.notifyOnConnectionSuspended(((Integer) msg.obj)
                         .intValue());
                 return;

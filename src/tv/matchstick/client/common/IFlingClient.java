@@ -34,28 +34,12 @@ public interface IFlingClient {
 
     public void unregisterConnectionCallbacks(ConnectionCallbacks callbacks);
 
-    public void registerConnectionFailedListener(
-            OnConnectionFailedListener listener);
-
-    public boolean isConnectionFailedListenerRegistered(
-            OnConnectionFailedListener listener);
-
-    public void unregisterConnectionFailedListener(
-            OnConnectionFailedListener listener);
-
-    public interface OnConnectionFailedListener {
-        /**
-         * Called when there was an error connecting the client to the service.
-         *
-         * @param result
-         */
-        public void onConnectionFailed(ConnectionResult result);
-    }
-
     public interface ConnectionCallbacks {
         public void onConnected(Bundle paramBundle);
 
         public void onDisconnected();
+
+        public void onConnectionFailed(ConnectionResult result);
     }
 
 }

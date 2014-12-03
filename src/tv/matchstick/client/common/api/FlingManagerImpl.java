@@ -95,53 +95,6 @@ public final class FlingManagerImpl implements FlingManager {
         }
     };
 
-    /**
-     * Called when connected.
-     */
-    final ConnectionCallbacks mConnectionCallbacks = new ConnectionCallbacks() {
-        /**
-         * Connected event
-         */
-        public void onConnected(Bundle connectionHint) {
-            mLock.lock();
-            try {
-                if (mConnectState == 1) {
-                    if (connectionHint != null) {
-                        mBundle.putAll(connectionHint);
-                    }
-                    notifyConnectionResult();
-                }
-            } finally {
-                mLock.unlock();
-            }
-        }
-
-        /**
-         * Connection suspended event
-         */
-        public void onConnectionSuspended(int cause) {
-            mLock.lock();
-            try {
-                onDisconnected(cause);
-                switch (cause) {
-                case 2:
-                    connect();
-                    break;
-                case 1:
-                    if (canRetryConnect()) {
-                        return;
-                    }
-                    mRetryConnectCounter = 2;
-                    mHander.sendMessageDelayed(
-                            mHander.obtainMessage(MSG_WHAT_DO_CONNECT),
-                            mMessageDelay);
-                }
-            } finally {
-                mLock.unlock();
-            }
-        }
-    };
-
     private final FlingClientEvents.ClientEventCallback mClientEventCallback = new FlingClientEvents.ClientEventCallback() {
         public boolean canReceiveEvent() {
             return mCanReceiveEvent;
@@ -166,8 +119,7 @@ public final class FlingManagerImpl implements FlingManager {
      * @param connFailedListenerSet
      */
     public FlingManagerImpl(Context context, Looper looper, Map<Api, ApiOptions> apiOptionsMap,
-            Set<ConnectionCallbacks> connCallbacksSet,
-            Set<OnConnectionFailedListener> connFailedListenerSet) {
+            Set<ConnectionCallbacks> connCallbacksSet) {
         mFlingClientEvents = new FlingClientEvents(context, looper,
                 mClientEventCallback);
         mHander = new FlingApiClientHandler(looper);
@@ -178,42 +130,71 @@ public final class FlingManagerImpl implements FlingManager {
             mFlingClientEvents.registerConnectionCallbacks(cb);
         }
 
-        Iterator<OnConnectionFailedListener> itListener = connFailedListenerSet
-                .iterator();
-        while (itListener.hasNext()) {
-            mFlingClientEvents.registerConnectionFailedListener(itListener
-                    .next());
-        }
-
         Iterator<Api> apis = apiOptionsMap.keySet().iterator();
         while (apis.hasNext()) {
             Api api = apis.next();
             final Api.ConnectionBuilder<?> builder = api.getConnectionBuilder();
             ApiOptions apiOption = apiOptionsMap.get(api);
             mConnectionMap.put(builder, builder.build(context, looper,
-                    apiOption, mConnectionCallbacks,
-                    /**
-                     * Connection failed listener
-                     */
-                    new OnConnectionFailedListener() {
-
-                        /**
-                         * Connection failed event happens
-                         */
-                        public void onConnectionFailed(ConnectionResult result) {
-                            mLock.lock();
-                            try {
-                                if ((mConnectionFailedResult == null)
-                                        || (builder.getPriority() < mCurrentPrority)) {
-                                    mConnectionFailedResult = result;
-                                    mCurrentPrority = builder.getPriority();
-                                }
-                                notifyConnectionResult();
-                            } finally {
-                                mLock.unlock();
+                    apiOption, new ConnectionCallbacks() {
+                /**
+                 * Connected event
+                 */
+                public void onConnected(Bundle connectionHint) {
+                    mLock.lock();
+                    try {
+                        if (mConnectState == 1) {
+                            if (connectionHint != null) {
+                                mBundle.putAll(connectionHint);
                             }
+                            notifyConnectionResult();
                         }
-                    }));
+                    } finally {
+                        mLock.unlock();
+                    }
+                }
+
+                /**
+                 * Connection suspended event
+                 */
+                public void onConnectionSuspended(int cause) {
+                    mLock.lock();
+                    try {
+                        onDisconnected(cause);
+                        switch (cause) {
+                        case 2:
+                            connect();
+                            break;
+                        case 1:
+                            if (canRetryConnect()) {
+                                return;
+                            }
+
+                            mRetryConnectCounter = 2;
+                            mHander.sendMessageDelayed(
+                                    mHander.obtainMessage(MSG_WHAT_DO_CONNECT),
+                                    mMessageDelay);
+                        }
+                    } finally {
+                        mLock.unlock();
+                    }
+                }
+
+                @Override
+                public void onConnectionFailed(ConnectionResult result) {
+                    mLock.lock();
+                    try {
+                        if ((mConnectionFailedResult == null)
+                                || (builder.getPriority() < mCurrentPrority)) {
+                            mConnectionFailedResult = result;
+                            mCurrentPrority = builder.getPriority();
+                        }
+                        notifyConnectionResult();
+                    } finally {
+                        mLock.unlock();
+                    }
+                }
+            }));
         }
     }
 
@@ -560,25 +541,6 @@ public final class FlingManagerImpl implements FlingManager {
     @Override
     public void unregisterConnectionCallbacks(ConnectionCallbacks listener) {
         mFlingClientEvents.unregisterConnectionCallbacks(listener);
-    }
-
-    @Override
-    public void registerConnectionFailedListener(
-            OnConnectionFailedListener listener) {
-        mFlingClientEvents.registerConnectionFailedListener(listener);
-    }
-
-    @Override
-    public boolean isConnectionFailedListenerRegistered(
-            OnConnectionFailedListener listener) {
-        return mFlingClientEvents
-                .isConnectionFailedListenerRegistered(listener);
-    }
-
-    @Override
-    public void unregisterConnectionFailedListener(
-            OnConnectionFailedListener listener) {
-        mFlingClientEvents.unregisterConnectionFailedListener(listener);
     }
 
     /**

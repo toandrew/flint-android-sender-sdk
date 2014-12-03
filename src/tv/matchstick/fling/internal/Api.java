@@ -98,8 +98,7 @@ public final class Api {
          * @return the specific class instance
          */
         public T build(Context context, Looper looper,
-                ApiOptions options, FlingManager.ConnectionCallbacks callbacks,
-                FlingManager.OnConnectionFailedListener failedListener);
+                ApiOptions options, FlingManager.ConnectionCallbacks callbacks);
 
         /**
          * Get related priority

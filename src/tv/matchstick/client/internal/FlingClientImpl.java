@@ -92,10 +92,9 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
      */
     public FlingClientImpl(Context context, Looper looper, FlingDevice device,
             long flags, Fling.Listener flingListener,
-            FlingManager.ConnectionCallbacks callbacks,
-            FlingManager.OnConnectionFailedListener failedListener) {
+            FlingManager.ConnectionCallbacks callbacks) {
 
-        super(context, looper, callbacks, failedListener, null);
+        super(context, looper, callbacks, null);
 
         this.mFlingDevice = device;
         this.mFlingListener = flingListener;

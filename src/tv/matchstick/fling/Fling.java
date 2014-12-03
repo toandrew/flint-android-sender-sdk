@@ -22,7 +22,6 @@ import tv.matchstick.client.internal.FlingClientImpl;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.FlingManager.ApiOptions;
 import tv.matchstick.fling.FlingManager.ConnectionCallbacks;
-import tv.matchstick.fling.FlingManager.OnConnectionFailedListener;
 import tv.matchstick.fling.internal.Api;
 import tv.matchstick.fling.internal.MatchStickApi.MatchStickApiImpl;
 import android.content.Context;
@@ -94,8 +93,7 @@ public class Fling {
          */
         @Override
         public FlingClientImpl build(Context context, Looper looper, ApiOptions options,
-                ConnectionCallbacks callbacks,
-                OnConnectionFailedListener failedListener) {
+                ConnectionCallbacks callbacks) {
             ValueChecker.checkNullPointer(options,
                     "Setting the API options is required.");
             ValueChecker.checkTrueWithErrorMsg(options instanceof FlingOptions,
@@ -104,7 +102,7 @@ public class Fling {
             FlingOptions flingOptions = (FlingOptions) options;
             return new FlingClientImpl(context, looper,
                     flingOptions.flingDevice, flingOptions.loggingFlag,
-                    flingOptions.flingListener, callbacks, failedListener);
+                    flingOptions.flingListener, callbacks);
         }
     };
 
