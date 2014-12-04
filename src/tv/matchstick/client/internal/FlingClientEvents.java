@@ -18,7 +18,6 @@ package tv.matchstick.client.internal;
 
 import java.util.ArrayList;
 
-import tv.matchstick.client.common.IFlingClient;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.FlingManager.ConnectionCallbacks;
@@ -33,7 +32,9 @@ import android.util.Log;
  * FlingClientEvents
  */
 public class FlingClientEvents {
-    final ArrayList<ConnectionCallbacks> mUnConnectionCallbacks = new ArrayList<ConnectionCallbacks>();
+    private static final int NOTIFY_CALLBACK = 1;
+
+    private final ArrayList<ConnectionCallbacks> mUnConnectionCallbacks = new ArrayList<ConnectionCallbacks>();
     private final ClientEventCallback mFlingClientEventCallback;
     private final Handler mHandler;
 
@@ -41,10 +42,10 @@ public class FlingClientEvents {
 
     private boolean mIsNotifingCallbacks = false;
 
-    public FlingClientEvents(Context paramContext, Looper paramLooper,
+    public FlingClientEvents(Context context, Looper looper,
             ClientEventCallback callback) {
         mFlingClientEventCallback = callback;
-        mHandler = new ClientEventsHandler(paramLooper);
+        mHandler = new ClientEventsHandler(looper);
     }
 
     protected void notifyOnConnected() {
@@ -56,41 +57,37 @@ public class FlingClientEvents {
     public void notifyOnConnected(Bundle bundle) {
         synchronized (mConnectionCallbacks) {
             ValueChecker.checkTrue(!mIsNotifingCallbacks);
-            mHandler.removeMessages(1);
+            mHandler.removeMessages(NOTIFY_CALLBACK);
             mIsNotifingCallbacks = true;
             ValueChecker.checkTrue(mUnConnectionCallbacks.size() == 0);
-            ArrayList<ConnectionCallbacks> localArrayList = mConnectionCallbacks;
-            int i = 0;
-            int j = localArrayList.size();
-            while ((i < j) && (mFlingClientEventCallback.canReceiveEvent())) {
-                if (!mFlingClientEventCallback.isConnected()) {
+            ArrayList<ConnectionCallbacks> connectionList = mConnectionCallbacks;
+            for (ConnectionCallbacks callback : connectionList) {
+                if (!mFlingClientEventCallback.canReceiveEvent()) {
                     break;
                 }
-                if (!mUnConnectionCallbacks.contains(localArrayList.get(i))) {
-                    localArrayList.get(i).onConnected(bundle);
+                if (mFlingClientEventCallback.isConnected()
+                        && !mUnConnectionCallbacks.contains(callback)) {
+                    callback.onConnected(bundle);
                 }
-                ++i;
             }
+
             mUnConnectionCallbacks.clear();
             mIsNotifingCallbacks = false;
         }
     }
 
-    public void notifyOnConnectionSuspended(int paramInt) {
-        mHandler.removeMessages(1);
+    public void notifyOnConnectionSuspended(int cause) {
+        mHandler.removeMessages(NOTIFY_CALLBACK);
         synchronized (mConnectionCallbacks) {
             mIsNotifingCallbacks = true;
-            ArrayList<ConnectionCallbacks> list = mConnectionCallbacks;
-            int i = 0;
-            int size = list.size();
-            while (i < size) {
+            ArrayList<ConnectionCallbacks> connectionList = mConnectionCallbacks;
+            for (ConnectionCallbacks callback : connectionList) {
                 if (!mFlingClientEventCallback.canReceiveEvent()) {
                     break;
                 }
-                if (mConnectionCallbacks.contains(list.get(i))) {
-                    list.get(i).onConnectionSuspended(paramInt);
+                if (mConnectionCallbacks.contains(callback)) {
+                    callback.onConnectionSuspended(cause);
                 }
-                ++i;
             }
             mIsNotifingCallbacks = false;
         }
@@ -124,10 +121,11 @@ public class FlingClientEvents {
                 mConnectionCallbacks.add(listener);
             }
         }
-        if (!mFlingClientEventCallback.isConnected()) {
-            return;
+        if (mFlingClientEventCallback.isConnected()) {
+            mHandler.sendMessage(mHandler.obtainMessage(NOTIFY_CALLBACK,
+                    listener));
         }
-        mHandler.sendMessage(mHandler.obtainMessage(1, listener));
+
     }
 
     public boolean isConnectionCallbacksRegistered(
@@ -167,8 +165,6 @@ public class FlingClientEvents {
         public Bundle getBundle();
     }
 
-    static final int NOTIFY_CALLBACK = 1;
-
     final class ClientEventsHandler extends Handler {
         public ClientEventsHandler(Looper paramLooper) {
             super(paramLooper);
@@ -185,10 +181,10 @@ public class FlingClientEvents {
                         cb.onConnected(bundle);
                     }
                 }
-                return;
+            } else {
+                Log.wtf("FlingClientEvents",
+                        "Don't know how to handle this message.");
             }
-            Log.wtf("FlingClientEvents",
-                    "Don't know how to handle this message.");
         }
     }
 }

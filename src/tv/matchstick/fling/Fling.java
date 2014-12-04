@@ -101,7 +101,7 @@ public class Fling {
 
             FlingOptions flingOptions = (FlingOptions) options;
             return new FlingClientImpl(context, looper,
-                    flingOptions.flingDevice, flingOptions.loggingFlag,
+                    flingOptions.flingDevice,
                     flingOptions.flingListener, callbacks);
         }
     };

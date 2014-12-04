@@ -17,7 +17,6 @@
 package tv.matchstick.client.common.api;
 
 public class StatusCodes {
-
     public static final int SUCCESS_CACHE = -1;
     public static final int SUCCESS = 0;
     public static final int SERVICE_MISSING = 1;

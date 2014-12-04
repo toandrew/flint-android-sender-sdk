@@ -28,6 +28,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import tv.matchstick.client.common.Releasable;
 import tv.matchstick.client.internal.FlingClientEvents;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.ConnectionResult;
@@ -45,17 +46,24 @@ import android.util.Log;
 
 /**
  * Implementation of FlingManager.
- *
+ * 
  * It's a concrete implementation of FlingManager interface.
  */
 public final class FlingManagerImpl implements FlingManager {
+    private static final int MSG_WHAT_DO_CONNECT = 1;
+
+    private static final int CONNECT_STATE_CONNECTING = 1;
+    private static final int CONNECT_STATE_CONNECTED = 2;
+    private static final int CONNECT_STATE_DISCONNECTING = 3;
+    private static final int CONNECT_STATE_DISCONNECTED = 4;
+
     private final FlingClientEvents mFlingClientEvents;
 
-    final Queue<FlingApiClientTask<?>> mPendingTaskQueue = new LinkedList<FlingApiClientTask<?>>();
+    private final Queue<FlingApiClientTask<?>> mPendingTaskQueue = new LinkedList<FlingApiClientTask<?>>();
 
-    final Handler mHander;
+    private final Handler mHander;
 
-    final Set<FlingApiClientTask<?>> mReleaseableTasks = new HashSet<FlingApiClientTask<?>>();
+    private final Set<FlingApiClientTask<?>> mReleaseableTasks = new HashSet<FlingApiClientTask<?>>();
 
     private final Lock mLock = new ReentrantLock();
 
@@ -67,7 +75,7 @@ public final class FlingManagerImpl implements FlingManager {
 
     private int mCurrentPrority;
 
-    private int mConnectState = 4; // 1: connecting, 2: connected, 3:
+    private int mConnectState = CONNECT_STATE_DISCONNECTED;
 
     private int mRetryConnectCounter = 0;
 
@@ -77,7 +85,7 @@ public final class FlingManagerImpl implements FlingManager {
 
     private boolean mCanReceiveEvent;
 
-    private long mMessageDelay = 5000L;
+    private int mMessageDelay = 5000;
 
     private ConnectionResult mConnectionFailedResult;
 
@@ -85,7 +93,7 @@ public final class FlingManagerImpl implements FlingManager {
      * Called when release resource.
      */
     private final ReleaseCallback mReleaseCallback = new ReleaseCallback() {
-        public void onRelease(FlingManagerImpl.FlingApiClientTask task) {
+        public void onRelease(FlingApiClientTask task) {
             mLock.lock();
             try {
                 mReleaseableTasks.remove(task);
@@ -111,14 +119,14 @@ public final class FlingManagerImpl implements FlingManager {
 
     /**
      * Implementation of FlingManager
-     *
+     * 
      * @param context
      * @param looper
      * @param apiOptionsMap
      * @param connCallbacksSet
-     * @param connFailedListenerSet
      */
-    public FlingManagerImpl(Context context, Looper looper, Map<Api, ApiOptions> apiOptionsMap,
+    public FlingManagerImpl(Context context, Looper looper,
+            Map<Api, ApiOptions> apiOptionsMap,
             Set<ConnectionCallbacks> connCallbacksSet) {
         mFlingClientEvents = new FlingClientEvents(context, looper,
                 mClientEventCallback);
@@ -126,8 +134,7 @@ public final class FlingManagerImpl implements FlingManager {
 
         Iterator<ConnectionCallbacks> itCallbacks = connCallbacksSet.iterator();
         while (itCallbacks.hasNext()) {
-            ConnectionCallbacks cb = itCallbacks.next();
-            mFlingClientEvents.registerConnectionCallbacks(cb);
+            mFlingClientEvents.registerConnectionCallbacks(itCallbacks.next());
         }
 
         Iterator<Api> apis = apiOptionsMap.keySet().iterator();
@@ -137,79 +144,76 @@ public final class FlingManagerImpl implements FlingManager {
             ApiOptions apiOption = apiOptionsMap.get(api);
             mConnectionMap.put(builder, builder.build(context, looper,
                     apiOption, new ConnectionCallbacks() {
-                /**
-                 * Connected event
-                 */
-                public void onConnected(Bundle connectionHint) {
-                    mLock.lock();
-                    try {
-                        if (mConnectState == 1) {
-                            if (connectionHint != null) {
-                                mBundle.putAll(connectionHint);
+                        /**
+                         * Connected event
+                         */
+                        public void onConnected(Bundle connectionHint) {
+                            mLock.lock();
+                            try {
+                                if (mConnectState == CONNECT_STATE_CONNECTING) {
+                                    if (connectionHint != null) {
+                                        mBundle.putAll(connectionHint);
+                                    }
+                                    notifyConnectionResult();
+                                }
+                            } finally {
+                                mLock.unlock();
                             }
-                            notifyConnectionResult();
                         }
-                    } finally {
-                        mLock.unlock();
-                    }
-                }
 
-                /**
-                 * Connection suspended event
-                 */
-                public void onConnectionSuspended(int cause) {
-                    mLock.lock();
-                    try {
-                        onDisconnected(cause);
-                        switch (cause) {
-                        case 2:
-                            connect();
-                            break;
-                        case 1:
-                            if (canRetryConnect()) {
-                                return;
+                        /**
+                         * Connection suspended event
+                         */
+                        public void onConnectionSuspended(int cause) {
+                            mLock.lock();
+                            try {
+                                onDisconnected(cause);
+                                switch (cause) {
+                                case CAUSE_NETWORK_LOST:
+                                    connect();
+                                    break;
+                                case CAUSE_SERVICE_DISCONNECTED:
+                                    if (!canRetryConnect()) {
+                                        mRetryConnectCounter = 2;
+                                        mHander.sendMessageDelayed(
+                                                mHander.obtainMessage(MSG_WHAT_DO_CONNECT),
+                                                mMessageDelay);
+                                    }
+                                }
+                            } finally {
+                                mLock.unlock();
                             }
-
-                            mRetryConnectCounter = 2;
-                            mHander.sendMessageDelayed(
-                                    mHander.obtainMessage(MSG_WHAT_DO_CONNECT),
-                                    mMessageDelay);
                         }
-                    } finally {
-                        mLock.unlock();
-                    }
-                }
 
-                @Override
-                public void onConnectionFailed(ConnectionResult result) {
-                    mLock.lock();
-                    try {
-                        if ((mConnectionFailedResult == null)
-                                || (builder.getPriority() < mCurrentPrority)) {
-                            mConnectionFailedResult = result;
-                            mCurrentPrority = builder.getPriority();
+                        @Override
+                        public void onConnectionFailed(ConnectionResult result) {
+                            mLock.lock();
+                            try {
+                                if ((mConnectionFailedResult == null)
+                                        || (builder.getPriority() < mCurrentPrority)) {
+                                    mConnectionFailedResult = result;
+                                    mCurrentPrority = builder.getPriority();
+                                }
+                                notifyConnectionResult();
+                            } finally {
+                                mLock.unlock();
+                            }
                         }
-                        notifyConnectionResult();
-                    } finally {
-                        mLock.unlock();
-                    }
-                }
-            }));
+                    }));
         }
     }
 
     /*************************************************/
     // private methods
     /*************************************************/
-
     private void notifyConnectionResult() {
         mLock.lock();
         try {
-            mConnectionMapSize -= 1;
+            mConnectionMapSize--;
             if (mConnectionMapSize == 0) {
                 if (mConnectionFailedResult != null) {
                     mPending = false;
-                    onDisconnected(3);
+                    onDisconnected(ConnectionCallbacks.CAUSE_CONNECTION_FAILED);
                     if (canRetryConnect()) {
                         mRetryConnectCounter -= 1;
                     }
@@ -223,17 +227,17 @@ public final class FlingManagerImpl implements FlingManager {
                     }
                     mCanReceiveEvent = false;
                 } else {
-                    mConnectState = 2;
+                    mConnectState = CONNECT_STATE_CONNECTED;
                     cancelReconnect();
                     mCondition.signalAll();
                     flushQueue();
                     if (mPending) {
                         mPending = false;
-                        onDisconnected(-1);
+                        onDisconnected(ConnectionCallbacks.CAUSE_CONNECTION_CANCEL);
                     } else {
-                        Bundle localBundle = (mBundle.isEmpty()) ? null
-                                : mBundle;
-                        mFlingClientEvents.notifyOnConnected(localBundle);
+                        mFlingClientEvents
+                                .notifyOnConnected((mBundle.isEmpty()) ? null
+                                        : mBundle);
                     }
                 }
             }
@@ -287,22 +291,19 @@ public final class FlingManagerImpl implements FlingManager {
 
     /**
      * Disconnected event
-     *
-     * cause: -1 : cancel
+     * 
      */
     private void onDisconnected(int cause) {
         mLock.lock();
         try {
-            if (mConnectState != 3) {
-                if (cause == -1) { // cancel action
+            if (mConnectState != CONNECT_STATE_DISCONNECTING) {
+                if (cause == ConnectionCallbacks.CAUSE_CONNECTION_CANCEL) {
                     if (isConnecting()) {
                         Iterator tasks = mPendingTaskQueue.iterator();
                         while (tasks.hasNext()) {
                             FlingApiClientTask task = (FlingApiClientTask) tasks
                                     .next();
-                            if (task.getFlag() != 1) {
-                                tasks.remove();
-                            }
+                            tasks.remove();
                         }
                     } else {
                         mPendingTaskQueue.clear();
@@ -315,32 +316,32 @@ public final class FlingManagerImpl implements FlingManager {
                 }
                 boolean isConnecting = isConnecting();
                 boolean isConnected = isConnected();
-                mConnectState = 3;
+                mConnectState = CONNECT_STATE_DISCONNECTING;
                 if (isConnecting) {
-                    if (cause == -1) { // canceled
+                    if (cause == ConnectionCallbacks.CAUSE_CONNECTION_CANCEL) { // canceled
                         mConnectionFailedResult = null;
                     }
-                    this.mCondition.signalAll();
+                    mCondition.signalAll();
                 }
                 Iterator tasks = mReleaseableTasks.iterator();
                 while (tasks.hasNext()) {
-                    FlingApiClientTask c = (FlingApiClientTask) tasks.next();
-                    c.release();
+                    FlingApiClientTask task = (FlingApiClientTask) tasks.next();
+                    task.release();
                 }
                 mReleaseableTasks.clear();
                 mCanReceiveEvent = false;
                 Iterator connections = mConnectionMap.values().iterator();
                 while (connections.hasNext()) {
-                    Api.ConnectionApi c = (Api.ConnectionApi) connections
+                    Api.ConnectionApi api = (Api.ConnectionApi) connections
                             .next();
-                    if (c.isConnected()) {
-                        c.disconnect();
+                    if (api.isConnected()) {
+                        api.disconnect();
                     }
                 }
                 mCanReceiveEvent = true;
-                mConnectState = 4;
+                mConnectState = CONNECT_STATE_DISCONNECTED;
                 if (isConnected) {
-                    if (cause != -1) {
+                    if (cause != ConnectionCallbacks.CAUSE_CONNECTION_CANCEL) {
                         mFlingClientEvents.notifyOnConnectionSuspended(cause);
                     }
                     mCanReceiveEvent = false;
@@ -353,7 +354,7 @@ public final class FlingManagerImpl implements FlingManager {
 
     /**
      * Whether we can retry connect.
-     *
+     * 
      * @return
      */
     private boolean canRetryConnect() {
@@ -389,7 +390,6 @@ public final class FlingManagerImpl implements FlingManager {
         try {
             execute(task);
         } catch (DeadObjectException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return task;
@@ -418,14 +418,14 @@ public final class FlingManagerImpl implements FlingManager {
             }
             mCanReceiveEvent = true;
             mConnectionFailedResult = null;
-            mConnectState = 1; // connecting...
+            mConnectState = CONNECT_STATE_CONNECTING;
             mBundle.clear();
             mConnectionMapSize = mConnectionMap.size();
             Iterator<Api.ConnectionApi> connections = mConnectionMap.values()
                     .iterator();
             while (connections.hasNext()) {
-                Api.ConnectionApi c = connections.next();
-                c.connect(); // call connect() in FlingApi
+                Api.ConnectionApi api = connections.next();
+                api.connect();
             }
         } finally {
             mLock.unlock();
@@ -486,7 +486,7 @@ public final class FlingManagerImpl implements FlingManager {
         /**
          * call disconnect callback
          */
-        onDisconnected(-1);
+        onDisconnected(ConnectionCallbacks.CAUSE_CONNECTION_CANCEL);
     }
 
     /**
@@ -510,7 +510,7 @@ public final class FlingManagerImpl implements FlingManager {
     public boolean isConnected() {
         mLock.lock();
         try {
-            return (mConnectState == 2) ? true : false;
+            return (mConnectState == CONNECT_STATE_CONNECTED) ? true : false;
         } finally {
             mLock.unlock();
         }
@@ -522,7 +522,7 @@ public final class FlingManagerImpl implements FlingManager {
     public boolean isConnecting() {
         mLock.lock();
         try {
-            return (mConnectState == 1) ? true : false;
+            return (mConnectState == CONNECT_STATE_CONNECTING) ? true : false;
         } finally {
             mLock.unlock();
         }
@@ -550,8 +550,6 @@ public final class FlingManagerImpl implements FlingManager {
         public void onRelease(FlingApiClientTask task);
     }
 
-    static final int MSG_WHAT_DO_CONNECT = 1;
-
     /**
      * Handler
      */
@@ -567,7 +565,6 @@ public final class FlingManagerImpl implements FlingManager {
                     if (!isConnected() && !isConnecting()) {
                         connect();
                     }
-                    return;
                 } finally {
                     mLock.unlock();
                 }
@@ -579,7 +576,7 @@ public final class FlingManagerImpl implements FlingManager {
 
     /**
      * Fling tasks
-     *
+     * 
      * @param <A>
      */
     public interface FlingApiClientTask<A extends Api.ConnectionApi> {
@@ -591,7 +588,5 @@ public final class FlingManagerImpl implements FlingManager {
 
         public void release();
 
-        // The task can be removed if return non 1.
-        public int getFlag();
     }
 }

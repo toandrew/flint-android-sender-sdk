@@ -33,6 +33,41 @@ import android.os.SystemClock;
  * Media control channel
  */
 public class MediaControlChannel extends FlingChannel {
+    // json.put("requestId", requestId);
+    // json.put("type", "LOAD");
+    // json.put("media", mediaInfo.buildJson());
+    // json.put("autoplay", autoplay);
+    // json.put("currentTime",
+    // DoubleAndLongConverter.long2double(currentTime));
+    // if (customData != null) {
+    // json.put("customData", customData);
+    // }
+    private static final String MSG_KEY_REQUESTID = "requestId";
+    private static final String MSG_KEY_TYPE = "type";
+    private static final String MSG_KEY_MEDIA = "media";
+    private static final String MSG_KEY_AUTOPLAY = "autoplay";
+    private static final String MSG_KEY_CURRENT_TIME = "currentTime";
+    private static final String MSG_KEY_CUSTOM_DATA = "customData";
+    private static final String MSG_KEY_MEDIA_SESSION_ID = "mediaSessionId";
+    private static final String MSG_KEY_RESUME_STATE = "resumeState";
+    private static final String MSG_KEY_VOLUME = "volume";
+
+    private static final String MSG_TYPE_LOAD = "LOAD";
+    private static final String MSG_TYPE_PLAY = "PLAY";
+    private static final String MSG_TYPE_PAUSE = "PAUSE";
+    private static final String MSG_TYPE_STOP = "STOP";
+    private static final String MSG_TYPE_SEEK = "SEEK";
+    private static final String MSG_TYPE_SET_VOLUME = "SET_VOLUME";
+    private static final String MSG_TYPE_GET_STATUS = "GET_STATUS";
+    private static final String MSG_TYPE_MEDIA_STATUS = "MEDIA_STATUS";
+    private static final String MSG_TYPE_INVALID_PLAYER_STATE = "INVALID_PLAYER_STATE";
+    private static final String MSG_TYPE_LOAD_FAILED = "LOAD_FAILED";
+    private static final String MSG_TYPE_LOAD_CANCELLED = "LOAD_CANCELLED";
+    private static final String MSG_TYPE_INVALID_REQUEST = "INVALID_REQUEST";
+
+    private static final String MSG_RESUME_STATE_START = "PLAYBACK_START";
+    private static final String MSG_RESUME_STATE_PAUSE = "PLAYBACK_PAUSE";
+
     private static final long REQUEST_MAX_TIME_OUT = TimeUnit.HOURS
             .toMillis(24L);
 
@@ -52,7 +87,7 @@ public class MediaControlChannel extends FlingChannel {
             REQUEST_MAX_TIME_OUT);
     private final RequestTracker mRequestTrackerStop = new RequestTracker(
             REQUEST_MAX_TIME_OUT);
-    private final RequestTracker mRequestTrackerSeed = new RequestTracker(
+    private final RequestTracker mRequestTrackerSeek = new RequestTracker(
             REQUEST_MAX_TIME_OUT);
     private final RequestTracker mRequestTrackerVolume = new RequestTracker(
             REQUEST_MAX_TIME_OUT);
@@ -92,14 +127,14 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "LOAD");
-            json.put("media", mediaInfo.buildJson());
-            json.put("autoplay", autoplay);
-            json.put("currentTime",
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_LOAD);
+            json.put(MSG_KEY_MEDIA, mediaInfo.buildJson());
+            json.put(MSG_KEY_AUTOPLAY, autoplay);
+            json.put(MSG_KEY_CURRENT_TIME,
                     DoubleAndLongConverter.long2double(currentTime));
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException e) {
         }
@@ -126,11 +161,11 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "PAUSE");
-            json.put("mediaSessionId", getMediaSessionId());
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_PAUSE);
+            json.put(MSG_KEY_MEDIA_SESSION_ID, getMediaSessionId());
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException e) {
         }
@@ -157,11 +192,11 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "STOP");
-            json.put("mediaSessionId", getMediaSessionId());
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_STOP);
+            json.put(MSG_KEY_MEDIA_SESSION_ID, getMediaSessionId());
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException e) {
         }
@@ -189,11 +224,11 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "PLAY");
-            json.put("mediaSessionId", getMediaSessionId());
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_PLAY);
+            json.put(MSG_KEY_MEDIA_SESSION_ID, getMediaSessionId());
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException e) {
         }
@@ -220,22 +255,22 @@ public class MediaControlChannel extends FlingChannel {
 
         JSONObject json = new JSONObject();
         long requestId = getRequestId();
-        mRequestTrackerSeed.startTrack(requestId, callback);
+        mRequestTrackerSeek.startTrack(requestId, callback);
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "SEEK");
-            json.put("mediaSessionId", getMediaSessionId());
-            json.put("currentTime",
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_SEEK);
+            json.put(MSG_KEY_MEDIA_SESSION_ID, getMediaSessionId());
+            json.put(MSG_KEY_CURRENT_TIME,
                     DoubleAndLongConverter.long2double(currentTime));
             if (resumeState == 1) {
-                json.put("resumeState", "PLAYBACK_START");
+                json.put(MSG_KEY_RESUME_STATE, MSG_RESUME_STATE_START);
             } else if (resumeState == 2) {
-                json.put("resumeState", "PLAYBACK_PAUSE");
+                json.put(MSG_KEY_RESUME_STATE, MSG_RESUME_STATE_PAUSE);
             }
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException e) {
         }
@@ -270,14 +305,14 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "SET_VOLUME");
-            json.put("mediaSessionId", getMediaSessionId());
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_SET_VOLUME);
+            json.put(MSG_KEY_MEDIA_SESSION_ID, getMediaSessionId());
             JSONObject volumeJson = new JSONObject();
             volumeJson.put("level", level);
-            json.put("volume", volumeJson);
+            json.put(MSG_KEY_VOLUME, volumeJson);
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException e) {
         }
@@ -306,14 +341,14 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "SET_VOLUME");
-            json.put("mediaSessionId", getMediaSessionId());
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_SET_VOLUME);
+            json.put(MSG_KEY_MEDIA_SESSION_ID, getMediaSessionId());
             JSONObject volumeJson = new JSONObject();
             volumeJson.put("muted", muted);
-            json.put("volume", volumeJson);
+            json.put(MSG_KEY_VOLUME, volumeJson);
             if (customData != null) {
-                json.put("customData", customData);
+                json.put(MSG_KEY_CUSTOM_DATA, customData);
             }
         } catch (JSONException localJSONException) {
         }
@@ -339,10 +374,11 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(true);
 
         try {
-            json.put("requestId", requestId);
-            json.put("type", "GET_STATUS");
+            json.put(MSG_KEY_REQUESTID, requestId);
+            json.put(MSG_KEY_TYPE, MSG_TYPE_GET_STATUS);
             if (mMediaStatus != null) {
-                json.put("mediaSessionId", mMediaStatus.getMediaSessionId());
+                json.put(MSG_KEY_MEDIA_SESSION_ID,
+                        mMediaStatus.getMediaSessionId());
             }
         } catch (JSONException e) {
         }
@@ -409,7 +445,7 @@ public class MediaControlChannel extends FlingChannel {
      * @return media status
      */
     public MediaStatus getMediaStatus() {
-        return this.mMediaStatus;
+        return mMediaStatus;
     }
 
     /**
@@ -418,7 +454,7 @@ public class MediaControlChannel extends FlingChannel {
      * @return media info
      */
     public MediaInfo getMediaInfo() {
-        return ((this.mMediaStatus == null) ? null : this.mMediaStatus
+        return ((this.mMediaStatus == null) ? null : mMediaStatus
                 .getMediaInfo());
     }
 
@@ -433,60 +469,60 @@ public class MediaControlChannel extends FlingChannel {
 
         try {
             JSONObject jsonMessage = new JSONObject(message);
-            String type = jsonMessage.getString("type");
-            long requestId = jsonMessage.optLong("requestId", -1L);
-            if (type.equals("MEDIA_STATUS")) {
+            String type = jsonMessage.getString(MSG_KEY_TYPE);
+            long requestId = jsonMessage.optLong(MSG_KEY_REQUESTID, -1L);
+            if (type.equals(MSG_TYPE_MEDIA_STATUS)) {
                 JSONArray status = jsonMessage.getJSONArray("status");
                 if (status.length() > 0) {
                     updateMediaStatus(requestId, status.getJSONObject(0));
                 } else {
-                    this.mMediaStatus = null;
+                    mMediaStatus = null;
                     onStatusUpdated();
                     onMetadataUpdated();
                     mRequestTrackerRequestStatus.trackRequest(requestId, 0);
                 }
-            } else if (type.equals("INVALID_PLAYER_STATE")) {
-                this.log.w("received unexpected error: Invalid Player State.",
+            } else if (type.equals(MSG_TYPE_INVALID_PLAYER_STATE)) {
+                log.w("received unexpected error: Invalid Player State.",
                         new Object[0]);
-                JSONObject customData = jsonMessage.optJSONObject("customData");
-                this.mRequestTrackerLoad.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerPause
-                        .trackRequest(requestId, 1, customData);
-                this.mRequestTrackerPlay.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerStop.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerSeed.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerVolume.trackRequest(requestId, 1,
+                JSONObject customData = jsonMessage
+                        .optJSONObject(MSG_KEY_CUSTOM_DATA);
+                mRequestTrackerLoad.trackRequest(requestId, 1, customData);
+                mRequestTrackerPause.trackRequest(requestId, 1, customData);
+                mRequestTrackerPlay.trackRequest(requestId, 1, customData);
+                mRequestTrackerStop.trackRequest(requestId, 1, customData);
+                mRequestTrackerSeek.trackRequest(requestId, 1, customData);
+                mRequestTrackerVolume.trackRequest(requestId, 1, customData);
+                mRequestTrackerMute.trackRequest(requestId, 1, customData);
+                mRequestTrackerRequestStatus.trackRequest(requestId, 1,
                         customData);
-                this.mRequestTrackerMute.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerRequestStatus.trackRequest(requestId, 1,
-                        customData);
-            } else if (type.equals("LOAD_FAILED")) {
-                JSONObject customData = jsonMessage.optJSONObject("customData");
-                this.mRequestTrackerLoad.trackRequest(requestId, 1,
+            } else if (type.equals(MSG_TYPE_LOAD_FAILED)) {
+                JSONObject customData = jsonMessage
+                        .optJSONObject(MSG_KEY_CUSTOM_DATA);
+                mRequestTrackerLoad.trackRequest(requestId, 1,
                         (JSONObject) customData);
-            } else if (type.equals("LOAD_CANCELLED")) {
-                JSONObject customData = jsonMessage.optJSONObject("customData");
-                this.mRequestTrackerLoad.trackRequest(requestId, 2,
+            } else if (type.equals(MSG_TYPE_LOAD_CANCELLED)) {
+                JSONObject customData = jsonMessage
+                        .optJSONObject(MSG_KEY_CUSTOM_DATA);
+                mRequestTrackerLoad.trackRequest(requestId, 2,
                         (JSONObject) customData);
-            } else if (type.equals("INVALID_REQUEST")) {
-                this.log.w("received unexpected error: Invalid Request.",
+            } else if (type.equals(MSG_TYPE_INVALID_REQUEST)) {
+                log.w("received unexpected error: Invalid Request.",
                         new Object[0]);
-                JSONObject customData = jsonMessage.optJSONObject("customData");
-                this.mRequestTrackerLoad.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerPause
-                        .trackRequest(requestId, 1, customData);
-                this.mRequestTrackerPlay.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerStop.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerSeed.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerVolume.trackRequest(requestId, 1,
-                        customData);
-                this.mRequestTrackerMute.trackRequest(requestId, 1, customData);
-                this.mRequestTrackerRequestStatus.trackRequest(requestId, 1,
+                JSONObject customData = jsonMessage
+                        .optJSONObject(MSG_KEY_CUSTOM_DATA);
+                mRequestTrackerLoad.trackRequest(requestId, 1, customData);
+                mRequestTrackerPause.trackRequest(requestId, 1, customData);
+                mRequestTrackerPlay.trackRequest(requestId, 1, customData);
+                mRequestTrackerStop.trackRequest(requestId, 1, customData);
+                mRequestTrackerSeek.trackRequest(requestId, 1, customData);
+                mRequestTrackerVolume.trackRequest(requestId, 1, customData);
+                mRequestTrackerMute.trackRequest(requestId, 1, customData);
+                mRequestTrackerRequestStatus.trackRequest(requestId, 1,
                         customData);
             }
         } catch (JSONException e) {
-            this.log.w("Message is malformed (%s); ignoring: %s",
-                    e.getMessage(), message);
+            log.w("Message is malformed (%s); ignoring: %s", e.getMessage(),
+                    message);
         }
     }
 
@@ -498,59 +534,60 @@ public class MediaControlChannel extends FlingChannel {
      */
     @Override
     public void trackFailedRequests(long requestId, int statusCode) {
-        this.mRequestTrackerLoad.trackRequest(requestId, statusCode);
-        this.mRequestTrackerPause.trackRequest(requestId, statusCode);
-        this.mRequestTrackerPlay.trackRequest(requestId, statusCode);
-        this.mRequestTrackerStop.trackRequest(requestId, statusCode);
-        this.mRequestTrackerSeed.trackRequest(requestId, statusCode);
-        this.mRequestTrackerVolume.trackRequest(requestId, statusCode);
-        this.mRequestTrackerMute.trackRequest(requestId, statusCode);
-        this.mRequestTrackerRequestStatus.trackRequest(requestId, statusCode);
+        mRequestTrackerLoad.trackRequest(requestId, statusCode);
+        mRequestTrackerPause.trackRequest(requestId, statusCode);
+        mRequestTrackerPlay.trackRequest(requestId, statusCode);
+        mRequestTrackerStop.trackRequest(requestId, statusCode);
+        mRequestTrackerSeek.trackRequest(requestId, statusCode);
+        mRequestTrackerVolume.trackRequest(requestId, statusCode);
+        mRequestTrackerMute.trackRequest(requestId, statusCode);
+        mRequestTrackerRequestStatus.trackRequest(requestId, statusCode);
     }
 
     private void updateMediaStatus(long requestId, JSONObject json)
             throws JSONException {
-        boolean bool = this.mRequestTrackerLoad.isCurrentRequestId(requestId);
-        int i = ((this.mRequestTrackerSeed.isRequestIdAvailable()) && (!(this.mRequestTrackerSeed
+        boolean isCurrentRequestId = mRequestTrackerLoad
+                .isCurrentRequestId(requestId);
+        int isSeek = ((mRequestTrackerSeek.isRequestIdAvailable()) && (!(mRequestTrackerSeek
                 .isCurrentRequestId(requestId)))) ? 1 : 0;
-        int j = (((this.mRequestTrackerVolume.isRequestIdAvailable()) && (!(this.mRequestTrackerVolume
-                .isCurrentRequestId(requestId)))) || ((this.mRequestTrackerMute
-                .isRequestIdAvailable()) && (!(this.mRequestTrackerMute
+        int isSetVolume = (((mRequestTrackerVolume.isRequestIdAvailable()) && (!(mRequestTrackerVolume
+                .isCurrentRequestId(requestId)))) || ((mRequestTrackerMute
+                .isRequestIdAvailable()) && (!(mRequestTrackerMute
                 .isCurrentRequestId(requestId))))) ? 1 : 0;
-        int k = 0;
-        if (i != 0) {
-            k |= 2;
+        int updateMask = 0;
+        if (isSeek != 0) {
+            updateMask |= 2;
         }
-        if (j != 0) {
-            k |= 1;
+        if (isSetVolume != 0) {
+            updateMask |= 1;
         }
         int updateBits = 0;
-        if ((bool) || (this.mMediaStatus == null)) {
-            this.mMediaStatus = new MediaStatus(json);
-            this.mMediaStartTime = SystemClock.elapsedRealtime();
+        if ((isCurrentRequestId) || (this.mMediaStatus == null)) {
+            mMediaStatus = new MediaStatus(json);
+            mMediaStartTime = SystemClock.elapsedRealtime();
             updateBits = 7;
         } else {
-            updateBits = this.mMediaStatus.setMediaStatusWithJson(json, k);
+            updateBits = mMediaStatus.setMediaStatusWithJson(json, updateMask);
         }
         if ((updateBits & MediaStatus.UPDATE_SESSION_MASK) != 0) {
-            this.mMediaStartTime = SystemClock.elapsedRealtime();
+            mMediaStartTime = SystemClock.elapsedRealtime();
             onStatusUpdated();
         }
         if ((updateBits & MediaStatus.UPDATE_MEDIA_STATUS_MASK) != 0) {
-            this.mMediaStartTime = SystemClock.elapsedRealtime();
+            mMediaStartTime = SystemClock.elapsedRealtime();
             onStatusUpdated();
         }
         if ((updateBits & MediaStatus.UPDATE_METADATA_MASK) != 0) {
             onMetadataUpdated();
         }
-        this.mRequestTrackerLoad.trackRequest(requestId, 0);
-        this.mRequestTrackerPause.trackRequest(requestId, 0);
-        this.mRequestTrackerPlay.trackRequest(requestId, 0);
-        this.mRequestTrackerStop.trackRequest(requestId, 0);
-        this.mRequestTrackerSeed.trackRequest(requestId, 0);
-        this.mRequestTrackerVolume.trackRequest(requestId, 0);
-        this.mRequestTrackerMute.trackRequest(requestId, 0);
-        this.mRequestTrackerRequestStatus.trackRequest(requestId, 0);
+        mRequestTrackerLoad.trackRequest(requestId, 0);
+        mRequestTrackerPause.trackRequest(requestId, 0);
+        mRequestTrackerPlay.trackRequest(requestId, 0);
+        mRequestTrackerStop.trackRequest(requestId, 0);
+        mRequestTrackerSeek.trackRequest(requestId, 0);
+        mRequestTrackerVolume.trackRequest(requestId, 0);
+        mRequestTrackerMute.trackRequest(requestId, 0);
+        mRequestTrackerRequestStatus.trackRequest(requestId, 0);
     }
 
     public long getMediaSessionId() throws IllegalStateException {
@@ -570,9 +607,9 @@ public class MediaControlChannel extends FlingChannel {
         handlerTrackerTask(false);
         mMediaStartTime = 0L;
         mMediaStatus = null;
-        this.mRequestTrackerLoad.clear();
-        this.mRequestTrackerSeed.clear();
-        this.mRequestTrackerVolume.clear();
+        mRequestTrackerLoad.clear();
+        mRequestTrackerSeek.clear();
+        mRequestTrackerVolume.clear();
     }
 
     public void clean() {
@@ -580,16 +617,16 @@ public class MediaControlChannel extends FlingChannel {
     }
 
     private void handlerTrackerTask(boolean start) {
-        if (this.mTrackTaskStarting == start) {
+        if (mTrackTaskStarting == start) {
             return;
         }
 
-        this.mTrackTaskStarting = start;
+        mTrackTaskStarting = start;
 
         if (start) {
-            mHandler.postDelayed(this.mTrackerTask, MillisPerSecond);
+            mHandler.postDelayed(mTrackerTask, MillisPerSecond);
         } else {
-            mHandler.removeCallbacks(this.mTrackerTask);
+            mHandler.removeCallbacks(mTrackerTask);
         }
     }
 
@@ -603,7 +640,7 @@ public class MediaControlChannel extends FlingChannel {
             mRequestTrackerPause.trackRequestTimeout(timestamp, 3);
             mRequestTrackerPlay.trackRequestTimeout(timestamp, 3);
             mRequestTrackerStop.trackRequestTimeout(timestamp, 3);
-            mRequestTrackerSeed.trackRequestTimeout(timestamp, 3);
+            mRequestTrackerSeek.trackRequestTimeout(timestamp, 3);
             mRequestTrackerVolume.trackRequestTimeout(timestamp, 3);
             mRequestTrackerMute.trackRequestTimeout(timestamp, 3);
             mRequestTrackerRequestStatus.trackRequestTimeout(timestamp, 3);
@@ -611,7 +648,7 @@ public class MediaControlChannel extends FlingChannel {
             boolean needStart = false;
             synchronized (RequestTracker.mLock) {
                 needStart = (mRequestTrackerLoad.isRequestIdAvailable())
-                        || (mRequestTrackerSeed.isRequestIdAvailable())
+                        || (mRequestTrackerSeek.isRequestIdAvailable())
                         || (mRequestTrackerVolume.isRequestIdAvailable())
                         || (mRequestTrackerMute.isRequestIdAvailable())
                         || (mRequestTrackerRequestStatus.isRequestIdAvailable());

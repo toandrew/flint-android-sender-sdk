@@ -19,6 +19,7 @@ package tv.matchstick.client.internal;
 import java.util.ArrayList;
 
 import tv.matchstick.client.common.IFlingClient;
+import tv.matchstick.client.common.api.StatusCodes;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.internal.Api;
@@ -44,15 +45,19 @@ import android.util.Log;
 public abstract class FlingClient<T extends IInterface> implements
         IFlingClient, Api.ConnectionApi, FlingClientEvents.ClientEventCallback {
 
-    static final int CONNECTION_STATUS_DISCONNECTED = 1;
-    static final int CONNECTION_STATUS_CONNECTING = 2;
-    static final int CONNECTION_STATUS_CONNECTED = 3;
+    private static final int MSG_WHAT_CONNECTION_CALLBACK = 1;
+    private static final int MSG_WHAT_CONNECTION_FAILED = 2;
+    private static final int MSG_WHAT_DISCONNECTED = 3;
+
+    private static final int CONNECTION_STATUS_DISCONNECTED = 1;
+    private static final int CONNECTION_STATUS_CONNECTING = 2;
+    private static final int CONNECTION_STATUS_CONNECTED = 3;
 
     private final Context mContext;
 
     private final Looper mLooper;
 
-    final Handler mFlingClientHandler;
+    private final Handler mFlingClientHandler;
 
     private T mService;
 
@@ -60,7 +65,7 @@ public abstract class FlingClient<T extends IInterface> implements
 
     private volatile int mConnectedState = CONNECTION_STATUS_DISCONNECTED;
 
-    boolean mConnected = false;
+    private boolean mConnected = false;
 
     private final FlingClientEvents mClientEvent;
 
@@ -72,12 +77,10 @@ public abstract class FlingClient<T extends IInterface> implements
      * @param context
      * @param looper
      * @param callbacks
-     * @param failedListener
      * @param strArray
      */
     protected FlingClient(Context context, Looper looper,
-            FlingManager.ConnectionCallbacks callbacks,
-            String[] strArray) {
+            FlingManager.ConnectionCallbacks callbacks, String[] strArray) {
 
         ValueChecker.checkNullPointer(context);
         mContext = context;
@@ -99,19 +102,11 @@ public abstract class FlingClient<T extends IInterface> implements
      * @param strArray
      */
     protected FlingClient(Context context,
-            IFlingClient.ConnectionCallbacks callbacks,
-            String[] strArray) {
+            IFlingClient.ConnectionCallbacks callbacks, String[] strArray) {
 
         this(context, context.getMainLooper(), new ClientConnectionCallbacks(
                 callbacks), strArray);
     }
-
-    /**
-     * Service intent's action name
-     * 
-     * @return service intent's action name
-     */
-    protected abstract String getServiceName();
 
     /**
      * Fling service's interface descriptor.
@@ -138,8 +133,6 @@ public abstract class FlingClient<T extends IInterface> implements
      * By Calling this function, Fling application will try to connect with
      * Fling Service.
      * 
-     * Please see more info about
-     * {@link tv.matchstick.client.internal.FlingClient.FlingClientServiceConnection}
      */
     public void connect() {
         if (mFlingConnectedClient != null) {
@@ -160,14 +153,14 @@ public abstract class FlingClient<T extends IInterface> implements
      * Is connected?
      */
     public boolean isConnected() {
-        return this.mConnectedState == CONNECTION_STATUS_CONNECTED;
+        return mConnectedState == CONNECTION_STATUS_CONNECTED;
     }
 
     /**
      * Is connecting?
      */
     public boolean isConnecting() {
-        return this.mConnectedState == CONNECTION_STATUS_CONNECTING;
+        return mConnectedState == CONNECTION_STATUS_CONNECTING;
     }
 
     /**
@@ -178,16 +171,15 @@ public abstract class FlingClient<T extends IInterface> implements
     public void disconnect() {
         mConnected = false;
         synchronized (mCallbackProxyList) {
-            int size = this.mCallbackProxyList.size();
+            int size = mCallbackProxyList.size();
             for (int i = 0; i < size; i++) {
-                this.mCallbackProxyList.get(i).reset();
+                mCallbackProxyList.get(i).reset();
             }
-            this.mCallbackProxyList.clear();
+            mCallbackProxyList.clear();
         }
         mFlingConnectedClient = null;
         mConnectedState = CONNECTION_STATUS_DISCONNECTED;
         mService = null;
-
         mFlingClientHandler.sendMessage(mFlingClientHandler.obtainMessage(
                 MSG_WHAT_DISCONNECTED, Integer.valueOf(1)));
     }
@@ -198,8 +190,8 @@ public abstract class FlingClient<T extends IInterface> implements
      * @param reason
      */
     public void sendDisconnectedMessage(int reason) {
-        this.mFlingClientHandler.sendMessage(this.mFlingClientHandler
-                .obtainMessage(MSG_WHAT_DISCONNECTED, Integer.valueOf(reason)));
+        mFlingClientHandler.sendMessage(mFlingClientHandler.obtainMessage(
+                MSG_WHAT_DISCONNECTED, Integer.valueOf(reason)));
     }
 
     /**
@@ -208,14 +200,14 @@ public abstract class FlingClient<T extends IInterface> implements
      * @return
      */
     public final Context getContext() {
-        return this.mContext;
+        return mContext;
     }
 
     /**
      * Get looper
      */
     public final Looper getLooper() {
-        return this.mLooper;
+        return mLooper;
     }
 
     /**
@@ -227,9 +219,9 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     protected void onPostInitResult(int statusCode, IBinder binder,
             Bundle bundle) {
-        this.mFlingClientHandler.sendMessage(this.mFlingClientHandler
-                .obtainMessage(1, new FlingClientCallbackProxy(statusCode,
-                        binder, bundle)));
+        mFlingClientHandler.sendMessage(mFlingClientHandler.obtainMessage(
+                MSG_WHAT_CONNECTION_CALLBACK, new FlingClientCallbackProxy(
+                        statusCode, binder, bundle)));
     }
 
     /**
@@ -253,7 +245,7 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     protected final T getService() {
         checkConnected();
-        return this.mService;
+        return mService;
     }
 
     /**
@@ -262,18 +254,18 @@ public abstract class FlingClient<T extends IInterface> implements
      * @param callback
      */
     public final void addCallback(CallbackProxy<?> callback) {
-        synchronized (this.mCallbackProxyList) {
-            this.mCallbackProxyList.add(callback);
+        synchronized (mCallbackProxyList) {
+            mCallbackProxyList.add(callback);
         }
-        this.mFlingClientHandler.sendMessage(this.mFlingClientHandler
-                .obtainMessage(2, callback));
+        mFlingClientHandler.sendMessage(mFlingClientHandler.obtainMessage(
+                MSG_WHAT_CONNECTION_CALLBACK, callback));
     }
 
     /**
      * Whether client can receive event.
      */
     public boolean canReceiveEvent() {
-        return this.mConnected;
+        return mConnected;
     }
 
     /**
@@ -285,7 +277,7 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     public void registerConnectionCallbacks(
             FlingManager.ConnectionCallbacks callbacks) {
-        this.mClientEvent.registerConnectionCallbacks(callbacks);
+        mClientEvent.registerConnectionCallbacks(callbacks);
     }
 
     /**
@@ -293,9 +285,8 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     public void registerConnectionCallbacks(
             IFlingClient.ConnectionCallbacks callbacks) {
-        this.mClientEvent
-                .registerConnectionCallbacks(new ClientConnectionCallbacks(
-                        callbacks));
+        mClientEvent.registerConnectionCallbacks(new ClientConnectionCallbacks(
+                callbacks));
     }
 
     /**
@@ -303,7 +294,7 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     public boolean isConnectionCallbacksRegistered(
             IFlingClient.ConnectionCallbacks callbacks) {
-        return this.mClientEvent
+        return mClientEvent
                 .isConnectionCallbacksRegistered(new ClientConnectionCallbacks(
                         callbacks));
     }
@@ -313,7 +304,7 @@ public abstract class FlingClient<T extends IInterface> implements
      */
     public void unregisterConnectionCallbacks(
             IFlingClient.ConnectionCallbacks callbacks) {
-        this.mClientEvent
+        mClientEvent
                 .unregisterConnectionCallbacks(new ClientConnectionCallbacks(
                         callbacks));
     }
@@ -364,19 +355,19 @@ public abstract class FlingClient<T extends IInterface> implements
         }
 
         public void onConnected(Bundle connectionHint) {
-            this.callback.onConnected(connectionHint);
+            callback.onConnected(connectionHint);
         }
 
         public void onConnectionSuspended(int cause) {
-            this.callback.onDisconnected();
+            callback.onDisconnected();
         }
 
         public boolean equals(Object other) {
             if ((other instanceof ClientConnectionCallbacks)) {
-                return this.callback
+                return callback
                         .equals(((ClientConnectionCallbacks) other).callback);
             }
-            return this.callback.equals(other);
+            return callback.equals(other);
         }
 
         @Override
@@ -418,7 +409,7 @@ public abstract class FlingClient<T extends IInterface> implements
                 onFailed();
             }
             synchronized (this) {
-                this.isUsed = true;
+                isUsed = true;
             }
             unregister();
         }
@@ -458,13 +449,12 @@ public abstract class FlingClient<T extends IInterface> implements
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 return;
             }
-            switch (this.statusCode) {
-            case 0:
-                String desc = null;
+            switch (statusCode) {
+            case StatusCodes.SUCCESS:
                 try {
-                    desc = this.binder.getInterfaceDescriptor();
+                    String desc = binder.getInterfaceDescriptor();
                     if (getInterfaceDescriptor().equals(desc)) {
-                        mService = getService(this.binder);
+                        mService = getService(binder);
                         if (mService != null) {
                             mConnectedState = CONNECTION_STATUS_CONNECTED;
                             mClientEvent.notifyOnConnected();
@@ -472,35 +462,33 @@ public abstract class FlingClient<T extends IInterface> implements
                         }
                     }
                 } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
                 mFlingConnectedClient = null;
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
-                mClientEvent.notifyOnConnectionFailed(new ConnectionResult(8,
+                mClientEvent.notifyOnConnectionFailed(new ConnectionResult(StatusCodes.INTERNAL_ERROR,
                         null));
                 break;
-            case 10:
+            case StatusCodes.DEVELOPER_ERROR:
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 throw new IllegalStateException(
                         "A fatal developer error has occurred. Check the logs for further information.");
             default:
                 PendingIntent pendingIntent = null;
-                if (this.bundle != null) {
-                    pendingIntent = (PendingIntent) this.bundle
+                if (bundle != null) {
+                    pendingIntent = (PendingIntent) bundle
                             .getParcelable("pendingIntent");
                 }
                 mFlingConnectedClient = null;
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
                 mClientEvent.notifyOnConnectionFailed(new ConnectionResult(
-                        this.statusCode, pendingIntent));
+                        statusCode, pendingIntent));
             }
 
         }
     }
-
-    static final int MSG_WHAT_CONNECTION_FAILED = 3;
-    static final int MSG_WHAT_DISCONNECTED = 4;
 
     /**
      * This handler will process all client connected/disconnected related
@@ -516,37 +504,33 @@ public abstract class FlingClient<T extends IInterface> implements
 
         @Override
         public void handleMessage(Message msg) {
-            if ((msg.what == 2) || (msg.what == 1)) {
+            switch (msg.what) {
+            case MSG_WHAT_CONNECTION_CALLBACK:
                 if (!isConnecting()) {
                     CallbackProxy cb = (CallbackProxy) msg.obj;
                     cb.onFailed();
                     cb.unregister();
-                    return;
                 } else {
                     CallbackProxy cb = (CallbackProxy) msg.obj;
                     cb.call(); // when connected with Fling service(device),
                                // come to here.
-                    return;
                 }
-            }
-
-            // when connect failed.
-            if (msg.what == MSG_WHAT_CONNECTION_FAILED) {
+                break;
+            case MSG_WHAT_CONNECTION_FAILED:
                 mClientEvent.notifyOnConnectionFailed(new ConnectionResult(
                         ((Integer) msg.obj).intValue(), null));
-                return;
-            }
-
-            // when disconnect from service.
-            if (msg.what == MSG_WHAT_DISCONNECTED) {
+                break;
+            case MSG_WHAT_DISCONNECTED:
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
 
                 mClientEvent.notifyOnConnectionSuspended(((Integer) msg.obj)
                         .intValue());
-                return;
+                break;
+            default:
+                Log.wtf("FlingClient", "Don't know how to handle this message.");
+                break;
             }
-            Log.wtf("FlingClient", "Don't know how to handle this message.");
         }
     }
 }

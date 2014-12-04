@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import tv.matchstick.client.common.IFlingClient;
 import tv.matchstick.client.common.api.FlingManagerImpl;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.internal.Api;
@@ -141,10 +140,6 @@ public interface FlingManager {
      * Helper class for FlingApi class
      */
     public final class Builder {
-        /**
-         * scope uri set
-         */
-        private final Set<String> mScopeUriSet;
 
         /**
          * Used context
@@ -167,28 +162,16 @@ public interface FlingManager {
         private Looper mLooper;
 
         /**
-         * Package name
-         */
-        private String mPackageName;
-
-        /**
-         * Account name
-         */
-        // private String mAccountName;
-
-        /**
          * Builder Constructor
          * 
          * @param context
          *            used context
          */
         public Builder(Context context) {
-            this.mScopeUriSet = new HashSet<String>();
             this.mApiOptionMap = new HashMap<Api, ApiOptions>();
             this.mCallbacksSet = new HashSet<ConnectionCallbacks>();
             this.mContext = context;
             this.mLooper = context.getMainLooper();
-            this.mPackageName = context.getPackageName();
         }
 
         /**
@@ -289,6 +272,13 @@ public interface FlingManager {
      * Most applications implement onConnected(Bundle) to start making requests.
      */
     public interface ConnectionCallbacks {
+
+        /**
+         * Connection cancel
+         * 
+         */
+        public static final int CAUSE_CONNECTION_CANCEL = -1;
+
         /**
          * Service disconnected.
          * 
@@ -303,6 +293,12 @@ public interface FlingManager {
          * lost.
          */
         public static final int CAUSE_NETWORK_LOST = 2;
+
+        /**
+         * Connection failed
+         * 
+         */
+        public static final int CAUSE_CONNECTION_FAILED = 3;
 
         /**
          * Called when connected.

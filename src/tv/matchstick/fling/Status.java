@@ -199,7 +199,7 @@ public class Status implements Result, SafeParcelable {
      * @return
      */
     public boolean isInterrupted() {
-        return (this.mStatusCode == 14);
+        return (mStatusCode == StatusCodes.INTERRUPTED);
     }
 
     /**
@@ -208,7 +208,7 @@ public class Status implements Result, SafeParcelable {
      * @return Status code
      */
     public int getStatusCode() {
-        return this.mStatusCode;
+        return mStatusCode;
     }
 
     @Override

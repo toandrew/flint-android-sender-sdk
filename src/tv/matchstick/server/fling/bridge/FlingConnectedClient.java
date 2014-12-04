@@ -251,7 +251,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     public final void onConnectedWithoutApp() {
         try {
             mFlingCallbacks
-                    .onPostInitComplete(1001, mStubImpl.asBinder(), null);
+                    .onPostInitComplete(FlingStatusCodes.CONNECTED_WITHOUT_APP, mStubImpl.asBinder(), null);
             log.d("Connected to device without app.");
         } catch (RemoteException e) {
             e.printStackTrace();

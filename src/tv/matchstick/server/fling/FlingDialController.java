@@ -54,6 +54,7 @@ public class FlingDialController implements FlingSocketListener {
     private Set<String> mNamespaces = new HashSet<String>();
     private FlingWebsocket mFlingWebsocket;
     private String mCurrentReceiverUrl;
+    private boolean mUseIpc = false;
 
     private boolean mDisposed = false;
     private boolean mIsConnected = false;
@@ -284,11 +285,16 @@ public class FlingDialController implements FlingSocketListener {
             }
         }
     }
-
+    
     private void launchApplication(final String type, final String receiverUrl) {
+        launchApplication(type, receiverUrl, true);
+    }
+
+    private void launchApplication(final String type, final String receiverUrl, final boolean useIpc) {
         log.d("type: type = %s", type);
         final String url = buildAppUrl();
         mCurrentReceiverUrl = receiverUrl;
+        mUseIpc = useIpc;
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -304,7 +310,7 @@ public class FlingDialController implements FlingSocketListener {
                     jsonObject.put("type", type);
                     JSONObject sub = new JSONObject();
                     sub.put("url", receiverUrl);
-                    sub.put("useIpc", true);
+                    sub.put("useIpc", useIpc);
                     jsonObject.put("app_info", sub);
                     urlConnection.setDoOutput(true);
 

@@ -51,6 +51,11 @@ public final class FlingStatusCodes {
     public static final int TIMEOUT = 15;
 
     /**
+     * Connected to device without app.
+     */
+    public static final int CONNECTED_WITHOUT_APP = 1001;
+
+    /**
      * Authentication failed
      */
     public static final int AUTHENTICATION_FAILED = 2000;

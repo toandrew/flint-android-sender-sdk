@@ -41,16 +41,16 @@ public class ParcelRead {
     }
 
     public static void skip(Parcel data, int position) {
-        int i = readStart(data, position);
-        data.setDataPosition(data.dataPosition() + i);
+        int start = readStart(data, position);
+        data.setDataPosition(start + data.dataPosition());
     }
 
     private static void readStart(Parcel data, int position, int length) {
-        int i = readStart(data, position);
-        if (i == length)
+        int start = readStart(data, position);
+        if (start == length)
             return;
-        throw new ReadParcelException("Expected size " + length + " got " + i
-                + " (0x" + Integer.toHexString(i) + ")", data);
+        throw new ReadParcelException("Expected size " + length + " got " + start
+                + " (0x" + Integer.toHexString(start) + ")", data);
     }
 
     public static int readStart(Parcel data) {

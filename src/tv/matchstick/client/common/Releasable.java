@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package tv.matchstick.client.common.api;
+package tv.matchstick.client.common;
 
 public interface Releasable {
     public void release();

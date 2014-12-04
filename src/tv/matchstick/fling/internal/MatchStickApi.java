@@ -19,9 +19,9 @@ package tv.matchstick.fling.internal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import tv.matchstick.client.common.Releasable;
 import tv.matchstick.client.common.api.FlingManagerImpl;
 import tv.matchstick.client.common.api.FlingManagerImpl.FlingApiClientTask;
-import tv.matchstick.client.common.api.Releasable;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.PendingResult;
@@ -135,13 +135,6 @@ public class MatchStickApi {
         public void release() {
             releaseInternal();
             this.mReleaseFlag = true;
-        }
-
-        /**
-         * Get current flag
-         */
-        public int getFlag() {
-            return 0;
         }
 
         /**
