@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import tv.matchstick.client.internal.LOG;
+import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingStatusCodes;
 
 public class FlingWebsocket extends WebSocketClient {
@@ -53,12 +54,12 @@ public class FlingWebsocket extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         log.d("close");
-        mSocketListener.onDisconnected(FlingStatusCodes.SUCCESS);
+        mSocketListener.onDisconnected(ConnectionResult.SUCCESS);
     }
 
     @Override
     public void onError(Exception ex) {
         log.d("error");
-        mSocketListener.onDisconnected(FlingStatusCodes.NETWORK_ERROR);
+        mSocketListener.onDisconnected(ConnectionResult.NETWORK_ERROR);
     }
 }

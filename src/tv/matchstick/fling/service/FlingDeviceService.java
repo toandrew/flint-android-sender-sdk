@@ -17,7 +17,6 @@
 package tv.matchstick.fling.service;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import tv.matchstick.server.fling.FlingDialController;
@@ -46,10 +45,9 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
     private static final String MEDIA_ROUTE_ACTION = "android.media.MediaRouteProviderService";
 
-    private static final String SERVICE_ACTION_KEY = "what"; // see
-                                                             // AndroidUtils.buildIntent
-    private static final String SERVICE_ACTION_FLING = "fling"; // fling action
-    private static final String SERVICE_ACTION_SCAN = "scan"; // device scan
+    private static final String SERVICE_ACTION_KEY = "what";
+    private static final String SERVICE_ACTION_FLING = "fling";
+    private static final String SERVICE_ACTION_SCAN = "scan";
 
     public final MediaRouteProvider getInstance() {
         return FlingMediaRouteProvider.getInstance(this);
@@ -98,13 +96,13 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param level
      * @param mute
      */
-    public static void setVolume(Context context, final FlingDialController controller,
-            final double level, final boolean mute) {
+    public static void setVolume(Context context,
+            final FlingDialController controller, final double level,
+            final boolean mute) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.setVolumeInternal(level, mute);
             }
 
@@ -124,7 +122,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.onSocketConnectionFailedInternal(socketError);
             }
 
@@ -211,8 +208,7 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                controller.launchApplicationInternal(applicationId,
-                        relaunch);
+                controller.launchApplicationInternal(applicationId, relaunch);
             }
 
         });
@@ -242,7 +238,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.leaveApplicationInternal();
             }
 
@@ -282,7 +277,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.addNamespace(namespace);
             }
 
@@ -301,7 +295,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.getStatus();
             }
 
@@ -322,7 +315,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.removeNamespace(namespace);
             }
 
@@ -341,7 +333,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
             @Override
             public void doFling() throws IOException {
-                // TODO Auto-generated method stub
                 controller.onSocketConnectedInternal();
             }
 
@@ -366,7 +357,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
                     @Override
                     public void act() {
-                        // TODO Auto-generated method stub
                         deviceScanner.onAllDevicesOffline();
                         deviceScanner.startScan();
                     }
@@ -387,7 +377,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
                     @Override
                     public void act() {
-                        // TODO Auto-generated method stub
                         deviceScanner.stopScan();
                     }
 
@@ -454,7 +443,6 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        // TODO Auto-generated method stub
         if (intent == null) {
             Log.e("FlingService", "intent is null.ignore it!!!!");
             return;

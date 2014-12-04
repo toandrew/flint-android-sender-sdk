@@ -87,7 +87,6 @@ public final class MediaInfo {
      * @param contentId
      * @throws IllegalArgumentException
      */
-    // TODO: need public?
     public MediaInfo(String contentId) throws IllegalArgumentException {
         if (TextUtils.isEmpty(contentId)) {
             throw new IllegalArgumentException(
@@ -104,7 +103,6 @@ public final class MediaInfo {
      * @param json
      * @throws JSONException
      */
-    // TODO: need public?
     public MediaInfo(JSONObject json) throws JSONException {
         this.mContentId = json.getString("contentId");
         String str = json.getString("streamType");

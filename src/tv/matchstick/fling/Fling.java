@@ -595,7 +595,6 @@ public class Fling {
          */
         @Override
         protected Status createResult(Status status) {
-            // TODO Auto-generated method stub
             return status;
         }
     }
@@ -693,11 +692,6 @@ public class Fling {
         final Listener flingListener;
 
         /**
-         * Log flags
-         */
-        private final int loggingFlag;
-
-        /**
          * Fling operation constructor
          * 
          * @param builder
@@ -705,7 +699,6 @@ public class Fling {
         private FlingOptions(Builder builder) {
             this.flingDevice = builder.mFlingDevice;
             this.flingListener = builder.mListener;
-            this.loggingFlag = builder.mLoggingFlag;
         }
 
         /**
@@ -737,11 +730,6 @@ public class Fling {
              */
             Listener mListener;
 
-            /**
-             * Log flags
-             */
-            private int mLoggingFlag;
-
             private Builder(FlingDevice flingDevice, Listener flingListener) {
                 ValueChecker.checkNullPointer(flingDevice,
                         "FlingDevice parameter cannot be null");
@@ -749,24 +737,6 @@ public class Fling {
                         "FlingListener parameter cannot be null");
                 this.mFlingDevice = flingDevice;
                 this.mListener = flingListener;
-                this.mLoggingFlag = 0;
-            }
-
-            /**
-             * Enables or disables verbose logging for this Fling session.
-             * 
-             * Debug only
-             * 
-             * @param enabled
-             * @return
-             */
-            public Builder setVerboseLoggingEnabled(boolean enabled) {
-                if (enabled) {
-                    this.mLoggingFlag |= 1;
-                } else {
-                    this.mLoggingFlag &= -2;
-                }
-                return this;
             }
 
             /**

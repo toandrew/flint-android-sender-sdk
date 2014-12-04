@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import tv.matchstick.fling.FlingMediaControlIntent;
 import tv.matchstick.server.common.checker.ObjEqualChecker;
 import android.text.TextUtils;
 
@@ -35,11 +36,11 @@ public final class DiscoveryCriteria {
 
     public static DiscoveryCriteria getDiscoveryCriteria(String category) {
         if (!category
-                .equals("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK")
-                && !category.equals("tv.matchstick.fling.CATEGORY_FLING")
+                .equals(FlingMediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
+                && !category.equals(FlingMediaControlIntent.CATEGORY_FLING)
                 && !category
-                        .startsWith("tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK/")
-                && !category.startsWith("tv.matchstick.fling.CATEGORY_FLING/")) {
+                        .startsWith(FlingMediaControlIntent.CATEGORY_FLING + "/")
+                && !category.startsWith(FlingMediaControlIntent.CATEGORY_FLING + "/")) {
             throw new IllegalArgumentException(
                     "Invalid discovery control category:" + category);
         }

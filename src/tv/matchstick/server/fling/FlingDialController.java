@@ -30,6 +30,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.ApplicationMetadata;
+import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.Fling;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
@@ -409,7 +410,7 @@ public class FlingDialController implements FlingSocketListener {
                         || !Fling.FlingApi.getApplicationId().equals(
                                 mApplicationState.appName)) {
                     release();
-                    onDisconnected(FlingStatusCodes.NETWORK_ERROR);
+                    onDisconnected(ConnectionResult.NETWORK_ERROR);
                 } else {
                     mHandler.removeCallbacks(mTimeoutRunnable);
                     mHandler.postDelayed(mHeartbeatRunnable, mHeartbeatInterval);
@@ -429,7 +430,7 @@ public class FlingDialController implements FlingSocketListener {
         @Override
         public void run() {
             log.d("heartbeat time out");
-            onSocketDisconnectedInternal(FlingStatusCodes.NETWORK_ERROR);
+            onSocketDisconnectedInternal(ConnectionResult.NETWORK_ERROR);
         }
     };
 

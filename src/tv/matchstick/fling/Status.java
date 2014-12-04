@@ -16,7 +16,6 @@
 
 package tv.matchstick.fling;
 
-import tv.matchstick.client.common.api.StatusCodes;
 import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
 import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
@@ -32,17 +31,17 @@ public class Status implements Result, SafeParcelable {
     /**
      * Success Status
      */
-    public static final Status SuccessStatus = new Status(0, null, null);
+    public static final Status SuccessStatus = new Status(ConnectionResult.SUCCESS, null, null);
 
     /**
      * Interrupted Status
      */
-    public static final Status InterruptedStatus = new Status(14, null, null);
+    public static final Status InterruptedStatus = new Status(ConnectionResult.INTERRUPTED, null, null);
 
     /**
      * Timeout Status
      */
-    public static final Status TimeOutStatus = new Status(15, null, null);
+    public static final Status TimeOutStatus = new Status(ConnectionResult.TIMEOUT, null, null);
 
     /**
      * Status Creator
@@ -199,7 +198,7 @@ public class Status implements Result, SafeParcelable {
      * @return
      */
     public boolean isInterrupted() {
-        return (mStatusCode == StatusCodes.INTERRUPTED);
+        return (mStatusCode == ConnectionResult.INTERRUPTED);
     }
 
     /**
@@ -231,22 +230,10 @@ public class Status implements Result, SafeParcelable {
                 this.mPendingIntent, status.mPendingIntent)));
     }
 
-    /**
-     * Get status message
-     *
-     * @return
-     */
-    private String getStatusMessageInternal() {
-        if (this.mStatusMessage != null) {
-            return this.mStatusMessage;
-        }
-        return StatusCodes.getStatusMessage(this.mStatusCode);
-    }
-
     @Override
     public String toString() {
         return MyStringBuilder.newStringBuilder(this)
-                .append("statusCode", getStatusMessageInternal())
+                .append("statusCode", mStatusCode)
                 .append("resolution", this.mPendingIntent).toString();
     }
 

@@ -19,8 +19,8 @@ package tv.matchstick.client.internal;
 import java.util.HashMap;
 import java.util.Map;
 
-import tv.matchstick.client.common.api.StatusCodes;
 import tv.matchstick.fling.ApplicationMetadata;
+import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.Fling;
 import tv.matchstick.fling.Fling.ApplicationConnectionResult;
 import tv.matchstick.fling.FlingDevice;
@@ -117,7 +117,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                         statusCode);
                 mIsConnectedDevice = false;
                 mApplicationMetadata = null;
-                if (statusCode != StatusCodes.SUCCESS) {
+                if (statusCode != ConnectionResult.SUCCESS) {
                     sendDisconnectedMessage(FlingManager.ConnectionCallbacks.CAUSE_NETWORK_LOST);
                 }
             }
@@ -133,7 +133,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
                     if (mResultCallback != null) {
                         mResultCallback
                                 .onResult(new ApplicationConnectionResultImpl(
-                                        new Status(StatusCodes.SUCCESS), data,
+                                        new Status(ConnectionResult.SUCCESS), data,
                                         statusText, relaunched));
                         mResultCallback = null;
                     }
@@ -239,7 +239,7 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
     @Override
     protected void onPostInitResult(int statusCode, IBinder binder,
             Bundle bundle) {
-        if ((statusCode == FlingStatusCodes.SUCCESS)
+        if ((statusCode == ConnectionResult.SUCCESS)
                 || (statusCode == FlingStatusCodes.CONNECTED_WITHOUT_APP)) {
             mIsConnectedDevice = true;
             mFirstStatusUpdate = true;

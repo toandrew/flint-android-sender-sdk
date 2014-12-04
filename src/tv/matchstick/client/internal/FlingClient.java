@@ -19,7 +19,6 @@ package tv.matchstick.client.internal;
 import java.util.ArrayList;
 
 import tv.matchstick.client.common.IFlingClient;
-import tv.matchstick.client.common.api.StatusCodes;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingManager;
 import tv.matchstick.fling.internal.Api;
@@ -450,7 +449,7 @@ public abstract class FlingClient<T extends IInterface> implements
                 return;
             }
             switch (statusCode) {
-            case StatusCodes.SUCCESS:
+            case ConnectionResult.SUCCESS:
                 try {
                     String desc = binder.getInterfaceDescriptor();
                     if (getInterfaceDescriptor().equals(desc)) {
@@ -467,10 +466,10 @@ public abstract class FlingClient<T extends IInterface> implements
                 mFlingConnectedClient = null;
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 mService = null;
-                mClientEvent.notifyOnConnectionFailed(new ConnectionResult(StatusCodes.INTERNAL_ERROR,
+                mClientEvent.notifyOnConnectionFailed(new ConnectionResult(ConnectionResult.INTERNAL_ERROR,
                         null));
                 break;
-            case StatusCodes.DEVELOPER_ERROR:
+            case ConnectionResult.DEVELOPER_ERROR:
                 mConnectedState = CONNECTION_STATUS_DISCONNECTED;
                 throw new IllegalStateException(
                         "A fatal developer error has occurred. Check the logs for further information.");

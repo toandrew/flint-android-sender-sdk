@@ -16,17 +16,12 @@
 
 package tv.matchstick.fling;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import tv.matchstick.client.common.internal.safeparcel.ParcelRead;
 import tv.matchstick.client.common.internal.safeparcel.ParcelWrite;
 import tv.matchstick.client.common.internal.safeparcel.SafeParcelable;
 import tv.matchstick.client.common.internal.safeparcel.ParcelRead.ReadParcelException;
-import tv.matchstick.fling.images.WebImage;
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -44,7 +39,6 @@ public final class ApplicationMetadata implements SafeParcelable {
 
         @Override
         public ApplicationMetadata createFromParcel(Parcel source) {
-            // TODO Auto-generated method stub
 
             int size = ParcelRead.readStart(source);
             Map<String, String> add = null;

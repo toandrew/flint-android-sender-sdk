@@ -61,9 +61,6 @@ public interface FlingManager {
     public <C extends Api.ConnectionApi> C getConnectionApi(
             Api.ConnectionBuilder<C> builder);
 
-    /*
-     * connected status: 1 - connecting, 2 - connected
-     */
     /**
      * Connect to Fling service.
      */

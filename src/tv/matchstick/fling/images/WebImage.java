@@ -36,8 +36,6 @@ public class WebImage implements SafeParcelable {
 
         @Override
         public WebImage createFromParcel(Parcel source) {
-            // TODO Auto-generated method stub
-
             int size = ParcelRead.readStart(source);
             int version = 0;
             Uri url = null;
@@ -74,8 +72,6 @@ public class WebImage implements SafeParcelable {
 
         @Override
         public WebImage[] newArray(int size) {
-            // TODO Auto-generated method stub
-
             return new WebImage[size];
         }
 

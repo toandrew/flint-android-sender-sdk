@@ -20,35 +20,6 @@ package tv.matchstick.fling;
  * All Fling status
  */
 public final class FlingStatusCodes {
-    /**
-     * Operation success
-     */
-    public static final int SUCCESS = 0;
-
-    /**
-     * Network error
-     */
-    public static final int NETWORK_ERROR = 7;
-
-    /**
-     * Internal software error
-     */
-    public static final int INTERNAL_ERROR = 8;
-
-    /**
-     * Unknown error
-     */
-    public static final int UNKNOWN_ERROR = 13;
-
-    /**
-     * Interrupted error
-     */
-    public static final int INTERRUPTED = 14;
-
-    /**
-     * Timeout error
-     */
-    public static final int TIMEOUT = 15;
 
     /**
      * Connected to device without app.

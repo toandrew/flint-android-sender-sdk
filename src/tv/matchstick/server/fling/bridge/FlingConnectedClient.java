@@ -21,6 +21,7 @@ import tv.matchstick.client.internal.IFlingDeviceControllerListener;
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.fling.ApplicationMetadata;
+import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.server.fling.FlingDialController;
@@ -108,7 +109,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
          */
         if (mFlingDialController.isConnected()) {
             try {
-                mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
+                mFlingCallbacks.onPostInitComplete(ConnectionResult.SUCCESS,
                         mStubImpl.asBinder(), null);
             } catch (RemoteException e) {
                 log.d("client died while brokering service");
@@ -164,7 +165,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     @Override
     public final void onConnected() {
         try {
-            mFlingCallbacks.onPostInitComplete(FlingStatusCodes.SUCCESS,
+            mFlingCallbacks.onPostInitComplete(ConnectionResult.SUCCESS,
                     mStubImpl.asBinder(), null);
             log.d("Connected to device.");
         } catch (RemoteException remoteexception) {
@@ -279,7 +280,7 @@ public final class FlingConnectedClient implements IFlingSrvController {
     @Override
     public final void onConnectionFailed() {
         try {
-            mFlingCallbacks.onPostInitComplete(FlingStatusCodes.NETWORK_ERROR,
+            mFlingCallbacks.onPostInitComplete(ConnectionResult.NETWORK_ERROR,
                     null, null);
         } catch (RemoteException e) {
             e.printStackTrace();

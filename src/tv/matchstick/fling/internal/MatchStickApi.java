@@ -23,7 +23,7 @@ import tv.matchstick.client.common.Releasable;
 import tv.matchstick.client.common.api.FlingManagerImpl;
 import tv.matchstick.client.common.api.FlingManagerImpl.FlingApiClientTask;
 import tv.matchstick.client.internal.ValueChecker;
-import tv.matchstick.fling.FlingStatusCodes;
+import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.PendingResult;
 import tv.matchstick.fling.Result;
 import tv.matchstick.fling.ResultCallback;
@@ -315,7 +315,6 @@ public class MatchStickApi {
                     return;
                 }
                 this.mCounter.countDown();
-                Status status = this.mCurrentResult.getStatus();
                 if (this.mResultCallback != null) {
                     this.mHandler.removeTimeoutMessage();
                     this.mHandler.notifyResultCallback(this.mResultCallback,
@@ -330,7 +329,7 @@ public class MatchStickApi {
          * @param exception
          */
         private void notifyInternalError(RemoteException exception) {
-            Status status = new Status(FlingStatusCodes.INTERNAL_ERROR,
+            Status status = new Status(ConnectionResult.INTERNAL_ERROR,
                     exception.getLocalizedMessage(), null);
             postResult(createResult(status));
         }

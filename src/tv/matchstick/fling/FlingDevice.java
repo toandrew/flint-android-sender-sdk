@@ -43,8 +43,6 @@ public class FlingDevice implements SafeParcelable {
 
         @Override
         public FlingDevice createFromParcel(Parcel source) {
-            // TODO Auto-generated method stub
-
             int servicePor = 0;
             ArrayList<WebImage> icons = null;
             int length = ParcelRead.readStart(source);
@@ -107,13 +105,12 @@ public class FlingDevice implements SafeParcelable {
             }
 
             return new FlingDevice(versionCode, deviceId, hostAddress,
-                    friendlyName, modelName, deviceVersion, servicePor, icons, foundSource);
+                    friendlyName, modelName, deviceVersion, servicePor, icons,
+                    foundSource);
         }
 
         @Override
         public FlingDevice[] newArray(int size) {
-            // TODO Auto-generated method stub
-
             return new FlingDevice[size];
         }
 
@@ -163,19 +160,20 @@ public class FlingDevice implements SafeParcelable {
      * icon list
      */
     private List<WebImage> mIconList;
-    
+
     /**
      * device found source
      */
     private String mFoundSource;
 
     private FlingDevice() {
-        this(1, null, null, null, null, null, -1, ((List) (new ArrayList())), null);
+        this(1, null, null, null, null, null, -1, ((List) (new ArrayList())),
+                null);
     }
 
     /**
      * Create fling device.
-     *
+     * 
      * @param versionCode
      *            SDK version code
      * @param deviceId
@@ -219,7 +217,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set device's service port.
-     *
+     * 
      * @param device
      *            Fling device
      * @param port
@@ -233,7 +231,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set fling device's id.
-     *
+     * 
      * @param device
      *            Fling device
      * @param deviceID
@@ -247,7 +245,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get fling device's host.
-     *
+     * 
      * @param device
      *            Fling device
      * @return device's host address.
@@ -258,7 +256,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set device's host.
-     *
+     * 
      * @param device
      *            Fling device
      * @param inet4address
@@ -273,7 +271,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set icon list.
-     *
+     * 
      * @param device
      *            Fling device
      * @param list
@@ -288,7 +286,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get device from bundle data.
-     *
+     * 
      * @param data
      *            bundle data which contains device info
      * @return Fling device
@@ -306,7 +304,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set friendly name.
-     *
+     * 
      * @param device
      *            Fling device
      * @param name
@@ -320,7 +318,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set model name.
-     *
+     * 
      * @param device
      *            Fling device
      * @param name
@@ -334,7 +332,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Set device's version.
-     *
+     * 
      * @param device
      *            Fling device
      * @param version
@@ -348,13 +346,13 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get SDK's version.
-     *
+     * 
      * @return SDK's version
      */
     public final int getVersionCode() {
         return mVersionCode;
     }
-    
+
     public final String getFoundSource() {
         return mFoundSource;
     }
@@ -366,7 +364,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Fill device's bundle data with FlingDevice data
-     *
+     * 
      * @param data
      *            FlingDevice bundle data
      */
@@ -380,7 +378,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get device Id.
-     *
+     * 
      * @return device Id
      */
     public final String getDeviceId() {
@@ -389,7 +387,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get device's IP address.
-     *
+     * 
      * @return device's IP address
      */
     public final Inet4Address getIpAddress() {
@@ -398,7 +396,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Check whether there's icon.
-     *
+     * 
      * @return true for non-empty list, otherwise false
      */
     public final boolean hasIcons() {
@@ -407,7 +405,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get device friendly name.
-     *
+     * 
      * @return device name
      */
     public final String getFriendlyName() {
@@ -421,7 +419,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get device model name
-     *
+     * 
      * @return device model name
      */
     public final String getModelName() {
@@ -430,7 +428,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Check whether they are the same Fling device.
-     *
+     * 
      * @param device
      *            Fling device
      * @return true for same device, or false
@@ -476,7 +474,8 @@ public class FlingDevice implements SafeParcelable {
                         flingDevice.mDeviceVersion)
                 && mServicePort == flingDevice.mServicePort
                 && ObjEqualChecker.isEquals(mIconList, flingDevice.mIconList)
-                && ObjEqualChecker.isEquals(mFoundSource, flingDevice.mFoundSource)) {
+                && ObjEqualChecker.isEquals(mFoundSource,
+                        flingDevice.mFoundSource)) {
             return true;
         }
 
@@ -485,7 +484,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * get device's version.
-     *
+     * 
      * @return device version
      */
     public final String getDeviceVersion() {
@@ -494,7 +493,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get service's port.
-     *
+     * 
      * @return service port
      */
     public final int getServicePort() {
@@ -503,7 +502,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get preferred icon.
-     *
+     * 
      * @param preferredWidth
      *            preferred icon width
      * @param preferredHeight
@@ -550,7 +549,7 @@ public class FlingDevice implements SafeParcelable {
 
     /**
      * Get all icons.
-     *
+     * 
      * @return icon list
      */
     public final List<WebImage> getIcons() {
@@ -568,7 +567,8 @@ public class FlingDevice implements SafeParcelable {
 
     @Override
     public String toString() {
-        return String.format("\"%s\" (%s) : (%s)", mFriendlyName, mDeviceId, mFoundSource);
+        return String.format("\"%s\" (%s) : (%s)", mFriendlyName, mDeviceId,
+                mFoundSource);
     }
 
     @Override
@@ -596,7 +596,7 @@ public class FlingDevice implements SafeParcelable {
     public static final class Builder {
         /**
          * Create fling device's container.
-         *
+         * 
          * @param deviceId
          *            device Id
          * @param inet4address
