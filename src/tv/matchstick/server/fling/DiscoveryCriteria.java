@@ -29,18 +29,18 @@ import android.text.TextUtils;
 public final class DiscoveryCriteria {
     public String mCategory;
     public String mAppid;
-    public final Set mNamespaceList = new HashSet();
+    public final Set<String> mNamespaceList = new HashSet<String>();
 
     public DiscoveryCriteria() {
     }
 
     public static DiscoveryCriteria getDiscoveryCriteria(String category) {
-        if (!category
-                .equals(FlingMediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
+        if (!category.equals(FlingMediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
                 && !category.equals(FlingMediaControlIntent.CATEGORY_FLING)
-                && !category
-                        .startsWith(FlingMediaControlIntent.CATEGORY_FLING + "/")
-                && !category.startsWith(FlingMediaControlIntent.CATEGORY_FLING + "/")) {
+                && !category.startsWith(FlingMediaControlIntent.CATEGORY_FLING
+                        + "/")
+                && !category.startsWith(FlingMediaControlIntent.CATEGORY_FLING
+                        + "/")) {
             throw new IllegalArgumentException(
                     "Invalid discovery control category:" + category);
         }
@@ -49,45 +49,39 @@ public final class DiscoveryCriteria {
         criteria.mCategory = category;
         String parts[] = TextUtils.split(category, "/");
         switch (parts.length) {
+        case 1:
+            break;
+        case 2:
+            criteria.mAppid = parts[1];
+            break;
+        case 3:
+            if (!TextUtils.isEmpty(parts[1])) {
+                criteria.mAppid = parts[1];
+            }
+
+            java.util.List list = Arrays.asList(TextUtils.split(parts[2], ","));
+            checkNamespaces(((Collection) (list)));
+            criteria.mNamespaceList.addAll(list);
+            break;
         default:
             throw new IllegalArgumentException(
                     "Could not parse criteria from control category: "
                             + category);
-
-        case 2:
-            criteria.mAppid = parts[1];
-        case 1:
-            return criteria;
-
-        case 3:
-            break;
         }
-
-        if (!TextUtils.isEmpty(parts[1])) {
-            criteria.mAppid = parts[1];
-        }
-
-        java.util.List list = Arrays.asList(TextUtils.split(parts[2], ","));
-        checkNamespaces(((Collection) (list)));
-        criteria.mNamespaceList.addAll(list);
 
         return criteria;
     }
 
     private static void checkNamespaces(Collection namespaces) {
         if (namespaces != null && namespaces.size() > 0) {
-            Iterator iterator = namespaces.iterator();
-            String namespace;
-            do {
-                if (!iterator.hasNext()) {
-                    return;
+            Iterator<String> iterator = namespaces.iterator();
+            while (iterator.hasNext()) {
+                String namespace = (String) iterator.next();
+                if (TextUtils.isEmpty(namespace) || namespace.trim().equals("")) {
+                    throw new IllegalArgumentException(
+                            "Namespaces must not be null or empty");
                 }
-                namespace = (String) iterator.next();
-            } while (!TextUtils.isEmpty(namespace)
-                    && !namespace.trim().equals(""));
-
-            throw new IllegalArgumentException(
-                    "Namespaces must not be null or empty");
+            }
         } else {
             throw new IllegalArgumentException(
                     "Must specify at least one namespace");

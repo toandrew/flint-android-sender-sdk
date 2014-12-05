@@ -23,7 +23,7 @@ import android.text.TextUtils;
 
 /**
  * Fling media control intent.
- *
+ * 
  * Intent constants for use with the Fling MediaRouteProvider. <br>
  * This class also contains utility methods for creating a control category for
  * discovering Fling media routes that support a specific app and/or set of
@@ -41,8 +41,28 @@ public class FlingMediaControlIntent {
     public static final String CATEGORY_REMOTE_PLAYBACK = "tv.matchstick.fling.CATEGORY_FLING_REMOTE_PLAYBACK";
 
     /**
+     * Get fling category with application Id.
+     * 
+     * Returns a custom control category for discovering Fling devices that
+     * support running the specified app, independent of whether the app is
+     * running or not.
+     * 
+     * @param applicationId
+     *            application's Id
+     * @return fling category
+     * @throws IllegalArgumentException
+     */
+    public static String categoryForFling(String applicationId)
+            throws IllegalArgumentException {
+        if (applicationId == null) {
+            throw new IllegalArgumentException("applicationId cannot be null");
+        }
+        return buildCategory(CATEGORY_FLING, applicationId, null);
+    }
+
+    /**
      * Get media remote playback category.
-     *
+     * 
      * Returns a custom control category for discovering Fling devices which
      * support the default Android remote playback actions using the specified
      * Fling player.
@@ -63,7 +83,7 @@ public class FlingMediaControlIntent {
 
     /**
      * Get default remote media playback category.
-     *
+     * 
      * Returns a custom control category for discovering Fling devices which
      * support the Default Media Receiver.
      * 

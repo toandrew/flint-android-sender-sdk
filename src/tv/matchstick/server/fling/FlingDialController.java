@@ -33,7 +33,6 @@ import tv.matchstick.fling.ApplicationMetadata;
 import tv.matchstick.fling.ConnectionResult;
 import tv.matchstick.fling.Fling;
 import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.fling.FlingStatusCodes;
 import tv.matchstick.fling.service.FlingDeviceService;
 import tv.matchstick.server.fling.bridge.IFlingSrvController;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
@@ -60,7 +59,7 @@ public class FlingDialController implements FlingSocketListener {
     private boolean mDisposed = false;
     private boolean mIsConnected = false;
     private boolean mIsConnecting = false;
-    
+
     private String mLastToken;
     private String mLastAddress;
 

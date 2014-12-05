@@ -21,7 +21,7 @@ import android.os.Bundle;
 /**
  * Discovery request
  */
-public final class DiscoveryRequest { // MediaRouteDiscoveryRequest
+public final class DiscoveryRequest {
     private final Bundle mData;
     private MediaRouteSelector mMediaRouteSelector;
 

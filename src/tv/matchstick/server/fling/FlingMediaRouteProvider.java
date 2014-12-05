@@ -142,12 +142,10 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
         mErrorMap.put(Integer.valueOf(3),
                 "Disconnected from Fling Device but trying to reconnect");
 
-        mFlingDeviceFilter = new DeviceFilter(context, mDiscoveryCriterias,
-                context.getPackageName()) {
+        mFlingDeviceFilter = new DeviceFilter(mDiscoveryCriterias) {
 
             @Override
             protected void setDeviceOffline(FlingDevice flingdevice) {
-                // TODO Auto-generated method stub
                 if (flingdevice.getFoundSource().equals(
                         FlingDevice.FOUND_SOURCE_MDNS))
                     mMdnsDeviceScanner.setDeviceOffline(flingdevice
@@ -159,7 +157,6 @@ public class FlingMediaRouteProvider extends MediaRouteProvider {
 
             @Override
             protected void onDeviceAccepted(FlingDevice flingdevice, Set set) {
-                // TODO Auto-generated method stub
 
                 log().d("DeviceFilter#onDeviceAccepted: %s", flingdevice);
 

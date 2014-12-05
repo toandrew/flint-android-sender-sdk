@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,7 +30,6 @@ import org.json.JSONObject;
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.fling.FlingDevice;
 import tv.matchstick.server.fling.socket.FlingSocketListener;
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -41,18 +39,12 @@ import android.util.Log;
  */
 abstract class DeviceFilter {
     private static final LOG log = new LOG("DeviceFilter");
-    private static AtomicLong mIdGen = new AtomicLong(0L);
-    private final Context mContext;
-    private final String mPackageName;
-    private final List mDeviceConnections = new ArrayList();
+    private final List<FlingDeviceManager> mDeviceConnections = new ArrayList<FlingDeviceManager>();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private Set<DiscoveryCriteria> mDiscoveryCriterias;
 
-    public DeviceFilter(Context context, Set<DiscoveryCriteria> set,
-            String packageName) {
-        mContext = context;
+    public DeviceFilter(Set<DiscoveryCriteria> set) {
         mDiscoveryCriterias = new HashSet<DiscoveryCriteria>(set);
-        mPackageName = packageName;
     }
 
     protected abstract void setDeviceOffline(FlingDevice flingdevice);
@@ -65,8 +57,8 @@ abstract class DeviceFilter {
      * @param criterias
      */
     public final void reset(Set<DiscoveryCriteria> criterias) {
-        for (Iterator iterator = mDeviceConnections.iterator(); iterator
-                .hasNext();) {
+        Iterator<FlingDeviceManager> iterator = mDeviceConnections.iterator();
+        while (iterator.hasNext()) {
             ((FlingDeviceManager) iterator.next()).mIsConnecting = false;
         }
 
@@ -93,7 +85,6 @@ abstract class DeviceFilter {
         boolean mNoNamespace;
         boolean mIsConnecting;
         final DeviceFilter mDeviceFilter;
-        private final String mSourceId;
         private final AppInfoHelper mAppInfoHelper = new AppInfoHelper();
         private final JSONArray mApplicationIds = new JSONArray();
 
@@ -107,9 +98,6 @@ abstract class DeviceFilter {
             mNoNamespace = false;
             mIsConnecting = true;
             mFlingDevice = flingDevice;
-
-            mSourceId = String.format("%s-%d", mPackageName,
-                    mIdGen.incrementAndGet());
 
             if (mDiscoveryCriterias.size() > 0) {
                 boolean noNameSpace = true;
@@ -156,24 +144,14 @@ abstract class DeviceFilter {
         }
 
         private void updateStatus() {
-            HashSet hashset = new HashSet();
+            HashSet<DiscoveryCriteria> hashset = new HashSet<DiscoveryCriteria>();
             Iterator<DiscoveryCriteria> iterator = mDiscoveryCriterias
                     .iterator();
-            do {
-                if (!iterator.hasNext()) {
-                    break;
-                }
+            while (iterator.hasNext()) {
                 DiscoveryCriteria criteria = (DiscoveryCriteria) iterator
                         .next();
-
                 boolean flag = false;
-
-                // if we need setNoApp later, the mAppAvailabityList must
-                // contains
-                if (/*
-                     * (criteria.mAppid == null ||
-                     * h.mAppAvailabityList.contains(criteria.mAppid)) &&
-                     */mAppInfoHelper.mAppNamespaceList.containsAll(Collections
+                if (mAppInfoHelper.mAppNamespaceList.containsAll(Collections
                         .unmodifiableSet(criteria.mNamespaceList))) {
                     flag = true;
                 }
@@ -181,33 +159,31 @@ abstract class DeviceFilter {
                 if (flag) {
                     hashset.add(criteria);
                 }
-            } while (true);
+            }
 
             if (mIsConnecting && hashset.size() > 0) {
                 acceptDevice(mFlingDevice, hashset);
-                return;
+            } else {
+                log.d("rejected device: %s", mFlingDevice);
             }
-
-            log.d("rejected device: %s", mFlingDevice);
-            return;
         }
 
         @Override
         public final void onConnected() {
-            
+
         }
 
         @Override
         public final void onConnectionFailed() {
-            log.w("Connection to %s:%d (%s) failed with error net work", mFlingDevice
-                    .getIpAddress().toString(), mFlingDevice.getServicePort(),
+            log.w("Connection to %s:%d (%s) failed with error net work",
+                    mFlingDevice.getIpAddress().toString(),
+                    mFlingDevice.getServicePort(),
                     mFlingDevice.getFriendlyName());
 
             mHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
                     mDeviceFilter.setDeviceOffline(mFlingDevice);
                 }
 
@@ -219,7 +195,6 @@ abstract class DeviceFilter {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
                     mDeviceFilter.onDeviceAccepted(flingdevice, set);
                 }
 
@@ -232,30 +207,26 @@ abstract class DeviceFilter {
         }
 
         private final class AppInfoHelper {
-            final Set mAppNamespaceList;
-            final Set mAppAvailabityList;
+            final Set<String> mAppNamespaceList;
+            final Set<String> mAppAvailabityList;
 
             private AppInfoHelper() {
-                mAppNamespaceList = new HashSet();
-                mAppAvailabityList = new HashSet();
+                mAppNamespaceList = new HashSet<String>();
+                mAppAvailabityList = new HashSet<String>();
             }
 
             public final void fillNamespaceList(JSONObject jsonobject) {
                 try {
                     JSONArray applications = jsonobject.getJSONObject("status")
                             .getJSONArray("applications");
-                    int i = 0;
-                    while (i < applications.length()) {
+                    for (int i = 0; i < applications.length(); i++) {
                         JSONArray namespaces = applications.getJSONObject(i)
                                 .getJSONArray("namespaces");
-                        int j = 0;
-                        while (j < namespaces.length()) {
-                            String name = namespaces.getJSONObject(j)
-                                    .getString("name");
-                            mAppNamespaceList.add(name);
-                            j++;
+                        for (int j = 0; j < namespaces.length(); j++) {
+                            mAppNamespaceList.add(namespaces.getJSONObject(j)
+                                    .getString("name"));
                         }
-                        i++;
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -269,15 +240,13 @@ abstract class DeviceFilter {
                 try {
                     JSONObject availability = obj.getJSONObject("availability");
                     Iterator<String> iterator = availability.keys();
-                    do {
-                        if (!iterator.hasNext())
-                            break;
+                    while (iterator.hasNext()) {
                         String appId = (String) iterator.next();
                         if ("APP_AVAILABLE".equals(availability
                                 .optString(appId))) {
                             mAppAvailabityList.add(appId);
                         }
-                    } while (true);
+                    }
                 } catch (JSONException e) {
                     log.d("No app availabities found in receiver response: %s",
                             e.getMessage());
