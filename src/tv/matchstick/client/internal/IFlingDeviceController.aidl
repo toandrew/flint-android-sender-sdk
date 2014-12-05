@@ -23,7 +23,7 @@ interface IFlingDeviceController
 	void disconnect();
 
 	void launchApplication(String applicationId,
-			boolean relaunchIfRunning);
+			boolean relaunchIfRunning, boolean useIpc);
 
 	void joinApplication(String applicationId);
 

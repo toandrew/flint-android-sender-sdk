@@ -39,9 +39,9 @@ IFlingDeviceController.Stub {
 
     @Override
     public void launchApplication(String applicationId,
-            boolean relaunchIfRunning) throws RemoteException {
+            boolean relaunchIfRunning, boolean useIpc) throws RemoteException {
         mFlingDeviceController.launchApplication(applicationId,
-                relaunchIfRunning);
+                relaunchIfRunning, useIpc);
     }
 
     @Override

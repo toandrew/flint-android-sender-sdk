@@ -200,6 +200,26 @@ public class Fling {
         public abstract PendingResult<ApplicationConnectionResult> launchApplication(
                 FlingManager manager, String url,
                 boolean relaunchIfRunning);
+        
+        /**
+         * Launch a receiver application
+         * 
+         * @param manager
+         *            fling manager with which to perform this request.
+         * @param url
+         *            the url of the receiver application to
+         *            launch.
+         * @param relaunchIfRunning
+         *            If true, relaunch the application if it is already
+         *            running.
+         * @param useIpc
+         *            If true, use websocket to connect receiver.
+         * @return launch's pending result which can be used to retrieve
+         *         connection information.
+         */
+        public abstract PendingResult<ApplicationConnectionResult> launchApplication(
+                FlingManager manager, String url,
+                boolean relaunchIfRunning, boolean useIpc);
 
         /**
          * Join to the current running receiver application.
@@ -433,7 +453,7 @@ public class Fling {
                                     throws RemoteException {
                                 try {
                                     client.launchApplication(url,
-                                            false, this);
+                                            true, true, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
                                 }
@@ -450,7 +470,24 @@ public class Fling {
                                     throws RemoteException {
                                 try {
                                     client.launchApplication(url,
-                                            relaunchIfRunning, this);
+                                            relaunchIfRunning, true, this);
+                                } catch (IllegalStateException e) {
+                                    notifyResult(FlingStatusCodes.INVALID_REQUEST);
+                                }
+                            }
+                        });
+            }
+            
+            public PendingResult<ApplicationConnectionResult> launchApplication(
+                    FlingManager manager, final String url,
+                    final boolean relaunchIfRunning, final boolean useIpc) {
+                return manager
+                        .executeTask(new ApplicationConnectionResultHandler() {
+                            protected void execute(FlingClientImpl client)
+                                    throws RemoteException {
+                                try {
+                                    client.launchApplication(url,
+                                            relaunchIfRunning, useIpc, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlingStatusCodes.INVALID_REQUEST);
                                 }

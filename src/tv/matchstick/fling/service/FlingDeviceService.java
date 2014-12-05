@@ -154,12 +154,12 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      * @param applicationId
      */
     public static void joinApplication(Context context,
-            final FlingDialController controller, final String applicationId) {
+            final FlingDialController controller, final String applicationId, final boolean useIpc) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                controller.joinApplicationInternal(applicationId);
+                controller.joinApplicationInternal(applicationId, useIpc);
             }
 
         });
@@ -203,12 +203,12 @@ public class FlingDeviceService extends MediaRouteProviderSrv {
      */
     public static void launchApplication(Context context,
             final FlingDialController controller, final String applicationId,
-            final boolean relaunch) {
+            final boolean relaunch, final boolean useIpc) {
         startFlingService(context, new FlingOperation(controller) {
 
             @Override
             public void doFling() throws IOException {
-                controller.launchApplicationInternal(applicationId, relaunch);
+                controller.launchApplicationInternal(applicationId, relaunch, useIpc);
             }
 
         });

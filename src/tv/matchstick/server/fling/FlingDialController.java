@@ -54,7 +54,7 @@ public class FlingDialController implements FlingSocketListener {
     private Set<String> mNamespaces = new HashSet<String>();
     private FlingWebsocket mFlingWebsocket;
     private String mCurrentReceiverUrl;
-    private boolean mUseIpc = false;
+    private boolean mUseIpc = true;
 
     private boolean mDisposed = false;
     private boolean mIsConnected = false;
@@ -198,19 +198,17 @@ public class FlingDialController implements FlingSocketListener {
                 try {
                     URL mURL;
                     if (!TextUtils.isEmpty(mApplicationState.appAddress)) {
-                        mURL = new URL(url
-                                + "/" + mApplicationState.appAddress);
+                        mURL = new URL(url + "/" + mApplicationState.appAddress);
                     } else if (!TextUtils.isEmpty(mLastAddress)) {
-                        mURL = new URL(url
-                                + "/" + mLastAddress);
-                    }  else {
+                        mURL = new URL(url + "/" + mLastAddress);
+                    } else {
                         mURL = new URL(url);
                     }
 
                     HttpURLConnection urlConnection = (HttpURLConnection) mURL
                             .openConnection();
                     urlConnection.setRequestMethod("DELETE");
-                    
+
                     if (!TextUtils.isEmpty(mApplicationState.token)) {
                         urlConnection.setRequestProperty("Authorization",
                                 mApplicationState.token);
@@ -242,16 +240,17 @@ public class FlingDialController implements FlingSocketListener {
         });
     }
 
-    public void joinApplicationInternal(String url) {
+    public void joinApplicationInternal(String url, boolean useIpc) {
         log.d("joinApplicationInternal");
         if (TextUtils.isEmpty(url))
-            launchApplication("join", mCurrentReceiverUrl);
+            launchApplication("join", mCurrentReceiverUrl, useIpc);
         else
-            launchApplication("join", url);
+            launchApplication("join", url, useIpc);
     }
 
     public void sendTextMessage(String namespace, String message) {
-        log.d("sendTextMessage: namespace = %s; message = %s", namespace, message);
+        log.d("sendTextMessage: namespace = %s; message = %s", namespace,
+                message);
 
         if (mFlingWebsocket != null && mFlingWebsocket.isOpen()) {
             mFlingWebsocket.sendText(namespace, message);
@@ -259,8 +258,9 @@ public class FlingDialController implements FlingSocketListener {
     }
 
     public void launchApplicationInternal(final String url,
-            final boolean relaunch) {
-        log.d("launchApplicationInternal: relaunch = %b; state = %s", relaunch, mApplicationState.state);
+            final boolean relaunch, final boolean useIpc) {
+        log.d("launchApplicationInternal: relaunch = %b; state = %s", relaunch,
+                mApplicationState.state);
         if (TextUtils.isEmpty(mApplicationState.state)) {
             log.d("status is null, get status first");
             getStatus(new StateCallback() {
@@ -269,28 +269,25 @@ public class FlingDialController implements FlingSocketListener {
                     if (TextUtils.isEmpty(mApplicationState.state)) {
                         mFlingSrvController.onApplicationConnectionFailed(0);
                     } else {
-                        launchApplicationInternal(url, relaunch);
+                        launchApplicationInternal(url, relaunch, useIpc);
                     }
                 }
             });
         } else {
             if (!"stopped".equals(mApplicationState.state)) {
                 if (relaunch) {
-                    launchApplication("relaunch", url);
+                    launchApplication("relaunch", url, useIpc);
                 } else {
                     joinApplication(url);
                 }
             } else {
-                launchApplication("launch", url);
+                launchApplication("launch", url, useIpc);
             }
         }
     }
-    
-    private void launchApplication(final String type, final String receiverUrl) {
-        launchApplication(type, receiverUrl, true);
-    }
 
-    private void launchApplication(final String type, final String receiverUrl, final boolean useIpc) {
+    private void launchApplication(final String type, final String receiverUrl,
+            final boolean useIpc) {
         log.d("type: type = %s", type);
         final String url = buildAppUrl();
         mCurrentReceiverUrl = receiverUrl;
@@ -366,27 +363,36 @@ public class FlingDialController implements FlingSocketListener {
         getStatus(new StateCallback() {
             @Override
             void onResult() {
-                if (mApplicationState.state.equals("running")
-                        && !TextUtils.isEmpty(mApplicationState.url)) {
-                    if (mFlingWebsocket != null && mFlingWebsocket.isOpen()) {
-                        mFlingWebsocket.close();
+                if (mApplicationState.state.equals("running")) {
+                    if (!TextUtils.isEmpty(mApplicationState.url)) {
+                        if (mFlingWebsocket != null && mFlingWebsocket.isOpen()) {
+                            mFlingWebsocket.close();
+                        }
+                        mFlingWebsocket = new FlingWebsocket(
+                                FlingDialController.this,
+                                URI.create(mApplicationState.url + "/senders/"
+                                        + mApplicationState.token));
+                        mFlingWebsocket.connect();
+                        mDisposed = false;
+                        startHeartbeat();
+                        log.d("launch success");
+                        return;
+                    } else if (!mUseIpc) {
+                        if (mFlingWebsocket != null && mFlingWebsocket.isOpen()) {
+                            mFlingWebsocket.close();
+                        }
+                        mDisposed = false;
+                        startHeartbeat();
+                        log.d("launch success");
+                        return;
                     }
-                    mFlingWebsocket = new FlingWebsocket(
-                            FlingDialController.this,
-                            URI.create(mApplicationState.url + "/senders/"
-                                    + mApplicationState.token));
-                    mFlingWebsocket.connect();
-                    mDisposed = false;
-                    startHeartbeat();
-                    log.d("launch success");
+                }
+                if (mLaunchStateCounter < 10) {
+                    mLaunchStateCounter++;
+                    mHandler.postDelayed(mRequestLaunchState, 1000);
                 } else {
-                    if (mLaunchStateCounter < 10) {
-                        mLaunchStateCounter++;
-                        mHandler.postDelayed(mRequestLaunchState, 1000);
-                    } else {
-                        log.d("launch time out");
-                        mFlingSrvController.onApplicationConnectionFailed(1);
-                    }
+                    log.d("launch time out");
+                    mFlingSrvController.onApplicationConnectionFailed(1);
                 }
             }
         });
@@ -569,7 +575,8 @@ public class FlingDialController implements FlingSocketListener {
                     try {
                         if (urlConnection.getResponseCode() == 400) {
                             log.d("token dispose, join");
-                            launchApplication("join", mCurrentReceiverUrl);
+                            launchApplication("join", mCurrentReceiverUrl,
+                                    mUseIpc);
                         } else {
                             Scanner s = new Scanner(in).useDelimiter("\\A");
                             String xml = s.hasNext() ? s.next() : "";
@@ -647,13 +654,17 @@ public class FlingDialController implements FlingSocketListener {
     }
 
     public void launchApplication(String applicationId,
-            boolean relaunchIfRunning) {
+            boolean relaunchIfRunning, boolean useIpc) {
         FlingDeviceService.launchApplication(mContext, this, applicationId,
-                relaunchIfRunning);
+                relaunchIfRunning, useIpc);
     }
 
     public void joinApplication(String url) {
-        FlingDeviceService.joinApplication(mContext, this, url);
+        FlingDeviceService.joinApplication(mContext, this, url, mUseIpc);
+    }
+
+    public void joinApplication(String url, boolean useIpc) {
+        FlingDeviceService.joinApplication(mContext, this, url, useIpc);
     }
 
     public void leaveApplication() {

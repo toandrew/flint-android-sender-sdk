@@ -323,11 +323,11 @@ public class FlingClientImpl extends FlingClient<IFlingDeviceController> {
      * @throws IllegalStateException
      * @throws RemoteException
      */
-    public void launchApplication(String applicationId, boolean relaunchFlag,
+    public void launchApplication(String applicationId, boolean relaunchFlag, boolean useIpc,
             ResultCallback<Fling.ApplicationConnectionResult> callback)
             throws IllegalStateException, RemoteException {
         setApplicationConnectionResultCallback(callback);
-        getService().launchApplication(applicationId, relaunchFlag);
+        getService().launchApplication(applicationId, relaunchFlag, useIpc);
     }
 
     /**
