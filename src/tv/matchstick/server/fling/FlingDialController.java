@@ -49,7 +49,6 @@ public class FlingDialController implements FlingSocketListener {
     private FlingDevice mFlingDevice;
     private final IFlingSrvController mFlingSrvController;
     private ApplicationState mApplicationState = new ApplicationState();
-    private int mLaunchStateCounter = 0;
     private int mHeartbeatInterval = 1000;
     private Set<String> mNamespaces = new HashSet<String>();
     private FlingWebsocket mFlingWebsocket;
@@ -335,7 +334,6 @@ public class FlingDialController implements FlingSocketListener {
                                     @Override
                                     public void run() {
                                         if (mApplicationState.token.length() > 0) {
-                                            mLaunchStateCounter = 0;
                                             requestLaunchState();
                                         } else {
                                             mFlingSrvController
@@ -386,13 +384,11 @@ public class FlingDialController implements FlingSocketListener {
                         log.d("launch success");
                         return;
                     }
-                }
-                if (mLaunchStateCounter < 10) {
-                    mLaunchStateCounter++;
-                    mHandler.postDelayed(mRequestLaunchState, 1000);
-                } else {
-                    log.d("launch time out");
+                } else if (mApplicationState.state.equals("stopped")) {
                     mFlingSrvController.onApplicationConnectionFailed(1);
+                    log.d("launch time out");
+                } else {
+                    mHandler.postDelayed(mRequestLaunchState, mHeartbeatInterval);
                 }
             }
         });
