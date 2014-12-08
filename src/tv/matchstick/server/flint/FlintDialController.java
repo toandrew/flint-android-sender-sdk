@@ -109,10 +109,79 @@ public class FlintDialController implements FlintSocketListener {
                         mApplicationState.state);
                 if (mApplicationState.state != null) {
                     onDialConnected();
+                    getVolume();
                 } else {
                     onConnectionFailed();
                 }
                 mIsConnecting = false;
+            }
+        });
+    }
+    
+    private void getVolume() {
+        final String url = buildSystemUrl();
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL mURL = new URL(url);
+                    HttpURLConnection urlConnection = (HttpURLConnection) mURL
+                            .openConnection();
+                    urlConnection.setRequestMethod("POST");
+                    urlConnection.setRequestProperty("Content-Type",
+                            "application/json");
+                    if (mApplicationState != null
+                            && !TextUtils.isEmpty(mApplicationState.token)) {
+                        urlConnection.setRequestProperty("Authorization",
+                                mApplicationState.token);
+                    }
+                    urlConnection.setConnectTimeout(10 * 1000);
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("type", "GET_VOLUME");
+                    urlConnection.setDoOutput(true);
+
+                    DataOutputStream wr = new DataOutputStream(urlConnection
+                            .getOutputStream());
+                    wr.writeBytes(jsonObject.toString());
+                    wr.flush();
+                    wr.close();
+
+                    InputStream in = new BufferedInputStream(urlConnection
+                            .getInputStream());
+                    try {
+                        if (urlConnection.getResponseCode() == 200
+                                || urlConnection.getResponseCode() == 201) {
+                            Scanner s = new Scanner(in).useDelimiter("\\A");
+                            String json = s.hasNext() ? s.next() : "";
+                            if (json.length() > 0) {
+                                JSONObject object = new JSONObject(json);
+                                final boolean success = object.optBoolean(
+                                        "success", false);
+                                final double level = object.optDouble(
+                                        "level");
+                                final boolean muted = object.optBoolean(
+                                        "muted", false);
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (success) {
+                                            mFlintSrvController.onVolumeChanged("", level, muted);
+                                        } else {
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    } finally {
+                        in.close();
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -158,10 +227,15 @@ public class FlintDialController implements FlintSocketListener {
                                 JSONObject object = new JSONObject(json);
                                 final boolean success = object.optBoolean(
                                         "success", false);
+                                final double device_level = object.optDouble(
+                                        "level");
+                                final boolean muted = object.optBoolean(
+                                        "muted", false);
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (success) {
+                                            mFlintSrvController.onVolumeChanged("", device_level, muted);
                                         } else {
                                         }
                                     }
