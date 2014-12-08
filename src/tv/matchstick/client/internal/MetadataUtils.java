@@ -28,7 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.fling.images.WebImage;
+import tv.matchstick.flint.images.WebImage;
 import android.text.TextUtils;
 
 public class MetadataUtils {

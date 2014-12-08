@@ -23,8 +23,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.fling.MediaInfo;
-import tv.matchstick.fling.MediaStatus;
+import tv.matchstick.flint.MediaInfo;
+import tv.matchstick.flint.MediaStatus;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -32,7 +32,7 @@ import android.os.SystemClock;
 /**
  * Media control channel
  */
-public class MediaControlChannel extends FlingChannel {
+public class MediaControlChannel extends FlintChannel {
     // json.put("requestId", requestId);
     // json.put("type", "LOAD");
     // json.put("media", mediaInfo.buildJson());
