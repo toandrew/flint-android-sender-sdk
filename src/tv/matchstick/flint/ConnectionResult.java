@@ -24,7 +24,6 @@ import android.app.PendingIntent;
  *
  * Contains all possible error codes for when an error happens while connecting
  * to a device. These error codes are used by
- * {@link FlintManager.OnConnectionFailedListener}.
  */
 public final class ConnectionResult {
 

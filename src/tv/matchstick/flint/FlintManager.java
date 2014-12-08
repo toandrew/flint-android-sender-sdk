@@ -179,9 +179,6 @@ public interface FlintManager {
          * @param connectedListener
          *            The listener where the results of the asynchronous
          *            connect() call are delivered.
-         * @param connectionFailedListener
-         *            the listener which will be notified if the connection
-         *            attempt fails.
          */
         public Builder(Context context,
                 FlintManager.ConnectionCallbacks connectedListener) {
