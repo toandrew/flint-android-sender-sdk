@@ -41,7 +41,7 @@ import android.os.RemoteException;
  * Matchstick, Chromecasts, bluetooth speakers, Android-powered smart TVs, and
  * other media playback devices; and for routing media content to and
  * controlling playback on those endpoints. These endpoints are referred to as
- * “media routes.”
+ * "media routes."
  * <p>
  * The first step to using these APIs is to acquire the MediaRouter singleton.
  * It is important for the application to hold on to the reference to this
