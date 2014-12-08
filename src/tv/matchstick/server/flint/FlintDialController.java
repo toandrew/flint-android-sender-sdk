@@ -465,7 +465,7 @@ public class FlintDialController implements FlintSocketListener {
     private String buildSystemUrl() {
         String address = mFlintDevice.getIpAddress().getHostAddress();
         int port = mFlintDevice.getServicePort();
-        String url = "http://" + address + ":" + port + "system/control";
+        String url = "http://" + address + ":" + port + "/system/control";
         return url;
     }
 
