@@ -33,7 +33,9 @@ interface IFlintDeviceController
 
 	void requestStatus();
 
-	void setVolume(double volume, boolean isMute);
+	void setVolume(double volume, boolean defaultMute);
+	
+	void setMute(double defaultVolume, boolean isMute);
 
 	void sendMessage(String namespace, String message);
 

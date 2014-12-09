@@ -186,7 +186,7 @@ public class FlintDialController implements FlintSocketListener {
         });
     }
 
-    public void setVolumeInternal(final double level, final boolean mute) {
+    public void setVolumeInternal(final boolean isSetVolume, final double level, final boolean mute) {
         final String url = buildSystemUrl();
         mExecutor.execute(new Runnable() {
             @Override
@@ -205,9 +205,13 @@ public class FlintDialController implements FlintSocketListener {
                     }
                     urlConnection.setConnectTimeout(10 * 1000);
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("type", "SET_VOLUME");
-                    jsonObject.put("level", level);
-                    jsonObject.put("muted", mute);
+                    if (isSetVolume) {
+                        jsonObject.put("type", "SET_VOLUME");
+                        jsonObject.put("level", level);
+                    } else {
+                        jsonObject.put("type", "SET_MUTED");
+                        jsonObject.put("muted", mute);
+                    }
                     urlConnection.setDoOutput(true);
 
                     DataOutputStream wr = new DataOutputStream(urlConnection
@@ -228,9 +232,9 @@ public class FlintDialController implements FlintSocketListener {
                                 final boolean success = object.optBoolean(
                                         "success", false);
                                 final double device_level = object.optDouble(
-                                        "level");
+                                        "level", level);
                                 final boolean muted = object.optBoolean(
-                                        "muted", false);
+                                        "muted", mute);
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -749,8 +753,12 @@ public class FlintDialController implements FlintSocketListener {
         FlintDeviceService.requestStatus(mContext, this);
     }
 
-    public void setVolume(double volume, boolean mute) {
-        FlintDeviceService.setVolume(mContext, this, volume, mute);
+    public void setVolume(double volume, boolean defaultMute) {
+        FlintDeviceService.setVolume(mContext, this, true, volume, defaultMute);
+    }
+
+    public void setMute(double defaultVolume, boolean isMute) {
+        FlintDeviceService.setVolume(mContext, this, false, defaultVolume, isMute);
     }
 
     public void sendMessageInternal(String namespace, String message) {

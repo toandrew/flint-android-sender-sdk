@@ -97,13 +97,13 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
      * @param mute
      */
     public static void setVolume(Context context,
-            final FlintDialController controller, final double level,
+            final FlintDialController controller, final boolean isSetVolume, final double level,
             final boolean mute) {
         startFlintService(context, new FlintOperation(controller) {
 
             @Override
             public void doFlint() throws IOException {
-                controller.setVolumeInternal(level, mute);
+                controller.setVolumeInternal(isSetVolume, level, mute);
             }
 
         });

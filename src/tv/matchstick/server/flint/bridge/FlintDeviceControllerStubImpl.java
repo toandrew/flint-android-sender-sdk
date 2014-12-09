@@ -74,11 +74,15 @@ IFlintDeviceController.Stub {
     }
 
     @Override
-    public void setVolume(double volume, boolean isMute)
+    public void setVolume(double volume, boolean defaultMute)
             throws RemoteException {
-        // TODO Auto-generated method stub
+        mFlintDeviceController.setVolume(volume, defaultMute);
+    }
 
-        mFlintDeviceController.setVolume(volume, isMute);
+    @Override
+    public void setMute(double defalutVolume, boolean isMute)
+            throws RemoteException {
+        mFlintDeviceController.setMute(defalutVolume, isMute);
     }
 
     @Override

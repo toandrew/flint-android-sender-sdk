@@ -437,7 +437,7 @@ public class FlintClientImpl extends FlintClient<IFlintDeviceController> {
      */
     public void setMute(boolean mute) throws IllegalStateException,
             RemoteException {
-        getService().setVolume(mVolume, mute);
+        getService().setMute(mVolume, mute);
     }
 
     /**
