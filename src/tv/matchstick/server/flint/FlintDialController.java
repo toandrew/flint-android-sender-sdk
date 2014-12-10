@@ -488,6 +488,7 @@ public class FlintDialController implements FlintSocketListener {
                 if ("stopped".equals(mApplicationState.state)
                         || !Flint.FlintApi.getApplicationId().equals(
                                 mApplicationState.appName)) {
+                    log.d("current app is not running, disconnect");
                     release();
                     onDisconnected(ConnectionResult.NETWORK_ERROR);
                 } else {

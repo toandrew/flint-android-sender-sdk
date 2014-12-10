@@ -453,7 +453,7 @@ public class Flint {
                                     throws RemoteException {
                                 try {
                                     client.launchApplication(url,
-                                            true, true, this);
+                                            false, true, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlintStatusCodes.INVALID_REQUEST);
                                 }
