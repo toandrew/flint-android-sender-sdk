@@ -47,6 +47,8 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
 
     private static FlintMediaRouteProvider mInstance;
 
+    private FlintDevice mCurrentDevice;
+
     private final Map<String, DiscoveryCriteriaHelper> mDiscoveryCriteriaMap = new HashMap<String, DiscoveryCriteriaHelper>();
     private final Map<String, FlintDeviceControllerHelper> mFlintDeviceControllerMap = new HashMap<String, FlintDeviceControllerHelper>();
     private final DeviceFilter mFlintDeviceFilter;
@@ -172,10 +174,19 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
         if (helper == null) {
             helper = new FlintDeviceControllerHelper();
             log.d("set FlintDeviceController Listener %s", flintdevice);
-            helper.isConnecting = true;
+            if (mCurrentDevice != null
+                    && mCurrentDevice.getDeviceId().equals(id)) {
+                helper.isConnecting = false;
+            } else {
+                helper.isConnecting = true;
+            }
             mFlintDeviceControllerMap.put(id, helper);
         }
         helper.mFlintRouteControllerList.add(controller);
+    }
+
+    public void setCurrentConnectedDevce(FlintDevice flintDevice) {
+        mCurrentDevice = flintDevice;
     }
 
     public static String getFriendlyName(FlintDevice flintdevice) {

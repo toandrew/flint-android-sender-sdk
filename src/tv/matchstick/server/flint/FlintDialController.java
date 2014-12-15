@@ -117,7 +117,7 @@ public class FlintDialController implements FlintSocketListener {
             }
         });
     }
-    
+
     private void getVolume() {
         final String url = buildSystemUrl();
         mExecutor.execute(new Runnable() {
@@ -157,15 +157,16 @@ public class FlintDialController implements FlintSocketListener {
                                 JSONObject object = new JSONObject(json);
                                 final boolean success = object.optBoolean(
                                         "success", false);
-                                final double level = object.optDouble(
-                                        "level");
+                                final double level = object.optDouble("level");
                                 final boolean muted = object.optBoolean(
                                         "muted", false);
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (success) {
-                                            mFlintSrvController.onVolumeChanged("", level, muted);
+                                            mFlintSrvController
+                                                    .onVolumeChanged("", level,
+                                                            muted);
                                         } else {
                                         }
                                     }
@@ -186,7 +187,8 @@ public class FlintDialController implements FlintSocketListener {
         });
     }
 
-    public void setVolumeInternal(final boolean isSetVolume, final double level, final boolean mute) {
+    public void setVolumeInternal(final boolean isSetVolume,
+            final double level, final boolean mute) {
         final String url = buildSystemUrl();
         mExecutor.execute(new Runnable() {
             @Override
@@ -239,7 +241,9 @@ public class FlintDialController implements FlintSocketListener {
                                     @Override
                                     public void run() {
                                         if (success) {
-                                            mFlintSrvController.onVolumeChanged("", device_level, muted);
+                                            mFlintSrvController
+                                                    .onVolumeChanged("",
+                                                            device_level, muted);
                                         } else {
                                         }
                                     }
@@ -466,7 +470,8 @@ public class FlintDialController implements FlintSocketListener {
                     mFlintSrvController.onApplicationConnectionFailed(1);
                     log.d("launch time out");
                 } else {
-                    mHandler.postDelayed(mRequestLaunchState, mHeartbeatInterval);
+                    mHandler.postDelayed(mRequestLaunchState,
+                            mHeartbeatInterval);
                 }
             }
         });
@@ -524,6 +529,8 @@ public class FlintDialController implements FlintSocketListener {
         log.d("release: disposed = %b", mDisposed);
         if (!mDisposed) {
             stopHeartbeat();
+            FlintMediaRouteProvider.getInstance(mContext)
+                    .setCurrentConnectedDevce(null);
             mLastToken = mApplicationState.token;
             mLastAddress = mApplicationState.appAddress;
             mApplicationState.reset();
@@ -702,12 +709,16 @@ public class FlintDialController implements FlintSocketListener {
                 .getFlintDeviceControllerMap() != null
                 && FlintMediaRouteProvider.getInstance(mContext)
                         .getFlintDeviceControllerMap()
-                        .get(mFlintDevice.getDeviceId()) != null)
+                        .get(mFlintDevice.getDeviceId()) != null) {
             FlintMediaRouteProvider.getInstance(mContext)
                     .getFlintDeviceControllerMap()
                     .get(mFlintDevice.getDeviceId()).isConnecting = false;
-        else
+        } else {
+            FlintMediaRouteProvider.getInstance(mContext)
+                    .setCurrentConnectedDevce(mFlintDevice);
             log.d("not find connected device");
+        }
+
         mFlintSrvController.onConnected();
         mIsConnected = true;
     }
@@ -759,7 +770,8 @@ public class FlintDialController implements FlintSocketListener {
     }
 
     public void setMute(double defaultVolume, boolean isMute) {
-        FlintDeviceService.setVolume(mContext, this, false, defaultVolume, isMute);
+        FlintDeviceService.setVolume(mContext, this, false, defaultVolume,
+                isMute);
     }
 
     public void sendMessageInternal(String namespace, String message) {
