@@ -130,7 +130,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     while (iterator.hasNext()) {
                         String key = (String) iterator.next();
                         SsdpScannerData value = (SsdpScannerData) mScannerData.get(key);
-                        if (value.mElapsedRealtime < SystemClock
+                        if (value.mScannedTime < SystemClock
                                 .elapsedRealtime() - RESCAN_INTERVAL) {
                             removeList.add(key);
                         }
@@ -257,7 +257,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 if (deviceId != null) {
                     synchronized (mScannerData) {
                         if (mScannerData.get(deviceId) != null) {
-                            ((SsdpScannerData) mScannerData.get(deviceId)).mElapsedRealtime = SystemClock
+                            ((SsdpScannerData) mScannerData.get(deviceId)).mScannedTime = SystemClock
                                     .elapsedRealtime();
                         }
                     }
@@ -412,8 +412,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     data = (SsdpScannerData) mScannerData.get(deviceId);
                     if (data != null) {
                         if (flintDevice.equals(data.mFlintDevice)) {
-                            if (!data.d) {
-                                data.mElapsedRealtime = SystemClock
+                            if (!data.mIsOffline) {
+                                data.mScannedTime = SystemClock
                                         .elapsedRealtime();
                             }
                             mDiscoveredDeviceList.remove(uuid);
@@ -458,8 +458,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
         synchronized (mScannerData) {
             SsdpScannerData data = (SsdpScannerData) mScannerData.get(id);
             if (data != null) {
-                data.mElapsedRealtime = SystemClock.elapsedRealtime();
-                data.d = true;
+                data.mScannedTime = SystemClock.elapsedRealtime();
+                data.mIsOffline = true;
                 device = data.mFlintDevice;
                 if (device != null) {
                     notifyDeviceOffline(device);
@@ -505,10 +505,6 @@ public class SsdpDeviceScanner extends DeviceScanner {
     }
 
     class SsdpScannerData extends ScannerDeviceData {
-        FlintDevice mFlintDevice;
-        long mElapsedRealtime;
-        long mTTl;
-        boolean d;
         String mUuid;
 
         SsdpScannerData(FlintDevice device, long ttl, String uuid) {

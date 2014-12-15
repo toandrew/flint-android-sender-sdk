@@ -264,10 +264,10 @@ public abstract class DeviceScanner {
     }
 
     public class ScannerDeviceData {
-        FlintDevice mFlintDevice;
-        long mScannedTime;
-        long mTTl;
-        boolean mIsOffline;
+        public FlintDevice mFlintDevice;
+        public long mScannedTime;
+        public long mTTl;
+        public boolean mIsOffline;
 
         public ScannerDeviceData(FlintDevice device, long ttl) {
             mFlintDevice = device;
