@@ -49,7 +49,9 @@ public class FlintDialController implements FlintSocketListener {
     private FlintDevice mFlintDevice;
     private final IFlintSrvController mFlintSrvController;
     private ApplicationState mApplicationState = new ApplicationState();
-    private int mHeartbeatInterval = 1000;
+    private int mHeartbeatInterval = 3000;
+    private int mReconnectCount = 0;
+
     private Set<String> mNamespaces = new HashSet<String>();
     private FlintWebsocket mFlintWebsocket;
     private String mCurrentReceiverUrl;
@@ -104,10 +106,10 @@ public class FlintDialController implements FlintSocketListener {
         mIsConnecting = true;
         getStatus(new StateCallback() {
             @Override
-            void onResult() {
+            void onResult(boolean success) {
                 log.d("connectToDeviceInternal: mApplicationState.state = %s",
                         mApplicationState.state);
-                if (mApplicationState.state != null) {
+                if (success && mApplicationState.state != null) {
                     onDialConnected();
                     getVolume();
                 } else {
@@ -346,8 +348,8 @@ public class FlintDialController implements FlintSocketListener {
             log.d("status is null, get status first");
             getStatus(new StateCallback() {
                 @Override
-                void onResult() {
-                    if (TextUtils.isEmpty(mApplicationState.state)) {
+                void onResult(boolean success) {
+                    if (!success || TextUtils.isEmpty(mApplicationState.state)) {
                         mFlintSrvController.onApplicationConnectionFailed(0);
                     } else {
                         launchApplicationInternal(url, relaunch, useIpc);
@@ -442,7 +444,7 @@ public class FlintDialController implements FlintSocketListener {
     private void requestLaunchState() {
         getStatus(new StateCallback() {
             @Override
-            void onResult() {
+            void onResult(boolean success) {
                 if (mApplicationState.state.equals("running")) {
                     if (!TextUtils.isEmpty(mApplicationState.url)) {
                         if (mFlintWebsocket != null && mFlintWebsocket.isOpen()) {
@@ -485,20 +487,36 @@ public class FlintDialController implements FlintSocketListener {
     };
 
     private void startHeartbeat() {
-        mHandler.postDelayed(mTimeoutRunnable,
-                Math.max(mHeartbeatInterval * 2, 10000));
+        restartHeartbeatTimeout();
         getStatus(new StateCallback() {
             @Override
-            void onResult() {
-                if ("stopped".equals(mApplicationState.state)
-                        || !Flint.FlintApi.getApplicationId().equals(
-                                mApplicationState.appName)) {
-                    log.d("current app is not running, disconnect");
-                    release();
-                    onDisconnected(ConnectionResult.NETWORK_ERROR);
+            void onResult(boolean success) {
+                if (mDisposed)
+                    return;
+
+                if (!success) {
+                    log.d("heartbeat result error: " + mReconnectCount);
+                    if (mReconnectCount < 5) {
+                        mReconnectCount++;
+                        mHandler.removeCallbacks(mTimeoutRunnable);
+                        mHandler.post(mHeartbeatRunnable);
+                    } else {
+                        mReconnectCount = 0;
+                        mHandler.removeCallbacks(mTimeoutRunnable);
+                        mHandler.post(mTimeoutRunnable);
+                    }
                 } else {
-                    mHandler.removeCallbacks(mTimeoutRunnable);
-                    mHandler.postDelayed(mHeartbeatRunnable, mHeartbeatInterval);
+                    if ("stopped".equals(mApplicationState.state)
+                            || !Flint.FlintApi.getApplicationId().equals(
+                                    mApplicationState.appName)) {
+                        log.d("current app is not running, disconnect");
+                        release();
+                        onDisconnected(ConnectionResult.NETWORK_ERROR);
+                    } else {
+                        mReconnectCount = 0;
+                        mHandler.removeCallbacks(mTimeoutRunnable);
+                        mHandler.postDelayed(mHeartbeatRunnable, mHeartbeatInterval);
+                    }
                 }
             }
         });
@@ -507,6 +525,7 @@ public class FlintDialController implements FlintSocketListener {
     private Runnable mHeartbeatRunnable = new Runnable() {
         @Override
         public void run() {
+            log.d("heartbeat");
             startHeartbeat();
         }
     };
@@ -525,9 +544,16 @@ public class FlintDialController implements FlintSocketListener {
         mHandler.removeCallbacks(mHeartbeatRunnable);
     }
 
+    private void restartHeartbeatTimeout() {
+        mHandler.removeCallbacks(mTimeoutRunnable);
+        mHandler.postDelayed(mTimeoutRunnable,
+                Math.max(mHeartbeatInterval * 2, 10000));
+    }
+
     public void release() {
         log.d("release: disposed = %b", mDisposed);
         if (!mDisposed) {
+            mReconnectCount = 0;
             stopHeartbeat();
             FlintMediaRouteProvider.getInstance(mContext)
                     .setCurrentConnectedDevce(null);
@@ -585,6 +611,7 @@ public class FlintDialController implements FlintSocketListener {
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                boolean success = false;
                 DefaultHandler dh = new DefaultHandler() {
                     String currentValue = null;
                     boolean parseAdditionalData = false;
@@ -642,8 +669,8 @@ public class FlintDialController implements FlintSocketListener {
                     URL mURL = new URL(url);
                     HttpURLConnection urlConnection = (HttpURLConnection) mURL
                             .openConnection();
+                    urlConnection.setConnectTimeout(mHeartbeatInterval);
                     urlConnection.setRequestMethod("GET");
-                    urlConnection.setReadTimeout(3000);
                     urlConnection.setRequestProperty("Accept",
                             "application/xml; charset=utf-8");
                     if (mApplicationState != null
@@ -655,18 +682,22 @@ public class FlintDialController implements FlintSocketListener {
                             .getInputStream());
 
                     try {
-                        if (urlConnection.getResponseCode() == 400) {
-                            log.d("token dispose, join");
-                            launchApplication("join", mCurrentReceiverUrl,
-                                    mUseIpc);
-                        } else {
-                            Scanner s = new Scanner(in).useDelimiter("\\A");
-                            String xml = s.hasNext() ? s.next() : "";
+                        if (!mDisposed) {
+                            if (urlConnection.getResponseCode() == 400) {
+                                log.d("token dispose, join");
+                                launchApplication("join", mCurrentReceiverUrl,
+                                        mUseIpc);
+                                return;
+                            } else {
+                                Scanner s = new Scanner(in).useDelimiter("\\A");
+                                String xml = s.hasNext() ? s.next() : "";
 
-                            parser = factory.newSAXParser();
-                            parser.parse(
-                                    new ByteArrayInputStream(xml.getBytes()),
-                                    dh);
+                                parser = factory.newSAXParser();
+                                parser.parse(
+                                        new ByteArrayInputStream(xml.getBytes()),
+                                        dh);
+                                success = true;
+                            }
                         }
                     } finally {
                         in.close();
@@ -682,7 +713,7 @@ public class FlintDialController implements FlintSocketListener {
                 }
 
                 if (callback != null) {
-                    callback.onResult();
+                    callback.onResult(success);
                 }
 
             }
@@ -789,7 +820,7 @@ public class FlintDialController implements FlintSocketListener {
     }
 
     abstract class StateCallback {
-        abstract void onResult();
+        abstract void onResult(boolean success);
     }
 
     class ApplicationState {
