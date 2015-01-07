@@ -174,25 +174,15 @@ abstract class MdnsClient {
 
     private Inet4Address getAddress(final NetworkInterface networkInterface) {
 
-        try {
-            for (Enumeration<NetworkInterface> e = NetworkInterface
-                    .getNetworkInterfaces(); e.hasMoreElements();) {
-                NetworkInterface item = e.nextElement();
-
-                for (InterfaceAddress address : item.getInterfaceAddresses()) {
-                    if (address.getAddress() instanceof Inet4Address) {
-                        Inet4Address inet4Address = (Inet4Address) address
-                                .getAddress();
-                        if (!inet4Address.isLoopbackAddress()) {
-                            return inet4Address;
-                        }
-                    }
+        for (InterfaceAddress address : networkInterface
+                .getInterfaceAddresses()) {
+            if (address.getAddress() instanceof Inet4Address) {
+                Inet4Address inet4Address = (Inet4Address) address.getAddress();
+                if (!inet4Address.isLoopbackAddress()) {
+                    return inet4Address;
                 }
             }
-        } catch (IOException ex) {
-
         }
-
         return null;
     }
 
