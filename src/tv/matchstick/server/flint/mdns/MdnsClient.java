@@ -60,18 +60,15 @@ abstract class MdnsClient {
 
         @Override
         public void serviceAdded(ServiceEvent event) {
-            // TODO Auto-generated method stub
-
             log.d("serviceAdded:" + event);
 
             // Required to force serviceResolved to be called again
             // (after the first search)
-            mJmDNS.requestServiceInfo(event.getType(), event.getName(), 1);
+            mJmDNS.requestServiceInfo(event.getType(), event.getName(), false, 1);
         }
 
         @Override
         public void serviceRemoved(ServiceEvent event) {
-            // TODO Auto-generated method stub
 
         }
 
