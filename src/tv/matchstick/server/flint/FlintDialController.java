@@ -582,9 +582,49 @@ public class FlintDialController implements FlintSocketListener {
     }
 
     public void leaveApplicationInternal() {
-        release();
-        // mFlintSrvController.onInvalidRequest();
-        mFlintSrvController.onApplicationDisconnected(0);
+//        release();
+//        // mFlintSrvController.onInvalidRequest();
+//        mFlintSrvController.onApplicationDisconnected(0);
+
+        final String url = buildAppUrl();
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL mURL = new URL(url);
+                    HttpURLConnection urlConnection = (HttpURLConnection) mURL
+                            .openConnection();
+                    urlConnection.setRequestMethod("DELETE");
+
+                    if (!TextUtils.isEmpty(mApplicationState.token)) {
+                        urlConnection.setRequestProperty("Authorization",
+                                mApplicationState.token);
+                    } else if (!TextUtils.isEmpty(mLastToken)) {
+                        urlConnection.setRequestProperty("Authorization",
+                                mLastToken);
+                    }
+                    urlConnection.connect();
+                    final int response = urlConnection.getResponseCode();
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (response == 200) {
+                                mFlintSrvController.onRequestStatus(0);
+                                release();
+                            } else {
+                                mFlintSrvController.onRequestStatus(1);
+                            }
+                        }
+                    });
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void onSocketDisconnectedInternal(int socketError) {
