@@ -328,7 +328,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
                     Iterator<IDeviceScanListener> it = listenerList.iterator();
                     while (it.hasNext()) {
                         ((IDeviceScanListener) it.next())
@@ -359,7 +358,6 @@ public final class MdnsDeviceScanner extends DeviceScanner {
                         .entrySet().iterator();
                 while (it.hasNext()) {
                     ScannerDeviceData deviceInfo = it.next().getValue();
-
                     int offline = 0;
                     if (currentTime - deviceInfo.mScannedTime < 30000L) {
                         offline = 0;

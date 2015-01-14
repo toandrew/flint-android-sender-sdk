@@ -48,7 +48,7 @@ import android.os.SystemClock;
 public class SsdpDeviceScanner extends DeviceScanner {
     private final static String TAG = "SsdpDeviceScanner";
     private final static int NUM_OF_THREADS = 20;
-    private final static int RESCAN_INTERVAL = 10000;
+    private final static int RESCAN_INTERVAL = 30000;
     private SSDPSocket mSSDPSocket;
     private SSDPSearchMsg mSearchMsg;
     private Thread mResponseThread;
@@ -129,9 +129,10 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     Iterator iterator = mScannerData.keySet().iterator();
                     while (iterator.hasNext()) {
                         String key = (String) iterator.next();
-                        SsdpScannerData value = (SsdpScannerData) mScannerData.get(key);
-                        if (value.mScannedTime < SystemClock
-                                .elapsedRealtime() - RESCAN_INTERVAL) {
+                        SsdpScannerData value = (SsdpScannerData) mScannerData
+                                .get(key);
+                        if (value.mScannedTime < SystemClock.elapsedRealtime()
+                                - RESCAN_INTERVAL) {
                             removeList.add(key);
                         }
                     }
@@ -141,7 +142,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 }
             }
         }, 100, RESCAN_INTERVAL);
-        
+
         mSendSearchTimer = new Timer();
         mSendSearchTimer.schedule(new TimerTask() {
 
@@ -244,8 +245,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
 
             if (location == null || location.length() == 0)
                 return;
-            android.util.Log.d(TAG, "location = " + location
-                    + "; uuid = " + uuid);
+            android.util.Log.d(TAG, "location = " + location + "; uuid = "
+                    + uuid);
             if (!mDiscoveredDeviceList.contains(uuid)
                     && mFoundDeviceMap.get(uuid) == null) {
                 mDiscoveredDeviceList.add(uuid);
@@ -410,6 +411,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     FlintDevice.setFoundSource(flintDevice,
                             FlintDevice.FOUND_SOURCE_SSDP);
                     data = (SsdpScannerData) mScannerData.get(deviceId);
+
                     if (data != null) {
                         if (flintDevice.equals(data.mFlintDevice)) {
                             if (!data.mIsOffline) {
@@ -428,7 +430,10 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     mDiscoveredDeviceList.remove(uuid);
                 }
 
-                if (data != null && data.mFlintDevice != null && data.mFlintDevice.getFoundSource().equals(FlintDevice.FOUND_SOURCE_SSDP)) {
+                if (data != null
+                        && data.mFlintDevice != null
+                        && data.mFlintDevice.getFoundSource().equals(
+                                FlintDevice.FOUND_SOURCE_SSDP)) {
                     notifyDeviceOffline(data.mFlintDevice);
                 }
 

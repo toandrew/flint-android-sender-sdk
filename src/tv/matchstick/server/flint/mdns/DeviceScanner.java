@@ -188,6 +188,10 @@ public abstract class DeviceScanner {
             mListenerList.add(listener);
         }
     }
+    
+    public boolean hasDevice(String deviceId) {
+        return (mScannerData.get(deviceId) == null) ? false : true;
+    }
 
     protected final void notifyDeviceOffline(final FlintDevice device) {
         log.d("notifyDeviceOffline: %s", device);

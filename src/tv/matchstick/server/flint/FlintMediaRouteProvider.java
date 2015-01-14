@@ -40,7 +40,6 @@ import tv.matchstick.server.flint.ssdp.SsdpDeviceScanner;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 public class FlintMediaRouteProvider extends MediaRouteProvider {
     private static final LOG log = new LOG("FlintMediaRouteProvider");
@@ -87,7 +86,6 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
 
         @Override
         public void onDeviceOnline(FlintDevice flintdevice) {
-
             log.d("DeviceScanner.Listener#onDeviceOnline :%s", flintdevice);
 
             FlintDeviceControllerHelper helper = (FlintDeviceControllerHelper) mFlintDeviceControllerMap
@@ -102,7 +100,18 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
         @Override
         public void onDeviceOffline(FlintDevice flintdevice) {
             log.d("DeviceScanner.Listener#onDeviceOffline :%s", flintdevice);
-
+            if (flintdevice.getFoundSource().equals(FlintDevice.FOUND_SOURCE_MDNS)) {
+                if (mSsdpDeviceScanner.hasDevice(flintdevice.getDeviceId())) {
+                    log.d("ssdp has device, return");
+                    return;
+                }
+            } else if (flintdevice.getFoundSource().equals(FlintDevice.FOUND_SOURCE_SSDP)) {
+                if (mMdnsDeviceScanner.hasDevice(flintdevice.getDeviceId())) {
+                    log.d("mdns has device, return");
+                    return;
+                }
+            }
+            log.d("all scanner offline, remove");
             FlintDeviceControllerHelper helper = (FlintDeviceControllerHelper) mFlintDeviceControllerMap
                     .get(flintdevice.getDeviceId());
             if (helper != null) {
@@ -129,7 +138,8 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
                         FlintDevice.FOUND_SOURCE_MDNS))
                     mMdnsDeviceScanner.setDeviceOffline(flintdevice
                             .getDeviceId());
-                else
+                else if (flintdevice.getFoundSource().equals(
+                        FlintDevice.FOUND_SOURCE_SSDP))
                     mSsdpDeviceScanner.setDeviceOffline(flintdevice
                             .getDeviceId());
             }
@@ -262,7 +272,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
 
     private void publishRoutes() {
         ArrayList<MediaRouteDescriptor> routeList = new ArrayList<MediaRouteDescriptor>();
-        Iterator iterator = mDiscoveryCriteriaMap.values().iterator();
+        Iterator<DiscoveryCriteriaHelper> iterator = mDiscoveryCriteriaMap.values().iterator();
         while (iterator.hasNext()) {
             routeList
                     .add(buildRouteDescriptorForDevice((DiscoveryCriteriaHelper) iterator
@@ -333,7 +343,8 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
                     if (flintdevice.getFoundSource().equals(
                             FlintDevice.FOUND_SOURCE_MDNS))
                         mMdnsDeviceScanner.setDeviceOffline(id);
-                    else
+                    else if (flintdevice.getFoundSource().equals(
+                            FlintDevice.FOUND_SOURCE_SSDP))
                         mSsdpDeviceScanner.setDeviceOffline(id);
                 }
 

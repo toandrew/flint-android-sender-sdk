@@ -473,9 +473,7 @@ public class FlintDevice implements SafeParcelable {
                 && ObjEqualChecker.isEquals(mDeviceVersion,
                         flintDevice.mDeviceVersion)
                 && mServicePort == flintDevice.mServicePort
-                && ObjEqualChecker.isEquals(mIconList, flintDevice.mIconList)
-                && ObjEqualChecker.isEquals(mFoundSource,
-                        flintDevice.mFoundSource)) {
+                && ObjEqualChecker.isEquals(mIconList, flintDevice.mIconList)) {
             return true;
         }
 
