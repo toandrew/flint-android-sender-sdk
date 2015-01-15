@@ -12,10 +12,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -126,7 +124,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
             public void run() {
                 List<String> removeList = new ArrayList<String>();
                 synchronized (mScannerData) {
-                    Iterator iterator = mScannerData.keySet().iterator();
+                    Iterator<String> iterator = mScannerData.keySet().iterator();
                     while (iterator.hasNext()) {
                         String key = (String) iterator.next();
                         SsdpScannerData value = (SsdpScannerData) mScannerData

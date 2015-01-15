@@ -167,7 +167,7 @@ public class FlintDevice implements SafeParcelable {
     private String mFoundSource;
 
     private FlintDevice() {
-        this(1, null, null, null, null, null, -1, ((List) (new ArrayList())),
+        this(1, null, null, null, null, null, -1, ((List<WebImage>) (new ArrayList<WebImage>())),
                 null);
     }
 

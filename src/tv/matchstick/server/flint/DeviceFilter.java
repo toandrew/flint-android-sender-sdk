@@ -49,7 +49,7 @@ abstract class DeviceFilter {
 
     protected abstract void setDeviceOffline(FlintDevice flintdevice);
 
-    protected abstract void onDeviceAccepted(FlintDevice flintdevice, Set set);
+    protected abstract void onDeviceAccepted(FlintDevice flintdevice, Set<DiscoveryCriteria> set);
 
     /**
      * Reset discovery criteria.
@@ -108,7 +108,7 @@ abstract class DeviceFilter {
                 while (iterator.hasNext()) {
                     DiscoveryCriteria criteria = (DiscoveryCriteria) iterator
                             .next();
-                    Set namespaces = Collections
+                    Set<String> namespaces = Collections
                             .unmodifiableSet(criteria.mNamespaceList);
                     if (criteria.mAppid != null) {
                         mApplicationIds.put(criteria.mAppid);
@@ -190,7 +190,7 @@ abstract class DeviceFilter {
             });
         }
 
-        final void acceptDevice(final FlintDevice flintdevice, final Set set) {
+        final void acceptDevice(final FlintDevice flintdevice, final Set<DiscoveryCriteria> set) {
             mHandler.post(new Runnable() {
 
                 @Override

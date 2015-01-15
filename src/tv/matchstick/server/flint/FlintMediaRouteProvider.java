@@ -206,7 +206,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
     private MediaRouteDescriptor buildRouteDescriptorForDevice(
             DiscoveryCriteriaHelper criteriaHelper) {
         FlintDevice flintdevice = criteriaHelper.mFlintDevice;
-        Set set = criteriaHelper.mDiscoveryCriteriaSet;
+        Set<DiscoveryCriteria> set = criteriaHelper.mDiscoveryCriteriaSet;
         FlintDeviceControllerHelper controllerHelper = (FlintDeviceControllerHelper) mFlintDeviceControllerMap
                 .get(flintdevice.getDeviceId());
         boolean isConnecting;
@@ -215,10 +215,11 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
         } else {
             isConnecting = false;
         }
+        
         Bundle bundle = new Bundle();
         flintdevice.putInBundle(bundle);
         ArrayList<IntentFilter> arraylist = new ArrayList<IntentFilter>();
-        Iterator iterator = set.iterator();
+        Iterator<DiscoveryCriteria> iterator = set.iterator();
         while (iterator.hasNext()) {
             DiscoveryCriteria criteria = (DiscoveryCriteria) iterator.next();
             IntentFilter filter = new IntentFilter();
@@ -234,6 +235,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
         MediaRouteDescriptorPrivateData data = new MediaRouteDescriptorPrivateData(
                 flintdevice.getDeviceId(), flintdevice.getFriendlyName());
         data.mBundle.putString("status", flintdevice.getModelName());
+
         data.mBundle.putBoolean("connecting", isConnecting);
         data.mBundle.putInt("volumeHandling", 0);
         data.mBundle.putInt("volume", 0);
@@ -510,7 +512,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
 
     final class MediaRouteDescriptorPrivateData {
         public final Bundle mBundle = new Bundle();
-        public ArrayList mControlIntentFilterList;
+        public ArrayList<IntentFilter> mControlIntentFilterList;
 
         public MediaRouteDescriptorPrivateData(String id, String name) {
             mBundle.putString("id", id);
@@ -518,11 +520,11 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
         }
 
         public final MediaRouteDescriptorPrivateData addIntentFilterList(
-                Collection collection) {
+                Collection<IntentFilter> collection) {
             if (collection == null)
                 throw new IllegalArgumentException("filters must not be null");
             if (!collection.isEmpty()) {
-                Iterator iterator = collection.iterator();
+                Iterator<IntentFilter> iterator = collection.iterator();
                 do {
                     if (!iterator.hasNext()) {
                         break;
@@ -535,7 +537,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
                     }
 
                     if (mControlIntentFilterList == null) {
-                        mControlIntentFilterList = new ArrayList();
+                        mControlIntentFilterList = new ArrayList<IntentFilter>();
                     }
 
                     if (!mControlIntentFilterList.contains(filter)) {

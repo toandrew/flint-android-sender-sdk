@@ -9,24 +9,20 @@ import org.json.JSONObject;
 
 import tv.matchstick.client.internal.LOG;
 import tv.matchstick.flint.ConnectionResult;
-import tv.matchstick.flint.FlintStatusCodes;
 
 public class FlintWebsocket extends WebSocketClient {
     private final LOG log = new LOG("FlintWebsocket");
     private final FlintSocketListener mSocketListener;
-    private int mSocketStatus;
 
     public FlintWebsocket(FlintSocketListener listener, URI serverURI) {
         super(serverURI);
         log.d("url = %s", serverURI.toString());
         mSocketListener = listener;
-        mSocketStatus = 0;
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         log.d("open");
-        mSocketStatus = 2;
         mSocketListener.onConnected();
     }
 

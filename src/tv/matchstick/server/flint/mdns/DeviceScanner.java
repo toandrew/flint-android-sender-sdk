@@ -41,7 +41,6 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 
 public abstract class DeviceScanner {
     static final LOG log = new LOG("DeviceScanner");
