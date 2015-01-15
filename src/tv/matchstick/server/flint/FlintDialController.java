@@ -515,7 +515,8 @@ public class FlintDialController implements FlintSocketListener {
                     } else {
                         mReconnectCount = 0;
                         mHandler.removeCallbacks(mTimeoutRunnable);
-                        mHandler.postDelayed(mHeartbeatRunnable, mHeartbeatInterval);
+                        mHandler.postDelayed(mHeartbeatRunnable,
+                                mHeartbeatInterval);
                     }
                 }
             }
@@ -582,9 +583,9 @@ public class FlintDialController implements FlintSocketListener {
     }
 
     public void leaveApplicationInternal() {
-//        release();
-//        // mFlintSrvController.onInvalidRequest();
-//        mFlintSrvController.onApplicationDisconnected(0);
+        // release();
+        // // mFlintSrvController.onInvalidRequest();
+        // mFlintSrvController.onApplicationDisconnected(0);
 
         final String url = buildAppUrl();
         mExecutor.execute(new Runnable() {
@@ -718,17 +719,18 @@ public class FlintDialController implements FlintSocketListener {
                         urlConnection.setRequestProperty("Authorization",
                                 mApplicationState.token);
                     }
-                    InputStream in = new BufferedInputStream(urlConnection
-                            .getInputStream());
 
-                    try {
-                        if (!mDisposed) {
-                            if (urlConnection.getResponseCode() == 400) {
-                                log.d("token dispose, join");
-                                launchApplication("join", mCurrentReceiverUrl,
-                                        mUseIpc);
-                                return;
-                            } else {
+                    if (!mDisposed) {
+                        log.d("ResponseCode = " + urlConnection.getResponseCode());
+                        if (urlConnection.getResponseCode() == 400) {
+                            log.d("token dispose, join");
+                            launchApplication("join", mCurrentReceiverUrl,
+                                    mUseIpc);
+                            return;
+                        } else {
+                            InputStream in = new BufferedInputStream(
+                                    urlConnection.getInputStream());
+                            try {
                                 Scanner s = new Scanner(in).useDelimiter("\\A");
                                 String xml = s.hasNext() ? s.next() : "";
 
@@ -737,11 +739,12 @@ public class FlintDialController implements FlintSocketListener {
                                         new ByteArrayInputStream(xml.getBytes()),
                                         dh);
                                 success = true;
+                            } finally {
+                                in.close();
                             }
                         }
-                    } finally {
-                        in.close();
                     }
+
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (ParserConfigurationException e) {
