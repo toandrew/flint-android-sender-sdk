@@ -458,7 +458,6 @@ public class FlintDialController implements FlintSocketListener {
                         mDisposed = false;
                         startHeartbeat();
                         log.d("launch success");
-                        return;
                     } else if (!mUseIpc) {
                         if (mFlintWebsocket != null && mFlintWebsocket.isOpen()) {
                             mFlintWebsocket.onlyClose();
@@ -466,7 +465,10 @@ public class FlintDialController implements FlintSocketListener {
                         mDisposed = false;
                         startHeartbeat();
                         log.d("launch success");
-                        return;
+                    } else {
+                        log.d("launch: state is running but no url");
+                        mHandler.postDelayed(mRequestLaunchState,
+                                mHeartbeatInterval);
                     }
                 } else if (mApplicationState.state.equals("stopped")) {
                     mFlintSrvController.onApplicationConnectionFailed(1);
