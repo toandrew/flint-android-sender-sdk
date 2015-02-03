@@ -448,7 +448,7 @@ public class FlintDialController implements FlintSocketListener {
                 if (mApplicationState.state.equals("running")) {
                     if (!TextUtils.isEmpty(mApplicationState.url)) {
                         if (mFlintWebsocket != null && mFlintWebsocket.isOpen()) {
-                            mFlintWebsocket.close();
+                            mFlintWebsocket.onlyClose();
                         }
                         mFlintWebsocket = new FlintWebsocket(
                                 FlintDialController.this,
@@ -461,7 +461,7 @@ public class FlintDialController implements FlintSocketListener {
                         return;
                     } else if (!mUseIpc) {
                         if (mFlintWebsocket != null && mFlintWebsocket.isOpen()) {
-                            mFlintWebsocket.close();
+                            mFlintWebsocket.onlyClose();
                         }
                         mDisposed = false;
                         startHeartbeat();
@@ -564,6 +564,7 @@ public class FlintDialController implements FlintSocketListener {
             mDisposed = true;
             if (mFlintWebsocket != null && mFlintWebsocket.isOpen())
                 mFlintWebsocket.close();
+            mFlintWebsocket = null;
         }
     }
 

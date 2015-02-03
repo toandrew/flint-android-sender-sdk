@@ -13,6 +13,7 @@ import tv.matchstick.flint.ConnectionResult;
 public class FlintWebsocket extends WebSocketClient {
     private final LOG log = new LOG("FlintWebsocket");
     private final FlintSocketListener mSocketListener;
+    private boolean mOnlyCloseWebSocket = false;
 
     public FlintWebsocket(FlintSocketListener listener, URI serverURI) {
         super(serverURI);
@@ -29,6 +30,11 @@ public class FlintWebsocket extends WebSocketClient {
     public void sendText(String namespace, String payload) {
         if (isOpen())
             send(buildMessage(namespace, payload));
+    }
+
+    public void onlyClose() {
+        mOnlyCloseWebSocket = true;
+        close();
     }
 
     private String buildMessage(String namespace, String payload) {
@@ -49,8 +55,9 @@ public class FlintWebsocket extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        log.d("close");
-        mSocketListener.onDisconnected(ConnectionResult.SUCCESS);
+        log.d("close: " + code + "; " + reason);
+        if (!mOnlyCloseWebSocket)
+            mSocketListener.onDisconnected(ConnectionResult.SUCCESS);
     }
 
     @Override
