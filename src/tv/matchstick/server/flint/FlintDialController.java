@@ -550,7 +550,7 @@ public class FlintDialController implements FlintSocketListener {
     private void restartHeartbeatTimeout() {
         mHandler.removeCallbacks(mTimeoutRunnable);
         mHandler.postDelayed(mTimeoutRunnable,
-                Math.max(mHeartbeatInterval * 2, 10000));
+                Math.max(mHeartbeatInterval * 2, 15000));
     }
 
     public void release() {
@@ -722,11 +722,13 @@ public class FlintDialController implements FlintSocketListener {
                         urlConnection.setRequestProperty("Authorization",
                                 mApplicationState.token);
                     }
-
+                    log.d("status start connect");
+                    int responseCode = urlConnection.getResponseCode();
                     if (!mDisposed) {
-                        log.d("ResponseCode = " + urlConnection.getResponseCode());
-                        if (urlConnection.getResponseCode() == 400) {
+                        log.d("ResponseCode = " + responseCode);
+                        if (responseCode == 400) {
                             log.d("token dispose, join");
+                            stopHeartbeat();
                             launchApplication("join", mCurrentReceiverUrl,
                                     mUseIpc);
                             return;
