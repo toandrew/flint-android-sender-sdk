@@ -42,8 +42,9 @@ import android.os.Handler;
 import android.text.TextUtils;
 
 public class FlintDialController implements FlintSocketListener {
-    private static final int NUM_OF_THREADS = 20;
     private static final LOG log = new LOG("FlintDialController");
+    private static final int NUM_OF_THREADS = 20;
+
     private Context mContext;
     private Handler mHandler;
     private FlintDevice mFlintDevice;
@@ -466,13 +467,13 @@ public class FlintDialController implements FlintSocketListener {
                         startHeartbeat();
                         log.d("launch success");
                     } else {
-                        log.d("launch: state is running but no url");
+                        log.w("launch: state is running but no url");
                         mHandler.postDelayed(mRequestLaunchState,
                                 mHeartbeatInterval);
                     }
                 } else if (mApplicationState.state.equals("stopped")) {
                     mFlintSrvController.onApplicationConnectionFailed(1);
-                    log.d("launch time out");
+                    log.w("launch time out");
                 } else {
                     mHandler.postDelayed(mRequestLaunchState,
                             mHeartbeatInterval);
@@ -497,7 +498,7 @@ public class FlintDialController implements FlintSocketListener {
                     return;
 
                 if (!success) {
-                    log.d("heartbeat result error: " + mReconnectCount);
+                    log.w("heartbeat result error: " + mReconnectCount);
                     if (mReconnectCount < 5) {
                         mReconnectCount++;
                         mHandler.removeCallbacks(mTimeoutRunnable);
@@ -536,7 +537,7 @@ public class FlintDialController implements FlintSocketListener {
     private Runnable mTimeoutRunnable = new Runnable() {
         @Override
         public void run() {
-            log.d("heartbeat time out");
+            log.w("heartbeat time out");
             onSocketDisconnectedInternal(ConnectionResult.NETWORK_ERROR);
         }
     };
@@ -727,7 +728,7 @@ public class FlintDialController implements FlintSocketListener {
                     if (!mDisposed) {
                         log.d("ResponseCode = " + responseCode);
                         if (responseCode == 400) {
-                            log.d("token dispose, join");
+                            log.w("token dispose, join");
                             stopHeartbeat();
                             launchApplication("join", mCurrentReceiverUrl,
                                     mUseIpc);
@@ -795,7 +796,7 @@ public class FlintDialController implements FlintSocketListener {
         } else {
             FlintMediaRouteProvider.getInstance(mContext)
                     .setCurrentConnectedDevce(mFlintDevice);
-            log.d("not find connected device");
+            log.w("not find connected device");
         }
 
         mFlintSrvController.onConnected();

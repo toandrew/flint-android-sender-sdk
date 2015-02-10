@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import tv.matchstick.client.common.Releasable;
 import tv.matchstick.client.common.api.FlintManagerImpl;
 import tv.matchstick.client.common.api.FlintManagerImpl.FlintApiClientTask;
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.flint.ConnectionResult;
 import tv.matchstick.flint.PendingResult;
@@ -40,7 +41,7 @@ import android.util.Pair;
  * Flint API class
  */
 public class MatchStickApi {
-
+    private static final LOG log = new LOG("MatchStickApi");
     /**
      * Flint api implementation
      *
@@ -356,7 +357,7 @@ public class MatchStickApi {
             try {
                 ((Releasable) this).release();
             } catch (Exception e) {
-                Log.w("MatchStickApi", "Unable to release " + this, e);
+                log.w(e, "Unable to release " + this);
             }
         }
     }
@@ -414,7 +415,7 @@ public class MatchStickApi {
                 flintApi.postResult(flintApi.createResult(Status.TimeOutStatus));
                 return;
             }
-            Log.wtf("FlintApi", "Don't know how to handle this message.");
+            log.wtf("Don't know how to handle this message.");
         }
 
         /**

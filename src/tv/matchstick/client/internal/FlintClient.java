@@ -43,7 +43,7 @@ import android.util.Log;
  */
 public abstract class FlintClient<T extends IInterface> implements
         IFlintClient, Api.ConnectionApi, FlintClientEvents.ClientEventCallback {
-
+    private static final LOG log = new LOG("FlintClient");
     private static final int MSG_WHAT_CONNECTION_CALLBACK = 1;
     private static final int MSG_WHAT_CONNECTION_FAILED = 2;
     private static final int MSG_WHAT_DISCONNECTED = 3;
@@ -393,7 +393,7 @@ public abstract class FlintClient<T extends IInterface> implements
             synchronized (this) {
                 listener = this.mListener;
                 if (this.isUsed) {
-                    Log.w("FlintClient", "Callback proxy " + this
+                    log.w("Callback proxy " + this
                             + " being reused. This is not safe.");
                 }
             }
@@ -527,7 +527,7 @@ public abstract class FlintClient<T extends IInterface> implements
                         .intValue());
                 break;
             default:
-                Log.wtf("FlintClient", "Don't know how to handle this message.");
+                log.wtf("Don't know how to handle this message.");
                 break;
             }
         }

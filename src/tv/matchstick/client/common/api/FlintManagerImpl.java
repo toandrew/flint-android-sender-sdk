@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import tv.matchstick.client.common.Releasable;
 import tv.matchstick.client.internal.FlintClientEvents;
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.client.internal.ValueChecker;
 import tv.matchstick.flint.ConnectionResult;
 import tv.matchstick.flint.FlintManager;
@@ -50,6 +51,7 @@ import android.util.Log;
  * It's a concrete implementation of FlintManager interface.
  */
 public final class FlintManagerImpl implements FlintManager {
+    private static final LOG log = new LOG("FlintManagerImpl");
     private static final int MSG_WHAT_DO_CONNECT = 1;
 
     private static final int CONNECT_STATE_CONNECTING = 1;
@@ -280,8 +282,7 @@ public final class FlintManagerImpl implements FlintManager {
                 try {
                     execute((FlintApiClientTask) mPendingTaskQueue.remove());
                 } catch (DeadObjectException e) {
-                    Log.w("FlintManagerImpl",
-                            "Service died while flushing queue", e);
+                    log.w(e, "Service died while flushing queue");
                 }
             }
         } finally {
@@ -569,8 +570,7 @@ public final class FlintManagerImpl implements FlintManager {
                     mLock.unlock();
                 }
             }
-            Log.wtf("FlintManagerImpl",
-                    "Don't know how to handle this message.");
+            log.wtf("Don't know how to handle this message.");
         }
     }
 

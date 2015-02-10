@@ -75,7 +75,7 @@ abstract class MdnsClient {
         public void serviceResolved(ServiceEvent event) {
             // TODO Auto-generated method stub
 
-            Log.d("MdnsClient", "serviceResolved:" + event);
+            log.d("serviceResolved:" + event);
 
             // get device info
             FlintDeviceInfo deviceInfo = extractDeviceInfo(event);
@@ -196,10 +196,10 @@ abstract class MdnsClient {
                     mAddress = getAddress(mNetwork);
 
                     if (mAddress != null) {
-                        Log.e("MdnsClient", "address:" + mAddress);
+                        log.d("address:" + mAddress);
                         mJmDNS = JmDNS.create(mAddress, mHostName);
                     } else {
-                        Log.e("MdnsClient", "address is null??!!!");
+                        log.w("address is null??!!!");
                         mJmDNS = JmDNS.create(mHostName);
                     }
 

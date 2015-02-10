@@ -92,8 +92,8 @@ public class Flint {
          * connect(),disconnect(), etc.
          */
         @Override
-        public FlintClientImpl build(Context context, Looper looper, ApiOptions options,
-                ConnectionCallbacks callbacks) {
+        public FlintClientImpl build(Context context, Looper looper,
+                ApiOptions options, ConnectionCallbacks callbacks) {
             ValueChecker.checkNullPointer(options,
                     "Setting the API options is required.");
             ValueChecker.checkTrueWithErrorMsg(options instanceof FlintOptions,
@@ -101,8 +101,8 @@ public class Flint {
 
             FlintOptions flintOptions = (FlintOptions) options;
             return new FlintClientImpl(context, looper,
-                    flintOptions.flintDevice,
-                    flintOptions.flintListener, callbacks);
+                    flintOptions.flintDevice, flintOptions.flintListener,
+                    callbacks);
         }
     };
 
@@ -119,19 +119,40 @@ public class Flint {
     public static final FlintApi FlintApi = new FlintApi.FlintApiImpl();
 
     /**
+     * Log flags
+     */
+    private static boolean mLoggingEnabled = true;
+
+    /**
+     * Enables or disables verbose logging for this Fling session.
+     * 
+     * Debug only
+     * 
+     * @param enabled
+     * @return
+     */
+    public static void setVerboseLoggingEnabled(boolean enabled) {
+        mLoggingEnabled = enabled;
+    }
+
+    public static boolean isLoggingEnabled() {
+        return mLoggingEnabled;
+    }
+
+    /**
      * The entry point for interacting with a Flint device.
      */
     public interface FlintApi {
         /**
          * Set Application's ID
          * 
-         * The Id can be one of them: 
-         * <br>
-         * Start with "~" : which means this application will use some Flint internal specific features. 
-         * <br>
+         * The Id can be one of them: <br>
+         * Start with "~" : which means this application will use some Flint
+         * internal specific features. <br>
          * Not start with "~" : Standard DIAL application ID.
          * 
-         * @param id Application ID
+         * @param id
+         *            Application ID
          */
         public abstract void setApplicationId(String id);
 
@@ -189,8 +210,7 @@ public class Flint {
          * @param manager
          *            Flint manager with which to perform this request.
          * @param url
-         *            the url of the receiver application to
-         *            launch.
+         *            the url of the receiver application to launch.
          * @param relaunchIfRunning
          *            If true, relaunch the application if it is already
          *            running.
@@ -198,17 +218,15 @@ public class Flint {
          *         connection information.
          */
         public abstract PendingResult<ApplicationConnectionResult> launchApplication(
-                FlintManager manager, String url,
-                boolean relaunchIfRunning);
-        
+                FlintManager manager, String url, boolean relaunchIfRunning);
+
         /**
          * Launch a receiver application
          * 
          * @param manager
          *            Flint manager with which to perform this request.
          * @param url
-         *            the url of the receiver application to
-         *            launch.
+         *            the url of the receiver application to launch.
          * @param relaunchIfRunning
          *            If true, relaunch the application if it is already
          *            running.
@@ -218,8 +236,8 @@ public class Flint {
          *         connection information.
          */
         public abstract PendingResult<ApplicationConnectionResult> launchApplication(
-                FlintManager manager, String url,
-                boolean relaunchIfRunning, boolean useIpc);
+                FlintManager manager, String url, boolean relaunchIfRunning,
+                boolean useIpc);
 
         /**
          * Join to the current running receiver application.
@@ -452,8 +470,8 @@ public class Flint {
                             protected void execute(FlintClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.launchApplication(url,
-                                            false, true, this);
+                                    client.launchApplication(url, false, true,
+                                            this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlintStatusCodes.INVALID_REQUEST);
                                 }
@@ -477,7 +495,7 @@ public class Flint {
                             }
                         });
             }
-            
+
             public PendingResult<ApplicationConnectionResult> launchApplication(
                     FlintManager manager, final String url,
                     final boolean relaunchIfRunning, final boolean useIpc) {
@@ -502,8 +520,7 @@ public class Flint {
                             protected void execute(FlintClientImpl client)
                                     throws RemoteException {
                                 try {
-                                    client.joinApplication(url,
-                                            this);
+                                    client.joinApplication(url, this);
                                 } catch (IllegalStateException e) {
                                     notifyResult(FlintStatusCodes.INVALID_REQUEST);
                                 }
@@ -539,8 +556,7 @@ public class Flint {
                 });
             }
 
-            public PendingResult<Status> stopApplication(FlintManager manager
-                    ) {
+            public PendingResult<Status> stopApplication(FlintManager manager) {
                 return manager.executeTask(new StatusResultHandler() {
                     protected void execute(FlintClientImpl client)
                             throws RemoteException {

@@ -19,6 +19,7 @@ package tv.matchstick.flint.service;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.server.flint.FlintDialController;
 import tv.matchstick.server.flint.FlintMediaRouteProvider;
 import tv.matchstick.server.flint.MediaRouteProvider;
@@ -42,6 +43,7 @@ import android.util.Log;
  * </ul>
  */
 public class FlintDeviceService extends MediaRouteProviderSrv {
+    private static final LOG log = new LOG("FlintDeviceService");
 
     private static final String MEDIA_ROUTE_ACTION = "android.media.MediaRouteProviderService";
 
@@ -186,7 +188,7 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
                     controller.sendTextMessage(namespace, message);
                     return;
                 } catch (IllegalStateException e) {
-                    Log.e(TAG, e.getMessage());
+                    log.e(e.getMessage());
                 }
             }
 
@@ -405,11 +407,12 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
         operation = (FlintDeviceScannerOperation) mDeviceScanOperationQueue
                 .poll();
         if (operation == null) {
-            Log.e("FlintDeviceService", "operation missing");
+            log.e("operation missing");
+            
             return;
         }
         startTime = SystemClock.elapsedRealtime();
-        Log.d("FlintDeviceService", "Starting operation: >> "
+        log.d("Starting operation: >> "
                 + operation.getClass().getSimpleName());
 
         try {
@@ -419,7 +422,7 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
         }
 
         long elapsed = SystemClock.elapsedRealtime() - startTime;
-        Log.d("FlintDeviceService", "Finished operation: << "
+        log.d("Finished operation: << "
                 + operation.getClass().getSimpleName() + " (" + elapsed
                 + "ms elapsed)");
     }
@@ -431,7 +434,7 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
     private void doFlintOperations() {
         FlintOperation operation = (FlintOperation) mFlintOperationQueue.poll();
         if (operation == null) {
-            Log.e("FlintIntentService", "operation missing");
+            log.e("operation missing");
             return;
         }
         try {
@@ -444,7 +447,7 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent == null) {
-            Log.e("FlintService", "intent is null.ignore it!!!!");
+            log.e("intent is null.ignore it!!!!");
             return;
         }
 
@@ -452,7 +455,7 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
         if (action.equals(MEDIA_ROUTE_ACTION)) {
             String extras = (String) intent.getStringExtra(SERVICE_ACTION_KEY);
             if (extras == null) {
-                Log.e("FlintDeviceService", "Media scan intent?!");
+                log.e("Media scan intent?!");
                 return;
             }
             if (extras.equals(SERVICE_ACTION_FLINT)) {
@@ -460,7 +463,7 @@ public class FlintDeviceService extends MediaRouteProviderSrv {
             } else if (extras.equals(SERVICE_ACTION_SCAN)) {
                 doDeviceScanOperations();
             } else {
-                Log.e("FlintService", "unknown actions!!!![" + intent
+                log.e("unknown actions!!!![" + intent
                         + "]action[" + extras + "]");
             }
         }

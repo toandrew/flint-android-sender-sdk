@@ -16,6 +16,7 @@
 
 package tv.matchstick.client.internal;
 
+import tv.matchstick.flint.Flint;
 import android.util.Log;
 
 public class LOG {
@@ -23,13 +24,11 @@ public class LOG {
     private static boolean DEBUG = true;
 
     private final String TAG;
-    private boolean mDebugEnabled;
     private boolean isVerbose;
     private String prefixMsg;
 
     public LOG(String tag, boolean enable) {
         this.TAG = tag;
-        this.mDebugEnabled = enable;
         this.isVerbose = false;
     }
 
@@ -41,16 +40,12 @@ public class LOG {
         this.prefixMsg = String.format("[%s] ", msg);
     }
 
-    public boolean isDebugEnabled() {
-        return this.mDebugEnabled;
-    }
-
     public boolean printVerbose() {
         return this.isVerbose;
     }
 
     public void v(String message, Object... args) {
-        if (!printVerbose()) {
+        if (!Flint.isLoggingEnabled()) {
             return;
         }
 
@@ -58,7 +53,7 @@ public class LOG {
     }
 
     public void d(String message, Object... args) {
-        if (!isDebugEnabled() && !DEBUG) {
+        if (!Flint.isLoggingEnabled() || !DEBUG) {
             return;
         }
 
@@ -66,7 +61,7 @@ public class LOG {
     }
 
     public void dd(Throwable t, String message, Object... args) {
-        if (!isDebugEnabled() && !DEBUG) {
+        if (!Flint.isLoggingEnabled() || !DEBUG) {
             return;
         }
 
@@ -110,7 +105,7 @@ public class LOG {
         DEBUG = flag;
     }
 
-    public final void setDebugEnabled(boolean flag) {
-        mDebugEnabled = flag;
+    public void wtf(String message, Object... args) {
+        Log.wtf(TAG, format(message, args));
     }
 }

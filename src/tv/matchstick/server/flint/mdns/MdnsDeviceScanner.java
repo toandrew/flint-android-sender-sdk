@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import tv.matchstick.client.internal.LOG;
+import tv.matchstick.flint.Flint;
 import tv.matchstick.flint.FlintDevice;
 import tv.matchstick.flint.images.WebImage;
 import android.content.Context;
@@ -181,7 +182,7 @@ public final class MdnsDeviceScanner extends DeviceScanner {
     }
     void onResults(FlintDeviceInfo info) {
         // print found device info
-        if (log.isDebugEnabled()) {
+        if (Flint.isLoggingEnabled()) {
             log.d("FQDN: %s", info.mFQDN);
 
             if (info.mIpV4AddrList != null) {

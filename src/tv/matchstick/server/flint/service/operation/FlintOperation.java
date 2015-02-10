@@ -18,10 +18,11 @@ package tv.matchstick.server.flint.service.operation;
 
 import java.io.IOException;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.server.flint.FlintDialController;
 
 public abstract class FlintOperation {
-    public static String TAG = "FlintOperation";
+    private static final LOG log = new LOG("FlintOperation");
 
     protected final FlintDialController mFlintDeviceController;
 

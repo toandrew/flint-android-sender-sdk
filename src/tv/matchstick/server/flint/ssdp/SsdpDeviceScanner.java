@@ -32,6 +32,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.flint.FlintDevice;
 import tv.matchstick.flint.images.WebImage;
 import tv.matchstick.server.flint.mdns.DeviceScanner;
@@ -44,7 +45,7 @@ import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 
 public class SsdpDeviceScanner extends DeviceScanner {
-    private final static String TAG = "SsdpDeviceScanner";
+    private final LOG log = new LOG("SsdpDeviceScanner");
     private final static int NUM_OF_THREADS = 20;
     private final static int RESCAN_INTERVAL = 30000;
     private SSDPSocket mSSDPSocket;
@@ -148,7 +149,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
             public void run() {
                 if (mSSDPSocket != null) {
                     try {
-                        android.util.Log.d(TAG, "send msg");
+                        log.d("send msg");
                         mSSDPSocket.send(mSearchMsg.toString());
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -235,7 +236,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
         String uuid = m.group();
 
         if (SSDP.NTS_BYEBYE.equals(pd.data.get(SSDP.NTS))) {
-            android.util.Log.d(TAG, "byebye uuid = " + uuid);
+            log.d("byebye uuid = " + uuid);
             String deviceId = mFoundDeviceMap.get(uuid);
             setDeviceOffline(deviceId);
         } else {
@@ -243,15 +244,15 @@ public class SsdpDeviceScanner extends DeviceScanner {
 
             if (location == null || location.length() == 0)
                 return;
-            android.util.Log.d(TAG, "location = " + location + "; uuid = "
+            log.d("location = " + location + "; uuid = "
                     + uuid);
             if (!mDiscoveredDeviceList.contains(uuid)
                     && mFoundDeviceMap.get(uuid) == null) {
                 mDiscoveredDeviceList.add(uuid);
-                android.util.Log.d(TAG, "getLocationData");
+                log.d("getLocationData");
                 getLocationData(location, uuid);
             } else {
-                android.util.Log.d(TAG, "update");
+                log.d("update");
                 String deviceId = mFoundDeviceMap.get(uuid);
                 if (deviceId != null) {
                     synchronized (mScannerData) {
@@ -269,7 +270,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                android.util.Log.d(TAG, "execute");
+                log.d("execute");
                 boolean success = false;
                 final LocationDevice device = new LocationDevice();
 
@@ -356,7 +357,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                android.util.Log.d(TAG, "success: " + success);
+                log.d("success: " + success);
                 if (success) {
                     onResult(uuid, device);
                 } else {

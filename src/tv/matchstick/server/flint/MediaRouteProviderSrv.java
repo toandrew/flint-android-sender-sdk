@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import tv.matchstick.client.internal.LOG;
 import tv.matchstick.server.common.checker.MainThreadChecker;
 import tv.matchstick.server.flint.media.RouteController;
 import android.app.IntentService;
@@ -37,8 +38,7 @@ import android.util.Log;
 import android.util.SparseArray;
 
 public abstract class MediaRouteProviderSrv extends IntentService {
-    private static final boolean DEBUG = Log.isLoggable(
-            "MediaRouteProviderSrv", Log.DEBUG);
+    private static final LOG log = new LOG("MediaRouteProviderSrv");
 
     private final ArrayList mFlintDeathRecipientList = new ArrayList();
 
@@ -101,10 +101,7 @@ public abstract class MediaRouteProviderSrv extends IntentService {
         public final void handleMessage(Message message) {
             android.os.Messenger messenger = message.replyTo;
             if (!isValid(messenger)) {
-                if (isDebugable()) {
-                    Log.d("MediaRouteProviderSrv",
-                            "Ignoring message without valid reply messenger.");
-                }
+                log.d("Ignoring message without valid reply messenger.");
                 return;
             }
             boolean ok = false;
@@ -197,12 +194,10 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             }
 
             if (!ok) {
-                if (isDebugable())
-                    Log.d("MediaRouteProviderSrv",
-                            getClientConnectionInfo(messenger)
-                                    + ": Message failed, what=" + what
-                                    + ", requestId=" + requestId + ", arg="
-                                    + arg + ", obj=" + obj + ", data=" + data);
+                log.d(getClientConnectionInfo(messenger)
+                        + ": Message failed, what=" + what + ", requestId="
+                        + requestId + ", arg=" + arg + ", obj=" + obj
+                        + ", data=" + data);
 
                 sendFailureReplyMsg(messenger, requestId);
             }
@@ -248,9 +243,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
         } catch (DeadObjectException de) {
             return;
         } catch (RemoteException e) {
-            Log.e("MediaRouteProviderSrv",
-                    ("Could not send message to " + getClientConnectionInfo(messenger)),
-                    e);
+            log.e(e, "Could not send message to "
+                    + getClientConnectionInfo(messenger));
         }
     }
 
@@ -266,10 +260,9 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             FlintDeathRecipient deathRecipient = (FlintDeathRecipient) mFlintDeathRecipientList
                     .get(i);
             sendReplyMsg(deathRecipient.mMessenger, 5, 0, 0, bundle, null); // 5:SERVICE_MSG_DESCRIPTOR_CHANGED
-            if (DEBUG)
-                Log.d("MediaRouteProviderSrv",
-                        (deathRecipient
-                                + ": Sent descriptor change event, descriptor=" + descriptor));
+            log.d(deathRecipient
+                    + ": Sent descriptor change event, descriptor="
+                    + descriptor);
         }
 
     }
@@ -281,9 +274,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             if (deathRecipient.linkToDeath()) {
                 mFlintDeathRecipientList.add(deathRecipient);
 
-                if (DEBUG)
-                    Log.d("MediaRouteProviderSrv", deathRecipient
-                            + ": Registered, version=" + version);
+                log.d("MediaRouteProviderSrv", deathRecipient
+                        + ": Registered, version=" + version);
 
                 if (requestId != 0) {
                     MediaRouteProviderDescriptor descriptor = mMediaRouteProvider.mMediaRouteProviderDescriptor;
@@ -308,9 +300,7 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             FlintDeathRecipient deathRecipient = (FlintDeathRecipient) mFlintDeathRecipientList
                     .remove(j);
 
-            if (DEBUG)
-                Log.d("MediaRouteProviderSrv", deathRecipient
-                        + ": Unregistered");
+            log.d(deathRecipient + ": Unregistered");
 
             deathRecipient.onBinderDied();
             sendReplyMsg(messenger, requestId);
@@ -326,10 +316,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
         FlintDeathRecipient deathRecipient = getFlintDeathRecipient(messenger);
         if (deathRecipient != null
                 && deathRecipient.checkRouteController(routeId, controllerId)) {
-            if (DEBUG)
-                Log.d("MediaRouteProviderSrv", deathRecipient
-                        + ": Route controller created, controllerId="
-                        + controllerId + ", routeId=" + routeId);
+            log.d(deathRecipient + ": Route controller created, controllerId="
+                    + controllerId + ", routeId=" + routeId);
             sendReplyMsg(messenger, requestId);
 
             return true;
@@ -345,11 +333,9 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             boolean actuallyChanged = deathRecipient
                     .setDiscoveryRequestInternal(request);
 
-            if (DEBUG)
-                Log.d("MediaRouteProviderSrv", deathRecipient
-                        + ": Set discovery request, request=" + request
-                        + ", actuallyChanged=" + actuallyChanged
-                        + ", compositeDiscoveryRequest=" + mDiscoveryRequest);
+            log.d(deathRecipient + ": Set discovery request, request="
+                    + request + ", actuallyChanged=" + actuallyChanged
+                    + ", compositeDiscoveryRequest=" + mDiscoveryRequest);
 
             sendReplyMsg(messenger, requestId);
 
@@ -380,15 +366,10 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             FlintDeathRecipient deathRecipient = (FlintDeathRecipient) mFlintDeathRecipientList
                     .remove(index);
 
-            if (DEBUG)
-                Log.d("MediaRouteProviderSrv", deathRecipient + ": Binder died");
+            log.d(deathRecipient + ": Binder died");
 
             deathRecipient.onBinderDied();
         }
-    }
-
-    private boolean isDebugable() {
-        return DEBUG;
     }
 
     private boolean setDiscoveryRequest() {
@@ -480,10 +461,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
         FlintDeathRecipient deathRecipient = getFlintDeathRecipient(messenger);
         if (deathRecipient != null
                 && deathRecipient.releaseRouteController(controllerId)) {
-            if (DEBUG)
-                Log.d("MediaRouteProviderSrv", deathRecipient
-                        + ": Route controller released, controllerId="
-                        + controllerId);
+            log.d(deathRecipient + ": Route controller released, controllerId="
+                    + controllerId);
 
             sendReplyMsg(messenger, requestId);
             return true;
@@ -511,9 +490,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             if (routeController != null) {
                 routeController.onSelect();
 
-                if (DEBUG)
-                    Log.d("MediaRouteProviderSrv", deathRecipient
-                            + ": Route selected, controllerId=" + controllerId);
+                log.d(deathRecipient + ": Route selected, controllerId="
+                        + controllerId);
 
                 sendReplyMsg(messenger, requestId);
                 return true;
@@ -536,10 +514,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
             if (routeController != null) {
                 routeController.onUnselect();
 
-                if (DEBUG)
-                    Log.d("MediaRouteProviderSrv", deathRecipient
-                            + ": Route unselected, controllerId="
-                            + controllerId);
+                log.d(deathRecipient + ": Route unselected, controllerId="
+                        + controllerId);
 
                 sendReplyMsg(messenger, requestId);
                 return true;
@@ -687,7 +663,8 @@ public abstract class MediaRouteProviderSrv extends IntentService {
 
         public final CategoriesData addCategoryList(Collection categories) {
             if (categories == null) {
-                throw new IllegalArgumentException("categories must not be null");
+                throw new IllegalArgumentException(
+                        "categories must not be null");
             }
 
             if (!categories.isEmpty()) {

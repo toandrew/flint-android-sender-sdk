@@ -90,9 +90,7 @@ public class FlintClientImpl extends FlintClient<IFlintDeviceController> {
     public FlintClientImpl(Context context, Looper looper, FlintDevice device,
             Flint.Listener flintListener,
             FlintManager.ConnectionCallbacks callbacks) {
-
         super(context, looper, callbacks, null);
-
         this.mFlintDevice = device;
         this.mFlintListener = flintListener;
         this.mHandler = new Handler(looper);

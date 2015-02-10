@@ -32,6 +32,7 @@ import android.util.Log;
  * FlintClientEvents
  */
 public class FlintClientEvents {
+    private static final LOG log = new LOG("FlintClientEvents");
     private static final int NOTIFY_CALLBACK = 1;
 
     private final ArrayList<ConnectionCallbacks> mUnConnectionCallbacks = new ArrayList<ConnectionCallbacks>();
@@ -110,8 +111,7 @@ public class FlintClientEvents {
         ValueChecker.checkNullPointer(listener);
         synchronized (mConnectionCallbacks) {
             if (mConnectionCallbacks.contains(listener)) {
-                Log.w("FlintClientEvents",
-                        "registerConnectionCallbacks(): listener " + listener
+                log.w("registerConnectionCallbacks(): listener " + listener
                                 + " is already registered");
             } else {
                 if (mIsNotifingCallbacks) {
@@ -146,8 +146,7 @@ public class FlintClientEvents {
                             mConnectionCallbacks);
                 boolean result = mConnectionCallbacks.remove(listener);
                 if (!result) {
-                    Log.w("FlintClientEvents",
-                            "unregisterConnectionCallbacks(): listener "
+                    log.w("unregisterConnectionCallbacks(): listener "
                                     + listener + " not found");
                 } else if (mIsNotifingCallbacks
                         && !(mUnConnectionCallbacks.contains(listener))) {
@@ -182,8 +181,7 @@ public class FlintClientEvents {
                     }
                 }
             } else {
-                Log.wtf("FlintClientEvents",
-                        "Don't know how to handle this message.");
+                log.wtf("Don't know how to handle this message.");
             }
         }
     }
