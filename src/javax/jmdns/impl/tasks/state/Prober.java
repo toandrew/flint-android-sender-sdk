@@ -138,8 +138,11 @@ public class Prober extends DNSStateTask {
         newOut.addQuestion(DNSQuestion.newQuestion(this.getDns().getLocalHost()
                 .getName(), DNSRecordType.TYPE_ANY, DNSRecordClass.CLASS_IN,
                 DNSRecordClass.NOT_UNIQUE));
-        for (DNSRecord answer : this.getDns().getLocalHost()
-                .answers(DNSRecordClass.NOT_UNIQUE, this.getTTL())) {
+        for (DNSRecord answer : this
+                .getDns()
+                .getLocalHost()
+                .answers(DNSRecordClass.CLASS_ANY, DNSRecordClass.NOT_UNIQUE,
+                        this.getTTL())) {
             newOut = this.addAuthoritativeAnswer(newOut, answer);
         }
         return newOut;

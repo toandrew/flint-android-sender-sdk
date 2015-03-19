@@ -14,7 +14,7 @@ import javax.jmdns.impl.JmDNSImpl;
 
 /**
  * mDNS implementation in Java.
- *
+ * 
  * @author Arthur van Hoff, Rick Blair, Jeff Sonstein, Werner Randelshofer,
  *         Pierre Frisch, Scott Lewis, Scott Cytacki
  */
@@ -27,7 +27,7 @@ public abstract class JmDNS implements Closeable {
 
         /**
          * This method is called if JmDNS cannot recover from an I/O error.
-         *
+         * 
          * @param dns
          *            target DNS
          * @param infos
@@ -41,7 +41,7 @@ public abstract class JmDNS implements Closeable {
     /**
      * The version of JmDNS.
      */
-    public static final String VERSION = "3.4.1";
+    public static final String VERSION = "3.4.2";
 
     /**
      * <p>
@@ -54,7 +54,7 @@ public abstract class JmDNS implements Closeable {
      * address and the local hostname. In doubt use the explicit constructor.<br/>
      * This call is equivalent to <code>create(null, null)</code>.
      * </p>
-     *
+     * 
      * @see #create(InetAddress, String)
      * @return jmDNS instance
      * @exception IOException
@@ -76,7 +76,7 @@ public abstract class JmDNS implements Closeable {
      * address and the local hostname. In doubt use the explicit constructor.<br/>
      * This call is equivalent to <code>create(addr, null)</code>.
      * </p>
-     *
+     * 
      * @see #create(InetAddress, String)
      * @param addr
      *            IP address to bind to.
@@ -99,7 +99,7 @@ public abstract class JmDNS implements Closeable {
      * address and the local hostname. In doubt use the explicit constructor.<br/>
      * This call is equivalent to <code>create(null, name)</code>.
      * </p>
-     *
+     * 
      * @see #create(InetAddress, String)
      * @param name
      *            name of the newly created JmDNS
@@ -145,7 +145,7 @@ public abstract class JmDNS implements Closeable {
      * . This must be done before creating a {@link JmDNS} or {@link JmmDNS}
      * instance.
      * </p>
-     *
+     * 
      * @param addr
      *            IP address to bind to.
      * @param name
@@ -162,7 +162,7 @@ public abstract class JmDNS implements Closeable {
     /**
      * Return the name of the JmDNS instance. This is an arbitrary string that
      * is useful for distinguishing instances.
-     *
+     * 
      * @return name of the JmDNS
      */
     public abstract String getName();
@@ -170,7 +170,7 @@ public abstract class JmDNS implements Closeable {
     /**
      * Return the HostName associated with this JmDNS instance. Note: May not be
      * the same as what started. The host name is subject to negotiation.
-     *
+     * 
      * @return Host name
      */
     public abstract String getHostName();
@@ -178,12 +178,26 @@ public abstract class JmDNS implements Closeable {
     /**
      * Return the address of the interface to which this instance of JmDNS is
      * bound.
-     *
+     * 
      * @return Internet Address
      * @exception IOException
      *                if there is an error in the underlying protocol, such as a
      *                TCP error.
      */
+    public abstract InetAddress getInetAddress() throws IOException;
+
+    /**
+     * Return the address of the interface to which this instance of JmDNS is
+     * bound.
+     * 
+     * @return Internet Address
+     * @exception IOException
+     *                if there is an error in the underlying protocol, such as a
+     *                TCP error.
+     * @deprecated do not use this implementation yields unpredictable results
+     *             use {@link #getInetAddress()}
+     */
+    @Deprecated
     public abstract InetAddress getInterface() throws IOException;
 
     /**
@@ -192,7 +206,7 @@ public abstract class JmDNS implements Closeable {
      * <p/>
      * Usage note: Do not call this method from the AWT event dispatcher thread.
      * You will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            fully qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -208,7 +222,7 @@ public abstract class JmDNS implements Closeable {
      * <p/>
      * Usage note: If you call this method from the AWT event dispatcher thread,
      * use a small timeout, or you will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -227,7 +241,7 @@ public abstract class JmDNS implements Closeable {
      * <p/>
      * Usage note: Do not call this method from the AWT event dispatcher thread.
      * You will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            fully qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -247,7 +261,7 @@ public abstract class JmDNS implements Closeable {
      * <p/>
      * Usage note: If you call this method from the AWT event dispatcher thread,
      * use a small timeout, or you will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -270,7 +284,7 @@ public abstract class JmDNS implements Closeable {
      * <p/>
      * Usage note: Do not call this method from the AWT event dispatcher thread.
      * You will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -286,7 +300,7 @@ public abstract class JmDNS implements Closeable {
      * <p/>
      * Usage note: Do not call this method from the AWT event dispatcher thread.
      * You will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -303,7 +317,7 @@ public abstract class JmDNS implements Closeable {
      * Request service information. The information about the service is
      * requested and the ServiceListener.resolveService method is called as soon
      * as it is available.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -319,7 +333,7 @@ public abstract class JmDNS implements Closeable {
      * Request service information. The information about the service is
      * requested and the ServiceListener.resolveService method is called as soon
      * as it is available.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -336,7 +350,7 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * Listen for service types.
-     *
+     * 
      * @param listener
      *            listener for service types
      * @exception IOException
@@ -348,7 +362,7 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * Remove listener for service types.
-     *
+     * 
      * @param listener
      *            listener for service types
      */
@@ -357,7 +371,7 @@ public abstract class JmDNS implements Closeable {
     /**
      * Listen for services of a given type. The type has to be a fully qualified
      * type name such as <code>_http._tcp.local.</code>.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code>.
@@ -369,7 +383,7 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * Remove listener for services of a given type.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code>.
@@ -385,7 +399,7 @@ public abstract class JmDNS implements Closeable {
      * Note that the given {@code ServiceInfo} is bound to this {@code JmDNS}
      * instance, and should not be reused for any other
      * {@linkplain #registerService(ServiceInfo)}.
-     *
+     * 
      * @param info
      *            service info to register
      * @exception IOException
@@ -403,13 +417,13 @@ public abstract class JmDNS implements Closeable {
      * the cache.<br/>
      * This is support for shared records that can be rescued by some other
      * cooperation DNS.
-     *
+     * 
      * <pre>
      * Clients receiving a Multicast DNS Response with a TTL of zero SHOULD NOT immediately delete the record from the cache, but instead record a TTL of 1 and then delete the record one second later.
      * </pre>
-     *
+     * 
      * </p>
-     *
+     * 
      * @param info
      *            service info to remove
      */
@@ -426,7 +440,7 @@ public abstract class JmDNS implements Closeable {
      * <p>
      * Service types are automatically registered as they are discovered.
      * </p>
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code>.
@@ -437,7 +451,7 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * List Services and serviceTypes. Debugging Only
-     *
+     * 
      * @deprecated since 3.2.2
      */
     @Deprecated
@@ -445,7 +459,7 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * Returns a list of service infos of the specified type.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @return An array of service instance.
@@ -454,7 +468,7 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * Returns a list of service infos of the specified type.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @param timeout
@@ -467,7 +481,7 @@ public abstract class JmDNS implements Closeable {
      * Returns a list of service infos of the specified type sorted by subtype.
      * Any service that do not register a subtype is listed in the empty subtype
      * section.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @return A dictionary of service info by subtypes.
@@ -478,7 +492,7 @@ public abstract class JmDNS implements Closeable {
      * Returns a list of service infos of the specified type sorted by subtype.
      * Any service that do not register a subtype is listed in the empty subtype
      * section.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @param timeout
@@ -490,14 +504,14 @@ public abstract class JmDNS implements Closeable {
 
     /**
      * Returns the instance delegate
-     *
+     * 
      * @return instance delegate
      */
     public abstract Delegate getDelegate();
 
     /**
      * Sets the instance delegate
-     *
+     * 
      * @param value
      *            new instance delegate
      * @return previous instance delegate

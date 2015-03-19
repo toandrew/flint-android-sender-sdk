@@ -13,7 +13,7 @@ import javax.jmdns.impl.NetworkTopologyDiscoveryImpl;
  * To create you own filtering class for Internet Addresses you will need to
  * implement the class and the factory delegate. These must be called before any
  * other call to JmDNS.
- *
+ * 
  * <pre>
  * public static class MyNetworkTopologyDiscovery implements
  *         NetworkTopologyDiscovery {
@@ -49,9 +49,9 @@ import javax.jmdns.impl.NetworkTopologyDiscoveryImpl;
  * 
  * }
  * </pre>
- *
+ * 
  * </p>
- *
+ * 
  * @author Pierre Frisch
  */
 public interface NetworkTopologyDiscovery {
@@ -72,7 +72,7 @@ public interface NetworkTopologyDiscovery {
             /**
              * Allows the delegate the opportunity to construct and return a
              * different NetworkTopologyDiscovery.
-             *
+             * 
              * @return Should return a new NetworkTopologyDiscovery Object.
              * @see #classDelegate()
              * @see #setClassDelegate(ClassDelegate anObject)
@@ -89,7 +89,7 @@ public interface NetworkTopologyDiscovery {
         /**
          * Assigns <code>delegate</code> as NetworkTopologyDiscovery's class
          * delegate. The class delegate is optional.
-         *
+         * 
          * @param delegate
          *            The object to set as NetworkTopologyDiscovery's class
          *            delegate.
@@ -102,7 +102,7 @@ public interface NetworkTopologyDiscovery {
 
         /**
          * Returns NetworkTopologyDiscovery's class delegate.
-         *
+         * 
          * @return NetworkTopologyDiscovery's class delegate.
          * @see #setClassDelegate(ClassDelegate anObject)
          * @see JmmDNS.Factory.ClassDelegate
@@ -114,7 +114,7 @@ public interface NetworkTopologyDiscovery {
         /**
          * Returns a new instance of NetworkTopologyDiscovery using the class
          * delegate if it exists.
-         *
+         * 
          * @return new instance of NetworkTopologyDiscovery
          */
         protected static NetworkTopologyDiscovery newNetworkTopologyDiscovery() {
@@ -128,8 +128,8 @@ public interface NetworkTopologyDiscovery {
         }
 
         /**
-         * Return the instance of the Multihommed Multicast DNS.
-         *
+         * Return the instance of the Multihomed Multicast DNS.
+         * 
          * @return the JmmDNS
          */
         public static NetworkTopologyDiscovery getInstance() {
@@ -147,14 +147,14 @@ public interface NetworkTopologyDiscovery {
 
     /**
      * Get all local Internet Addresses for the machine.
-     *
+     * 
      * @return Set of InetAddress
      */
     public abstract InetAddress[] getInetAddresses();
 
     /**
      * Check if a given InetAddress should be used for mDNS
-     *
+     * 
      * @param networkInterface
      * @param interfaceAddress
      * @return <code>true</code> is the address is to be used,
@@ -165,14 +165,14 @@ public interface NetworkTopologyDiscovery {
 
     /**
      * Locks the given InetAddress if the device requires it.
-     *
+     * 
      * @param interfaceAddress
      */
     public void lockInetAddress(InetAddress interfaceAddress);
 
     /**
      * Locks the given InetAddress if the device requires it.
-     *
+     * 
      * @param interfaceAddress
      */
     public void unlockInetAddress(InetAddress interfaceAddress);

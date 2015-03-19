@@ -28,7 +28,7 @@ import javax.jmdns.impl.tasks.state.Renewer;
  * <b>Note: </b> This is not considered as part of the general public API of
  * JmDNS.
  * </p>
- *
+ * 
  * @author Pierre Frisch
  */
 public interface DNSTaskStarter {
@@ -51,7 +51,7 @@ public interface DNSTaskStarter {
             /**
              * Allows the delegate the opportunity to construct and return a
              * different DNSTaskStarter.
-             *
+             * 
              * @param jmDNSImpl
              *            jmDNS instance
              * @return Should return a new DNSTaskStarter Object.
@@ -71,7 +71,7 @@ public interface DNSTaskStarter {
         /**
          * Assigns <code>delegate</code> as DNSTaskStarter's class delegate. The
          * class delegate is optional.
-         *
+         * 
          * @param delegate
          *            The object to set as DNSTaskStarter's class delegate.
          * @see #classDelegate()
@@ -83,7 +83,7 @@ public interface DNSTaskStarter {
 
         /**
          * Returns DNSTaskStarter's class delegate.
-         *
+         * 
          * @return DNSTaskStarter's class delegate.
          * @see #setClassDelegate(ClassDelegate anObject)
          * @see DNSTaskStarter.Factory.ClassDelegate
@@ -95,7 +95,7 @@ public interface DNSTaskStarter {
         /**
          * Returns a new instance of DNSTaskStarter using the class delegate if
          * it exists.
-         *
+         * 
          * @param jmDNSImpl
          *            jmDNS instance
          * @return new instance of DNSTaskStarter
@@ -112,7 +112,7 @@ public interface DNSTaskStarter {
 
         /**
          * Return the instance of the DNSTaskStarter Factory.
-         *
+         * 
          * @return DNSTaskStarter Factory
          */
         public static Factory getInstance() {
@@ -128,7 +128,7 @@ public interface DNSTaskStarter {
 
         /**
          * Return the instance of the DNSTaskStarter for the JmDNS.
-         *
+         * 
          * @param jmDNSImpl
          *            jmDNS instance
          * @return the DNSTaskStarter
@@ -140,6 +140,16 @@ public interface DNSTaskStarter {
                 starter = _instances.get(jmDNSImpl);
             }
             return starter;
+        }
+
+        /**
+         * Dispose of the DNSTaskStarter instance associated with this JmDNS.
+         * 
+         * @param jmDNSImpl
+         *            jmDNS instance
+         */
+        public void disposeStarter(JmDNSImpl jmDNSImpl) {
+            _instances.remove(jmDNSImpl);
         }
 
     }
@@ -300,7 +310,7 @@ public interface DNSTaskStarter {
             _timer = new StarterTimer("JmDNS(" + _jmDNSImpl.getName()
                     + ").Timer", true);
             _stateTimer = new StarterTimer("JmDNS(" + _jmDNSImpl.getName()
-                    + ").State.Timer", false);
+                    + ").State.Timer", true);
         }
 
         /*
@@ -487,7 +497,7 @@ public interface DNSTaskStarter {
 
     /**
      * Start a new service info resolver task
-     *
+     * 
      * @param info
      *            service info to resolve
      */
@@ -500,7 +510,7 @@ public interface DNSTaskStarter {
 
     /**
      * Start a new service resolver task
-     *
+     * 
      * @param type
      *            service type to resolve
      */
@@ -508,7 +518,7 @@ public interface DNSTaskStarter {
 
     /**
      * Start a new responder task
-     *
+     * 
      * @param in
      *            incoming message
      * @param port

@@ -8,7 +8,7 @@ import java.util.EventListener;
 
 /**
  * Listener for service updates.
- *
+ * 
  * @author Arthur van Hoff, Werner Randelshofer, Pierre Frisch
  */
 public interface ServiceListener extends EventListener {
@@ -19,14 +19,14 @@ public interface ServiceListener extends EventListener {
      * To get the full resolved information you need to listen to
      * {@link #serviceResolved(ServiceEvent)} or call
      * {@link JmDNS#getServiceInfo(String, String, long)}
-     *
+     * 
      * <pre>
      *  ServiceInfo info = event.getDNS().getServiceInfo(event.getType(), event.getName())
      * </pre>
      * <p>
      * Please note that service resolution may take a few second to resolve.
      * </p>
-     *
+     * 
      * @param event
      *            The ServiceEvent providing the name and fully qualified type
      *            of the service.
@@ -35,7 +35,7 @@ public interface ServiceListener extends EventListener {
 
     /**
      * A service has been removed.
-     *
+     * 
      * @param event
      *            The ServiceEvent providing the name and fully qualified type
      *            of the service.
@@ -47,7 +47,7 @@ public interface ServiceListener extends EventListener {
      * ServiceInfo record.<br/>
      * <b>Note:</b>This call back will never be called if the service does not
      * resolve.<br/>
-     *
+     * 
      * @param event
      *            The ServiceEvent providing the name, the fully qualified type
      *            of the service, and the service info record.

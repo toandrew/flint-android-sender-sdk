@@ -24,9 +24,9 @@ import javax.jmdns.impl.JmmDNSImpl;
  * raised in the middle of execution, you may be in an incoherent state.
  * <p>
  * <b>Note:</b> This API is experimental and may change in the future please let
- * us know what work and what does not work in you application.
+ * us know what work and what does not work in your application.
  * </p>
- *
+ * 
  * @author C&eacute;drik Lime, Pierre Frisch
  */
 public interface JmmDNS extends Closeable {
@@ -46,7 +46,7 @@ public interface JmmDNS extends Closeable {
             /**
              * Allows the delegate the opportunity to construct and return a
              * different JmmDNS.
-             *
+             * 
              * @return Should return a new JmmDNS.
              * @see #classDelegate()
              * @see #setClassDelegate(ClassDelegate anObject)
@@ -64,7 +64,7 @@ public interface JmmDNS extends Closeable {
         /**
          * Assigns <code>delegate</code> as JmmDNS's class delegate. The class
          * delegate is optional.
-         *
+         * 
          * @param delegate
          *            The object to set as JmmDNS's class delegate.
          * @see #classDelegate()
@@ -76,7 +76,7 @@ public interface JmmDNS extends Closeable {
 
         /**
          * Returns JmmDNS's class delegate.
-         *
+         * 
          * @return JmmDNS's class delegate.
          * @see #setClassDelegate(ClassDelegate anObject)
          * @see JmmDNS.Factory.ClassDelegate
@@ -88,7 +88,7 @@ public interface JmmDNS extends Closeable {
         /**
          * Returns a new instance of JmmDNS using the class delegate if it
          * exists.
-         *
+         * 
          * @return new instance of JmmDNS
          */
         protected static JmmDNS newJmmDNS() {
@@ -101,8 +101,8 @@ public interface JmmDNS extends Closeable {
         }
 
         /**
-         * Return the instance of the Multihommed Multicast DNS.
-         *
+         * Return the instance of the Multihomed Multicast DNS.
+         * 
          * @return the JmmDNS
          */
         public static JmmDNS getInstance() {
@@ -115,11 +115,23 @@ public interface JmmDNS extends Closeable {
             }
             return _instance;
         }
+
+        /**
+         * Closes the instance if still running and discard it.
+         * 
+         * @throws IOException
+         */
+        public static void close() throws IOException {
+            synchronized (Factory.class) {
+                _instance.close();
+                _instance = null;
+            }
+        }
     }
 
     /**
      * Return the names of the JmDNS instances.
-     *
+     * 
      * @return list of name of the JmDNS
      * @see javax.jmdns.JmDNS#getName()
      */
@@ -127,7 +139,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Return the list HostName associated with this JmmDNS instance.
-     *
+     * 
      * @return list of host names
      * @see javax.jmdns.JmDNS#getHostName()
      */
@@ -136,12 +148,32 @@ public interface JmmDNS extends Closeable {
     /**
      * Return the list of addresses of the interface to which this instance of
      * JmmDNS is bound.
-     *
+     * 
+     * @return list of Internet Address
+     * @exception IOException
+     * @see javax.jmdns.JmDNS#getInetAddress()
+     */
+    public abstract InetAddress[] getInetAddresses() throws IOException;
+
+    /**
+     * Return the list of addresses of the interface to which this instance of
+     * JmmDNS is bound.
+     * 
      * @return list of Internet Address
      * @exception IOException
      * @see javax.jmdns.JmDNS#getInterface()
+     * @deprecated do not use this implementation yields unpredictable results
+     *             use {@link #getInetAddresses()}
      */
+    @Deprecated
     public abstract InetAddress[] getInterfaces() throws IOException;
+
+    /**
+     * Return a list of all the registered JmDNS instances
+     * 
+     * @return list of JmDNS instances
+     */
+    public abstract JmDNS[] getDNS();
 
     /**
      * Get service information. If the information is not cached, the method
@@ -149,7 +181,7 @@ public interface JmmDNS extends Closeable {
      * <p/>
      * Usage note: Do not call this method from the AWT event dispatcher thread.
      * You will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            fully qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -167,7 +199,7 @@ public interface JmmDNS extends Closeable {
      * <p/>
      * Usage note: If you call this method from the AWT event dispatcher thread,
      * use a small timeout, or you will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -189,7 +221,7 @@ public interface JmmDNS extends Closeable {
      * <p/>
      * Usage note: If you call this method from the AWT event dispatcher thread,
      * use a small timeout, or you will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -212,7 +244,7 @@ public interface JmmDNS extends Closeable {
      * <p/>
      * Usage note: If you call this method from the AWT event dispatcher thread,
      * use a small timeout, or you will make the user interface unresponsive.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -235,7 +267,7 @@ public interface JmmDNS extends Closeable {
      * Request service information. The information about the service is
      * requested and the ServiceListener.resolveService method is called as soon
      * as it is available.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -250,7 +282,7 @@ public interface JmmDNS extends Closeable {
      * Request service information. The information about the service is
      * requested and the ServiceListener.resolveService method is called as soon
      * as it is available.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -269,7 +301,7 @@ public interface JmmDNS extends Closeable {
      * Request service information. The information about the service is
      * requested and the ServiceListener.resolveService method is called as soon
      * as it is available.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -287,7 +319,7 @@ public interface JmmDNS extends Closeable {
      * Request service information. The information about the service is
      * requested and the ServiceListener.resolveService method is called as soon
      * as it is available.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code> .
@@ -306,7 +338,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Listen for service types.
-     *
+     * 
      * @param listener
      *            listener for service types
      * @exception IOException
@@ -317,7 +349,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Remove listener for service types.
-     *
+     * 
      * @param listener
      *            listener for service types
      * @see javax.jmdns.JmDNS#removeServiceTypeListener(javax.jmdns.ServiceTypeListener)
@@ -327,7 +359,7 @@ public interface JmmDNS extends Closeable {
     /**
      * Listen for services of a given type. The type has to be a fully qualified
      * type name such as <code>_http._tcp.local.</code>.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code>.
@@ -341,7 +373,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Remove listener for services of a given type.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code>.
@@ -357,7 +389,7 @@ public interface JmmDNS extends Closeable {
      * Register a service. The service is registered for access by other jmdns
      * clients. The name of the service may be changed to make it unique.<br>
      * <b>Note</b> the Service info is cloned for each network interface.
-     *
+     * 
      * @param info
      *            service info to register
      * @exception IOException
@@ -367,7 +399,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Unregister a service. The service should have been registered.
-     *
+     * 
      * @param info
      *            service info to remove
      * @see javax.jmdns.JmDNS#unregisterService(javax.jmdns.ServiceInfo)
@@ -376,7 +408,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Unregister all services.
-     *
+     * 
      * @see javax.jmdns.JmDNS#unregisterAllServices()
      */
     public abstract void unregisterAllServices();
@@ -385,7 +417,7 @@ public interface JmmDNS extends Closeable {
      * Register a service type. If this service type was not already known, all
      * service listeners will be notified of the new service type. Service types
      * are automatically registered as they are discovered.
-     *
+     * 
      * @param type
      *            full qualified service type, such as
      *            <code>_http._tcp.local.</code>.
@@ -395,7 +427,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Returns a list of service infos of the specified type.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @return An array of service instance.
@@ -405,7 +437,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Returns a list of service infos of the specified type.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @param timeout
@@ -419,7 +451,7 @@ public interface JmmDNS extends Closeable {
      * Returns a list of service infos of the specified type sorted by subtype.
      * Any service that do not register a subtype is listed in the empty subtype
      * section.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @return A dictionary of service info by subtypes.
@@ -431,7 +463,7 @@ public interface JmmDNS extends Closeable {
      * Returns a list of service infos of the specified type sorted by subtype.
      * Any service that do not register a subtype is listed in the empty subtype
      * section.
-     *
+     * 
      * @param type
      *            Service type name, such as <code>_http._tcp.local.</code>.
      * @param timeout
@@ -444,7 +476,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Listen to network changes.
-     *
+     * 
      * @param listener
      *            listener for network changes
      */
@@ -453,7 +485,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Remove listener for network changes.
-     *
+     * 
      * @param listener
      *            listener for network changes
      */
@@ -462,7 +494,7 @@ public interface JmmDNS extends Closeable {
 
     /**
      * Returns list of network change listeners
-     *
+     * 
      * @return list of network change listeners
      */
     public abstract NetworkTopologyListener[] networkListeners();

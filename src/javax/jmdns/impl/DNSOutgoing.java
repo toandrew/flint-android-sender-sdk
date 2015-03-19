@@ -370,11 +370,6 @@ public final class DNSOutgoing extends DNSMessage {
         return message.toByteArray();
     }
 
-    @Override
-    public boolean isQuery() {
-        return (this.getFlags() & DNSConstants.FLAGS_QR_MASK) == DNSConstants.FLAGS_QR_QUERY;
-    }
-
     /**
      * Debugging.
      */
@@ -396,13 +391,13 @@ public final class DNSOutgoing extends DNSMessage {
         if (this.getFlags() != 0) {
             buf.append(", flags=0x");
             buf.append(Integer.toHexString(this.getFlags()));
-            if ((this.getFlags() & DNSConstants.FLAGS_QR_RESPONSE) != 0) {
+            if (this.isResponse()) {
                 buf.append(":r");
             }
-            if ((this.getFlags() & DNSConstants.FLAGS_AA) != 0) {
+            if (this.isAuthoritativeAnswer()) {
                 buf.append(":aa");
             }
-            if ((this.getFlags() & DNSConstants.FLAGS_TC) != 0) {
+            if (this.isTruncated()) {
                 buf.append(":tc");
             }
         }

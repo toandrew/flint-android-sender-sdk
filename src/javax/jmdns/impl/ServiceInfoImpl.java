@@ -36,7 +36,7 @@ import javax.jmdns.impl.tasks.DNSTask;
 
 /**
  * JmDNS service information.
- *
+ * 
  * @author Arthur van Hoff, Jeff Sonstein, Werner Randelshofer
  */
 public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
@@ -133,13 +133,26 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
         this(ServiceInfoImpl.decodeQualifiedNameMap(type, name, subtype), port,
                 weight, priority, persistent, (byte[]) null);
         _server = text;
+
+        byte[] encodedText = null;
         try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream(text.length());
-            writeUTF(out, text);
-            this._text = out.toByteArray();
+            ByteArrayOutputStream out = new ByteArrayOutputStream(256);
+            ByteArrayOutputStream out2 = new ByteArrayOutputStream(100);
+            writeUTF(out2, text);
+            byte data[] = out2.toByteArray();
+            if (data.length > 255) {
+                throw new IOException(
+                        "Cannot have individual values larger that 255 chars. Offending value: "
+                                + text);
+            }
+            out.write((byte) data.length);
+            out.write(data, 0, data.length);
+            encodedText = out.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("unexpected exception: " + e);
         }
+        this._text = (encodedText != null && encodedText.length > 0 ? encodedText
+                : DNSRecord.EMPTY_TXT);
     }
 
     /**
@@ -223,7 +236,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
 
     /**
      * During recovery we need to duplicate service info to reregister them
-     *
+     * 
      * @param info
      */
     ServiceInfoImpl(ServiceInfo info) {
@@ -290,7 +303,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
         } else {
             // First remove the name if it there.
             if (!aType.startsWith("_") || aType.startsWith("_services")) {
-                index = aType.indexOf('.');
+                index = aType.indexOf("._");
                 if (index > 0) {
                     // We need to preserve the case for the user readable name.
                     name = casePreservedType.substring(0, index);
@@ -312,8 +325,14 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
                 index = aType.indexOf("_" + protocol.toLowerCase() + ".");
                 int start = index + protocol.length() + 2;
                 int end = aType.length() - (aType.endsWith(".") ? 1 : 0);
-                domain = casePreservedType.substring(start, end);
-                application = casePreservedType.substring(0, index - 1);
+                if (end > start) {
+                    domain = casePreservedType.substring(start, end);
+                }
+                if (index > 0) {
+                    application = casePreservedType.substring(0, index - 1);
+                } else {
+                    application = "";
+                }
             }
             index = application.toLowerCase().indexOf("._sub");
             if (index > 0) {
@@ -446,7 +465,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
 
     /**
      * Sets the service instance name.
-     *
+     * 
      * @param name
      *            unqualified service instance name, such as <code>foobar</code>
      */
@@ -700,10 +719,13 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
     @Override
     public String[] getURLs(String protocol) {
         InetAddress[] addresses = this.getInetAddresses();
-        String[] urls = new String[addresses.length];
-        for (int i = 0; i < addresses.length; i++) {
-            String url = protocol + "://" + addresses[i].getHostAddress() + ":"
-                    + getPort();
+        List<String> urls = new ArrayList<String>(addresses.length);
+        for (InetAddress address : addresses) {
+            String hostAddress = address.getHostAddress();
+            if (address instanceof Inet6Address) {
+                hostAddress = "[" + hostAddress + "]";
+            }
+            String url = protocol + "://" + hostAddress + ":" + getPort();
             String path = getPropertyString("path");
             if (path != null) {
                 if (path.indexOf("://") >= 0) {
@@ -712,9 +734,9 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
                     url += path.startsWith("/") ? path : "/" + path;
                 }
             }
-            urls[i] = url;
+            urls.add(url);
         }
-        return urls;
+        return urls.toArray(new String[urls.size()]);
     }
 
     /**
@@ -913,7 +935,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
 
     /**
      * JmDNS callback to update a DNS record.
-     *
+     * 
      * @param dnsCache
      * @param now
      * @param rec
@@ -969,6 +991,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
                 if (rec.getName().equalsIgnoreCase(this.getQualifiedName())) {
                     DNSRecord.Text txt = (DNSRecord.Text) rec;
                     _text = txt.getText();
+                    _props = null; // set it null for apply update text data
                     serviceUpdated = true;
                 }
                 break;
@@ -985,9 +1008,13 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
             if (serviceUpdated && this.hasData()) {
                 JmDNSImpl dns = this.getDns();
                 if (dns != null) {
-                    ServiceEvent event = ((DNSRecord) rec).getServiceEvent(dns);
-                    event = new ServiceEventImpl(dns, event.getType(),
-                            event.getName(), this);
+                    // ServiceEvent event = ((DNSRecord)
+                    // rec).getServiceEvent(dns);
+                    // event = new ServiceEventImpl(dns, event.getType(),
+                    // event.getName(), this);
+                    // Failure to resolve services - ID: 3517826
+                    ServiceEvent event = new ServiceEventImpl(dns,
+                            this.getType(), this.getName(), this);
                     dns.handleServiceResolved(event);
                 }
             }
@@ -1001,7 +1028,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
 
     /**
      * Returns true if the service info is filled with data.
-     *
+     * 
      * @return <code>true</code> if the service info has data,
      *         <code>false</code> otherwise.
      */
@@ -1265,20 +1292,37 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
         return buf.toString();
     }
 
-    public Collection<DNSRecord> answers(boolean unique, int ttl,
-            HostInfo localHost) {
+    /**
+     * Create a series of answer that correspond with the give service info.
+     * 
+     * @param recordClass
+     *            record class of the query
+     * @param unique
+     * @param ttl
+     * @param localHost
+     * @return collection of answers
+     */
+    public Collection<DNSRecord> answers(DNSRecordClass recordClass,
+            boolean unique, int ttl, HostInfo localHost) {
         List<DNSRecord> list = new ArrayList<DNSRecord>();
-        if (this.getSubtype().length() > 0) {
-            list.add(new Pointer(this.getTypeWithSubtype(),
-                    DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE, ttl,
-                    this.getQualifiedName()));
+        // [PJYF Dec 6 2011] This is bad hack as I don't know what the spec
+        // should really means in this case. i.e. what is the class of our
+        // registered services.
+        if ((recordClass == DNSRecordClass.CLASS_ANY)
+                || (recordClass == DNSRecordClass.CLASS_IN)) {
+            if (this.getSubtype().length() > 0) {
+                list.add(new Pointer(this.getTypeWithSubtype(),
+                        DNSRecordClass.CLASS_IN, DNSRecordClass.NOT_UNIQUE,
+                        ttl, this.getQualifiedName()));
+            }
+            list.add(new Pointer(this.getType(), DNSRecordClass.CLASS_IN,
+                    DNSRecordClass.NOT_UNIQUE, ttl, this.getQualifiedName()));
+            list.add(new Service(this.getQualifiedName(),
+                    DNSRecordClass.CLASS_IN, unique, ttl, _priority, _weight,
+                    _port, localHost.getName()));
+            list.add(new Text(this.getQualifiedName(), DNSRecordClass.CLASS_IN,
+                    unique, ttl, this.getTextBytes()));
         }
-        list.add(new Pointer(this.getType(), DNSRecordClass.CLASS_IN,
-                DNSRecordClass.NOT_UNIQUE, ttl, this.getQualifiedName()));
-        list.add(new Service(this.getQualifiedName(), DNSRecordClass.CLASS_IN,
-                unique, ttl, _priority, _weight, _port, localHost.getName()));
-        list.add(new Text(this.getQualifiedName(), DNSRecordClass.CLASS_IN,
-                unique, ttl, this.getTextBytes()));
         return list;
     }
 
@@ -1304,7 +1348,7 @@ public class ServiceInfoImpl extends ServiceInfo implements DNSListener,
 
     /**
      * This is used internally by the framework
-     *
+     * 
      * @param text
      */
     void _setText(byte[] text) {

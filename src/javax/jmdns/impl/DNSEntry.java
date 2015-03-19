@@ -86,9 +86,8 @@ public abstract class DNSEntry {
      */
     public boolean isSameEntry(DNSEntry entry) {
         return this.getKey().equals(entry.getKey())
-                && this.getRecordType().equals(entry.getRecordType())
-                && ((DNSRecordClass.CLASS_ANY == entry.getRecordClass()) || this
-                        .getRecordClass().equals(entry.getRecordClass()));
+                && this.matchRecordType(entry.getRecordType())
+                && this.matchRecordClass(entry.getRecordClass());
     }
 
     /**
@@ -100,6 +99,30 @@ public abstract class DNSEntry {
      */
     public boolean sameSubtype(DNSEntry other) {
         return this.getSubtype().equals(other.getSubtype());
+    }
+
+    /**
+     * Check if the requested record class match the current record class
+     * 
+     * @param recordClass
+     * @return <code>true</code> if the two entries have compatible class,
+     *         <code>false</code> otherwise
+     */
+    public boolean matchRecordClass(DNSRecordClass recordClass) {
+        return (DNSRecordClass.CLASS_ANY == recordClass)
+                || (DNSRecordClass.CLASS_ANY == this.getRecordClass())
+                || this.getRecordClass().equals(recordClass);
+    }
+
+    /**
+     * Check if the requested record tyep match the current record type
+     * 
+     * @param recordType
+     * @return <code>true</code> if the two entries have compatible type,
+     *         <code>false</code> otherwise
+     */
+    public boolean matchRecordType(DNSRecordType recordType) {
+        return this.getRecordType().equals(recordType);
     }
 
     /**

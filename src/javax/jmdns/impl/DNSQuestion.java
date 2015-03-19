@@ -164,7 +164,8 @@ public class DNSQuestion extends DNSEntry {
             if (jmDNSImpl.getLocalHost().getName().equalsIgnoreCase(loname)) {
                 // type = DNSConstants.TYPE_A;
                 answers.addAll(jmDNSImpl.getLocalHost().answers(
-                        this.isUnique(), DNSConstants.DNS_TTL));
+                        this.getRecordClass(), this.isUnique(),
+                        DNSConstants.DNS_TTL));
                 return;
             }
             // Service type request
@@ -237,7 +238,8 @@ public class DNSQuestion extends DNSEntry {
             if (jmDNSImpl.getLocalHost().getName().equalsIgnoreCase(loname)) {
                 // type = DNSConstants.TYPE_A;
                 answers.addAll(jmDNSImpl.getLocalHost().answers(
-                        this.isUnique(), DNSConstants.DNS_TTL));
+                        this.getRecordClass(), this.isUnique(),
+                        DNSConstants.DNS_TTL));
                 return;
             }
             // Service type request
@@ -329,11 +331,15 @@ public class DNSQuestion extends DNSEntry {
             Set<DNSRecord> answers, ServiceInfoImpl info) {
         if ((info != null) && info.isAnnounced()) {
             if (this.getName().equalsIgnoreCase(info.getQualifiedName())
-                    || this.getName().equalsIgnoreCase(info.getType())) {
+                    || this.getName().equalsIgnoreCase(info.getType())
+                    || this.getName().equalsIgnoreCase(
+                            info.getTypeWithSubtype())) {
                 answers.addAll(jmDNSImpl.getLocalHost().answers(
-                        DNSRecordClass.UNIQUE, DNSConstants.DNS_TTL));
-                answers.addAll(info.answers(DNSRecordClass.UNIQUE,
-                        DNSConstants.DNS_TTL, jmDNSImpl.getLocalHost()));
+                        this.getRecordClass(), DNSRecordClass.UNIQUE,
+                        DNSConstants.DNS_TTL));
+                answers.addAll(info.answers(this.getRecordClass(),
+                        DNSRecordClass.UNIQUE, DNSConstants.DNS_TTL,
+                        jmDNSImpl.getLocalHost()));
             }
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer(jmDNSImpl.getName() + " DNSQuestion("

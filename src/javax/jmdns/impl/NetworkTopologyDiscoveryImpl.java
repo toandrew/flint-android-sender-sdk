@@ -17,7 +17,7 @@ import javax.jmdns.NetworkTopologyDiscovery;
 
 /**
  * This class implements NetworkTopologyDiscovery.
- *
+ * 
  * @author Pierre Frisch
  */
 public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
@@ -113,9 +113,6 @@ public class NetworkTopologyDiscoveryImpl implements NetworkTopologyDiscovery {
                 } catch (Exception exception) {
                     // We should hide that exception.
                 }
-            }
-            if (interfaceAddress.isLoopbackAddress()) {
-                return false;
             }
             return true;
         } catch (Exception exception) {

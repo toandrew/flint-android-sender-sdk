@@ -186,12 +186,42 @@ public abstract class DNSMessage {
     }
 
     /**
+     * Check is the response code is valid<br/>
+     * The only valid value is zero all other values signify an error and the
+     * message must be ignored.
+     * 
+     * @return true if the message has a valid response code.
+     */
+    public boolean isValidResponseCode() {
+        return (_flags & DNSConstants.FLAGS_RCODE) == 0;
+    }
+
+    /**
+     * Returns the operation code value. Currently only standard query 0 is
+     * valid.
+     * 
+     * @return The operation code value.
+     */
+    public int getOperationCode() {
+        return (_flags & DNSConstants.FLAGS_OPCODE) >> 11;
+    }
+
+    /**
      * Check if the message is truncated.
      * 
      * @return true if the message was truncated
      */
     public boolean isTruncated() {
         return (_flags & DNSConstants.FLAGS_TC) != 0;
+    }
+
+    /**
+     * Check if the message is an authoritative answer.
+     * 
+     * @return true if the message is an authoritative answer
+     */
+    public boolean isAuthoritativeAnswer() {
+        return (_flags & DNSConstants.FLAGS_AA) != 0;
     }
 
     /**
