@@ -328,6 +328,8 @@ public abstract class DNSRecord extends DNSEntry {
             Address address = (Address) other;
             if ((this.getAddress() == null) && (address.getAddress() != null)) {
                 return false;
+            } else if ((this.getAddress() == null) && (address.getAddress() == null)) {
+                return false;
             }
             return this.getAddress().equals(address.getAddress());
         }
