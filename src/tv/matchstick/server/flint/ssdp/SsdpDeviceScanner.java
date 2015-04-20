@@ -125,7 +125,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
             public void run() {
                 List<String> removeList = new ArrayList<String>();
                 synchronized (mScannerData) {
-                    Iterator<String> iterator = mScannerData.keySet().iterator();
+                    Iterator<String> iterator = mScannerData.keySet()
+                            .iterator();
                     while (iterator.hasNext()) {
                         String key = (String) iterator.next();
                         SsdpScannerData value = (SsdpScannerData) mScannerData
@@ -158,10 +159,10 @@ public class SsdpDeviceScanner extends DeviceScanner {
             }
         }, 100, 5000);
 
-        mResponseHandler = new Runnable() {
+        mResponseThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (mSSDPSocket != null && !Thread.interrupted()) {
+                while (mSSDPSocket != null) {
                     try {
                         handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
                                 .responseReceive()));
@@ -171,9 +172,8 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     }
                 }
             }
-        };
-
-        mRespNotifyHandler = new Runnable() {
+        });
+        mNotifyThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (mSSDPSocket != null && !Thread.interrupted()) {
@@ -186,10 +186,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
                     }
                 }
             }
-        };
-
-        mResponseThread = new Thread(mResponseHandler);
-        mNotifyThread = new Thread(mRespNotifyHandler);
+        });
 
         mResponseThread.start();
         mNotifyThread.start();
@@ -214,10 +211,6 @@ public class SsdpDeviceScanner extends DeviceScanner {
             mSSDPSocket = null;
         }
     }
-
-    private Runnable mResponseHandler;
-
-    private Runnable mRespNotifyHandler;
 
     private void handleDatagramPacket(final ParsedDatagram pd) {
         if (pd.data == null)
@@ -248,8 +241,7 @@ public class SsdpDeviceScanner extends DeviceScanner {
 
             if (location == null || location.length() == 0)
                 return;
-            log.d("location = " + location + "; uuid = "
-                    + uuid);
+            log.d("location = " + location + "; uuid = " + uuid);
             if (!mDiscoveredDeviceList.contains(uuid)
                     && mFoundDeviceMap.get(uuid) == null) {
                 mDiscoveredDeviceList.add(uuid);
