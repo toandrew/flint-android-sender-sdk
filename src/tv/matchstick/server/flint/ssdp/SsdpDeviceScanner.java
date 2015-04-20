@@ -158,6 +158,36 @@ public class SsdpDeviceScanner extends DeviceScanner {
             }
         }, 100, 5000);
 
+        mResponseHandler = new Runnable() {
+            @Override
+            public void run() {
+                while (mSSDPSocket != null && !Thread.interrupted()) {
+                    try {
+                        handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
+                                .responseReceive()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            }
+        };
+
+        mRespNotifyHandler = new Runnable() {
+            @Override
+            public void run() {
+                while (mSSDPSocket != null && !Thread.interrupted()) {
+                    try {
+                        handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
+                                .notifyReceive()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            }
+        };
+
         mResponseThread = new Thread(mResponseHandler);
         mNotifyThread = new Thread(mRespNotifyHandler);
 
@@ -185,35 +215,9 @@ public class SsdpDeviceScanner extends DeviceScanner {
         }
     }
 
-    private Runnable mResponseHandler = new Runnable() {
-        @Override
-        public void run() {
-            while (mSSDPSocket != null) {
-                try {
-                    handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
-                            .responseReceive()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        }
-    };
+    private Runnable mResponseHandler;
 
-    private Runnable mRespNotifyHandler = new Runnable() {
-        @Override
-        public void run() {
-            while (mSSDPSocket != null) {
-                try {
-                    handleDatagramPacket(SSDP.convertDatagram(mSSDPSocket
-                            .notifyReceive()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        }
-    };
+    private Runnable mRespNotifyHandler;
 
     private void handleDatagramPacket(final ParsedDatagram pd) {
         if (pd.data == null)
