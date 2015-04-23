@@ -295,8 +295,9 @@ public class FlintDevice implements SafeParcelable {
         if (data == null) {
             return null;
         }
-
-        data.setClassLoader(FlintDevice.class.getClassLoader());
+        ClassLoader cl = FlintDevice.class.getClass().getClassLoader();
+//        data.setClassLoader(FlintDevice.class.getClassLoader());
+        data.setClassLoader(cl);
 
         return (FlintDevice) data
                 .getParcelable("tv.matchstick.flint.EXTRA_FLINT_DEVICE");
