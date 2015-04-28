@@ -365,25 +365,15 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
     }
 
     private void onDiscoveryRequestChanged() {
-        boolean isStartScan, flag1, flag2;
         HashSet<DiscoveryCriteria> hashset = new HashSet<DiscoveryCriteria>(
                 mDiscoveryCriterias);
-        DiscoveryRequest request;
-        isStartScan = true;
+        boolean isStartScan = false;
         mDiscoveryCriterias.clear();
-        request = super.mDiscoveryRequest;
-        if (request == null) {
-            flag1 = false;
-        } else {
-            List list;
-            int size;
-            int index;
-            list = request.getSelector().getControlCategories();
-            size = list.size();
-            index = 0;
-            flag1 = false;
-            while (index < size) {
-                String category = (String) list.get(index);
+        if (mDiscoveryRequest != null) {
+            List list = mDiscoveryRequest.getSelector().getControlCategories();
+            int size = list.size();
+            for (int i = 0 ; i < size; i++) {
+                String category = (String) list.get(i);
                 if (!category
                         .equals("tv.matchstick.flint.CATEGORY_FLINT_REMOTE_PLAYBACK")
                         && !category
@@ -392,7 +382,6 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
                                 .equals("tv.matchstick.flint.CATEGORY_FLINT")
                         && !category
                                 .startsWith("tv.matchstick.flint.CATEGORY_FLINT/")) {
-                    flag2 = flag1;
                 } else {
                     try {
                         DiscoveryCriteria criteria = DiscoveryCriteria
@@ -401,15 +390,11 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
                     } catch (IllegalArgumentException e) {
                         e.printStackTrace();
                     } finally {
-                        flag2 = isStartScan;
+                        isStartScan = true;
                     }
                 }
-
-                index++;
-                flag1 = flag2;
             }
         }
-        isStartScan = flag1;
 
         if (hashset.equals(mDiscoveryCriterias)) {
             isStartScan = false;
