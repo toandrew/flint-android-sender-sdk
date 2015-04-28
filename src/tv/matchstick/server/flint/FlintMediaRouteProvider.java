@@ -372,7 +372,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
         if (mDiscoveryRequest != null) {
             List list = mDiscoveryRequest.getSelector().getControlCategories();
             int size = list.size();
-            for (int i = 0 ; i < size; i++) {
+            for (int i = 0; i < size; i++) {
                 String category = (String) list.get(i);
                 if (!category
                         .equals("tv.matchstick.flint.CATEGORY_FLINT_REMOTE_PLAYBACK")
@@ -395,13 +395,23 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
                 }
             }
         }
+        
+        if (!isStartScan) {
+            log.d("stopping the scan");
 
-        if (hashset.equals(mDiscoveryCriterias)) {
-            isStartScan = false;
-        } else {
-            mFlintDeviceFilter.reset(mDiscoveryCriterias);
+            FlintDeviceService.stopScanFlintDevice(super.mContext,
+                    mMdnsDeviceScanner);
+            FlintDeviceService.stopScanFlintDevice(super.mContext,
+                    mSsdpDeviceScanner);
+            return;
         }
 
+        if (!hashset.equals(mDiscoveryCriterias)) {
+            mFlintDeviceFilter.reset(mDiscoveryCriterias);
+        } else {
+            return;
+        }
+        
         if (isStartScan) {
             log.d("starting the scan");
 
@@ -415,15 +425,7 @@ public class FlintMediaRouteProvider extends MediaRouteProvider {
             FlintDeviceService.startScanFlintDevice(super.mContext,
                     mSsdpDeviceScanner);
 
-            return;
         }
-
-        log.d("stopping the scan");
-
-        FlintDeviceService.stopScanFlintDevice(super.mContext,
-                mMdnsDeviceScanner);
-        FlintDeviceService.stopScanFlintDevice(super.mContext,
-                mSsdpDeviceScanner);
     }
 
     public final RouteController getRouteController(String routeId) {
